@@ -9,14 +9,3 @@
     <color name="dark_gray">#666666</color>
 
 </resources>
-
-<!-- 
-
-<TextView
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="이것은 보조 텍스트입니다."
-    android:textColor="@color/white"
-    android:textSize="16sp" />
-    
--->

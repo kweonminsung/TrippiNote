@@ -4,13 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.app.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,29 +19,22 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AppTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                MainScreen()
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun MainScreen(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.fillMaxSize()
+    ) {
+        Text(
+            text = "Welcome to the Travel Diary App",
+            fontSize = 24.sp,
+            modifier = Modifier.padding(16.dp)
+        )
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    AppTheme {
-        Greeting("Android")
     }
 }
