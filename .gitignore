@@ -1,16 +1,75 @@
+# Built application files
+*.apk
+*.aar
+*.ap_
+*.aab
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
+# Generated files
+bin/
+gen/
+out/
+release/
+
+# Gradle files
 *.iml
 .gradle
+/build
+build/
+
+# Local configuration file (sdk path, etc)
 /local.properties
+local.properties
+
+# Log Files
+*.log
+
+# Android Studio captures folder
+/captures
+captures/
+
+# IntelliJ IDEA
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
 /.idea/workspace.xml
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
+/.idea/dictionaries
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/kotlinc.xml
+/.idea/render.experimental.xml
+/.idea/androidTestResultsUserPreferences.xml
+/.idea/deploymentTargetDropDown.xml
+.idea/appInsightsSettings.xml
+
+# OS-specific files
 .DS_Store
-/build
-/captures
+Thumbs.db
+
+# External native build folder generated in Android Studio 2.2 and later
 .externalNativeBuild
 .cxx
-local.properties
-.idea/appInsightsSettings.xml
+
+# Google Services (e.g. APIs or Firebase)
+google-services.json
+
+# Keystore files
+*.jks
+*.keystore
+
+# Lint
+lint/intermediates/
+lint/generated/
+lint/outputs/
+lint/tmp/
+lint-results*.xml
+
+# Android Profiling
+*.hprof
