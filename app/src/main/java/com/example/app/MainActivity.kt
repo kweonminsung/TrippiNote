@@ -16,13 +16,23 @@ import com.example.app.ui.pages.ProfileTab
 import com.example.app.ui.components.BottomBar
 import com.example.app.ui.components.top_bar.TopBar
 
+
+data class SessionData(val data: String)
+
+val LocalSession = compositionLocalOf<MutableState<SessionData>> { error("No Storage provided") }
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
-            AppTheme {
-                MainScreen()
+            val session = remember { mutableStateOf(SessionData("Initial Session Data")) }
+
+            CompositionLocalProvider(LocalSession provides session) {
+                AppTheme {
+                    MainScreen()
+                }
             }
         }
     }
