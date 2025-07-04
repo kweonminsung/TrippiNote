@@ -10,7 +10,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import com.example.app.ui.theme.AppTheme
-import com.example.app.ui.components.Header
+import com.example.app.ui.components.top_bar.Header
 import com.example.app.ui.pages.AlbumTab
 import com.example.app.ui.pages.HomeTab
 import com.example.app.ui.pages.MapTab
