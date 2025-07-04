@@ -14,9 +14,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.app.R
 
 
 @Composable
@@ -31,25 +33,36 @@ fun BottomBar(
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomBarButton("홈", Icons.Default.Home) { onItemClick("home") }
-        BottomBarButton("사진", Icons.Default.Phone) { onItemClick("photos") }
-        BottomBarButton("지도", Icons.Default.Add) { onItemClick("add") }
-        BottomBarButton("프로필", Icons.Default.Person) { onItemClick("profile") }
+
+        BottomBarButton("홈", R.drawable.bottombar_home) { onItemClick("home") }
+        BottomBarButton("사진", R.drawable.bottombar_album) { onItemClick("photos") }
+        BottomBarButton("지도", R.drawable.bottombar_map) { onItemClick("add") }
+        BottomBarButton("프로필", R.drawable.bottombar_profile) { onItemClick("profile") }
     }
 }
 
 @Composable
-fun IconButtonExample() {
-    Button(
-        onClick = { /* 버튼 클릭 시 동작 */ },
-        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFEEEEEE))
+fun BottomBarButton(
+    label: String,
+    iconResId: Int,
+    onClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .padding(8.dp)
     ) {
-        Icon(
-            imageVector = ImageVector.vectorResource(id = app.src.res.drawable.ic_home),
-            contentDescription = "홈 아이콘",
-            modifier = Modifier.size(20.dp)
+        Image(
+            painter = painterResource(id = iconResId),
+            contentDescription = label,
+            modifier = Modifier.size(24.dp)
         )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text("홈")
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            color = Color.Black
+        )
     }
 }
