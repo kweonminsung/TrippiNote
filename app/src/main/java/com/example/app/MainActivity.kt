@@ -22,12 +22,18 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+enum class TabType {
+    HOME, ALBUM, MAP, PROFILE
+}
+
 @Composable
 fun MainScreen(modifier: Modifier = Modifier) {
+    var tabType: TabType = TabType.HOME
+
     Column(
         modifier = modifier.fillMaxSize()
     ) {
-        Header("길동이의 여행 다이어리")
+        Header(tabType, )
 
     }
 }
