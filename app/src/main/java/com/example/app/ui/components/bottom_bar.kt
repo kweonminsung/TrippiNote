@@ -34,7 +34,7 @@ fun BottomBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        BottomBarButton("홈", R.drawable.bottombar_home) { onItemClick("home") }
+        BottomBarButton("홈", R.drawable.bottombar_home) {  }
         BottomBarButton("사진", R.drawable.bottombar_album) { onItemClick("photos") }
         BottomBarButton("지도", R.drawable.bottombar_map) { onItemClick("add") }
         BottomBarButton("프로필", R.drawable.bottombar_profile) { onItemClick("profile") }

@@ -21,6 +21,7 @@ import com.example.app.ui.pages.HomeTab
 import com.example.app.ui.pages.MapTab
 import com.example.app.ui.pages.ProfileTab
 import com.example.app.ui.components.BottomBar
+import tabType
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,30 +39,6 @@ enum class TabType {
     HOME, ALBUM, MAP, PROFILE
 }
 
-@Composable
-fun MainScreen(modifier: Modifier = Modifier) {
-    var tabType by remember { mutableStateOf(TabType.HOME) }
-
-    Column(
-        modifier = modifier.fillMaxSize()
-    ) {
-        Row {
-            Button(onClick = { tabType = TabType.HOME }) { Text("홈") }
-            Button(onClick = { tabType = TabType.ALBUM }) { Text("앨범") }
-            Button(onClick = { tabType = TabType.MAP }) { Text("지도") }
-            Button(onClick = { tabType = TabType.PROFILE }) { Text("프로필") }
-        }
-        Header(tabType)
-
-        when (tabType) {
-            TabType.HOME -> HomeTab()
-            TabType.ALBUM -> AlbumTab()
-            TabType.MAP -> MapTab()
-            TabType.PROFILE -> ProfileTab()
-        }
-    }
-}
-
 
 @Composable
 fun MainScreen(modifier: Modifier = Modifier) {
@@ -73,7 +50,8 @@ fun MainScreen(modifier: Modifier = Modifier) {
 //                title = { Text("상단바 제목") }
 //            )
         },
-        bottomBar = { BottomBar { /* 탭 변경 로직 */ } }
+        bottomBar = { BottomBar { selectedTab ->
+            tabType = selectedTab } }
     ) { innerPadding ->
         Column(
             modifier = modifier
@@ -93,7 +71,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
                 TabType.ALBUM -> AlbumTab()
                 TabType.MAP -> MapTab()
                 TabType.PROFILE -> ProfileTab()
-        }
-    }
+            }
+          }
     }
 }
