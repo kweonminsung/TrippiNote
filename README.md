@@ -4,9 +4,11 @@ Android 앱 프로젝트입니다.
 
 ## 환경 요구사항
 
-- Android Studio Arctic Fox 이상
+- Android Studio Hedgehog 이상 (2023.1.1)
 - JDK 11 이상
 - Android SDK API 24 이상
+- Android Gradle Plugin 8.10.1
+- Gradle 8.9
 
 ## 설정 방법
 
