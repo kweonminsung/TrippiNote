@@ -6,22 +6,15 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.Scaffold
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.runtime.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.Modifier
 import com.example.app.ui.theme.AppTheme
-import com.example.app.ui.components.top_bar.Header
 import com.example.app.ui.pages.AlbumTab
 import com.example.app.ui.pages.HomeTab
 import com.example.app.ui.pages.MapTab
 import com.example.app.ui.pages.ProfileTab
 import com.example.app.ui.components.BottomBar
-import tabType
+import com.example.app.ui.components.top_bar.TopBar
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,36 +35,27 @@ enum class TabType {
 
 @Composable
 fun MainScreen(modifier: Modifier = Modifier) {
-    var tabType by remember { mutableStateOf(TabType.HOME) }
+    val (tabType, setTabType) = remember { mutableStateOf(TabType.HOME) }
 
     Scaffold(
         topBar = {
-//            TopAppBar(
-//                title = { Text("상단바 제목") }
-//            )
+            TopBar(tabType)
         },
-        bottomBar = { BottomBar { selectedTab ->
-            tabType = selectedTab } }
-    ) { innerPadding ->
+        bottomBar = {
+            BottomBar(setTabType)
+        }
+    ) {
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(it)
         ) {
-            Row {
-                Button(onClick = { tabType = TabType.HOME }) { Text("홈") }
-                Button(onClick = { tabType = TabType.ALBUM }) { Text("앨범") }
-                Button(onClick = { tabType = TabType.MAP }) { Text("지도") }
-                Button(onClick = { tabType = TabType.PROFILE }) { Text("프로필") }
-            }
-            Header(tabType)
-
             when (tabType) {
                 TabType.HOME -> HomeTab()
                 TabType.ALBUM -> AlbumTab()
                 TabType.MAP -> MapTab()
                 TabType.PROFILE -> ProfileTab()
             }
-          }
+        }
     }
 }

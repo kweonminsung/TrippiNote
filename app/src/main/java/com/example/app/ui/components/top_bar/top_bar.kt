@@ -6,7 +6,7 @@ import com.example.app.TabType
 
 
 @Composable
-fun Header(
+fun TopBar(
     tabType: TabType,
     modifier: Modifier = Modifier
 ) {

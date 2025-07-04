@@ -20,6 +20,14 @@ fun SearchBar(
         value = query,
         onValueChange = onQueryChange,
         placeholder = { Text(placeholder) },
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = CustomColors.White,
+            unfocusedContainerColor = CustomColors.White,
+//            focusedIndicatorColor = CustomColors.Transparent,
+//            unfocusedIndicatorColor = CustomColors.Transparent,
+            focusedPlaceholderColor = CustomColors.Gray,
+            unfocusedPlaceholderColor = CustomColors.Gray
+        ),
         modifier = modifier.fillMaxWidth()
             .shadow(
                 elevation = 1.dp,
