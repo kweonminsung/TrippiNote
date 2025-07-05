@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
@@ -13,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.app.ui.components.search_bar.SearchBar
@@ -26,6 +26,7 @@ import com.google.android.libraries.places.api.model.AutocompletePrediction
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -38,7 +39,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-val INITIAL_LAT_LNG = LatLng(36.3730, 127.3622) // ㅣ지도의 초기 위치(카이스트)
+val INITIAL_LAT_LNG = LatLng(36.3730, 127.3622) // 지도의 초기 위치(카이스트)
 
 @Composable
 fun MapTab() {
@@ -65,7 +66,10 @@ fun MapTab() {
     Box(modifier = Modifier.fillMaxSize()) {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
-            cameraPositionState = cameraPositionState
+            cameraPositionState = cameraPositionState,
+            uiSettings = MapUiSettings(
+                compassEnabled = false  // 나침반 비활성화
+            )
         ) {
             Marker(
                 state = MarkerState(position = selectedLatLng ?: INITIAL_LAT_LNG),
@@ -92,61 +96,109 @@ fun MapTab() {
                             try {
                                 val results = PlaceUtil.searchPlaceByText(context, mapQuery)
                                 searchResults = results
-                                Log.d("MapTab", "검색 결과: $results")
+//                                Log.d("MapTab", "검색 결과: $results")
                             } catch (e: Exception) {
                                 searchResults = emptyList()
-                                Log.e("MapTab", "검색 실패: $e")
+//                                Log.e("MapTab", "검색 실패: $e")
                             }
                         } else {
                             searchResults = emptyList()
                         }
                     }
                 },
+                modifier = Modifier
+                    .width(358.dp)
             )
 
             if (searchResults.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
-                LazyColumn(
-                    modifier = Modifier
-                        .width(358.dp)
-                        .background(
-                            CustomColors.White,
-                            RoundedCornerShape(8.dp)
-                        )
+                Column (
+                    modifier = Modifier.width(300.dp)
                         .heightIn(max = 300.dp)
-                ) {
-                    itemsIndexed(searchResults) { index, prediction ->
-                        Text(
-                            text = prediction.getFullText(null).toString(),
-                            color = CustomColors.Black,
-                            modifier = Modifier
-                                .clickable {
-                                    CoroutineScope(Dispatchers.IO).launch {
-                                        try {
-                                            val placesClient = Places.createClient(context)
-                                            val fields = listOf(Place.Field.LAT_LNG)
-                                            val request = FetchPlaceRequest.builder(prediction.placeId, fields).build()
-                                            val response = placesClient.fetchPlace(request).await()
-                                            val latLng = response.place.latLng
-                                            if (latLng != null) {
-                                                val newLatLng = LatLng(latLng.latitude, latLng.longitude)
-                                                selectedLatLng = newLatLng
-                                                cameraTarget = newLatLng
-                                            }
-                                        } catch (e: Exception) {
-                                            Log.e("MapTab", "장소 이동 실패: $e")
-                                        }
-                                    }
-                                    searchResults = emptyList()
-                                }
-                                .padding(10.dp)
+                        .shadow(
+                            elevation = 1.dp,
+                            shape = RoundedCornerShape(8.dp),
+                            ambientColor = CustomColors.Black,
+                            spotColor = CustomColors.Black
                         )
-                        if (index != searchResults.lastIndex) {
-                            Divider(
-                                color = CustomColors.LightGray,
-                                thickness = 1.dp
+                        .background(
+                            CustomColors.White
+                        )
+                ) {
+                    Text(
+                        text = "여행에서 검색 결과",
+                        modifier = Modifier.padding(10.dp),
+                        color = CustomColors.Black
+                    )
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                    ) {
+                        item {
+                            Text(
+                                text = "여행 기록 ㅇㅇ",
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                color = CustomColors.Black
                             )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Divider(
+                        color = CustomColors.LightGray,
+                        thickness = 1.dp
+                    )
+
+                    Text(
+                        text = "지도에서 검색 결과",
+                        modifier = Modifier.padding(10.dp),
+                        color = CustomColors.Black
+                    )
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        itemsIndexed(searchResults) { index, prediction ->
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            try {
+                                                val placesClient = Places.createClient(context)
+                                                val fields = listOf(Place.Field.LAT_LNG)
+                                                val request = FetchPlaceRequest.builder(prediction.placeId, fields).build()
+                                                val response = placesClient.fetchPlace(request).await()
+                                                val latLng = response.place.latLng
+                                                if (latLng != null) {
+                                                    val newLatLng = LatLng(latLng.latitude, latLng.longitude)
+                                                    selectedLatLng = newLatLng
+                                                    cameraTarget = newLatLng
+                                                }
+                                            } catch (e: Exception) {
+                                                Log.e("MapTab", "장소 이동 실패: $e")
+                                            }
+                                        }
+                                        searchResults = emptyList()
+                                    }
+                                    .padding(10.dp)
+                            ) {
+                                Text(
+                                    text = prediction.getFullText(null).toString(),
+                                    color = CustomColors.Black
+                                )
+                            }
+                            if (index != searchResults.lastIndex) {
+                                Divider(
+                                    color = CustomColors.LightGray,
+                                    thickness = 1.dp
+                                )
+                            }
                         }
                     }
                 }
