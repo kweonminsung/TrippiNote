@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.google.maps.android:maps-compose:4.4.1")
+    implementation("com.google.android.libraries.places:places:3.4.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

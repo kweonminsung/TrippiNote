@@ -12,8 +12,8 @@ import androidx.compose.ui.Modifier
 import com.example.app.ui.theme.AppTheme
 import com.example.app.ui.pages.album.AlbumTab
 import com.example.app.ui.pages.HomeTab
-import com.example.app.ui.pages.MapTab
-import com.example.app.ui.pages.ProfileTab
+import com.example.app.ui.pages.map.MapTab
+import com.example.app.ui.pages.profile.ProfileTab
 import com.example.app.ui.components.BottomBar
 import com.example.app.ui.components.top_bar.TopBar
 import com.example.app.util.KeyValueStore
