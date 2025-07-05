@@ -1,4 +1,4 @@
-package com.example.app.ui.components
+package com.example.app.ui.components.search_bar
 
 
 import androidx.compose.foundation.Image
@@ -55,8 +55,8 @@ fun SearchBar(
                 .shadow(
                     elevation = 1.dp,
                     shape = RoundedCornerShape(8.dp),
-                    ambientColor = CustomColors.Black,
-                    spotColor = CustomColors.Black,
+                    ambientColor = CustomColors.Transparent,
+                    spotColor = CustomColors.Transparent
                 ),
             singleLine = true,
             maxLines = 1

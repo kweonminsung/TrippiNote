@@ -1,5 +1,6 @@
 package com.example.app
 
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -17,6 +18,7 @@ import com.example.app.ui.pages.profile.ProfileTab
 import com.example.app.ui.components.BottomBar
 import com.example.app.ui.components.top_bar.TopBar
 import com.example.app.util.KeyValueStore
+import com.google.android.libraries.places.api.Places
 
 
 data class SessionData(val data: Map<String, Any>)
@@ -72,9 +74,25 @@ val EXAMPLE_SESSION_DATA: Map<String, Any> = mapOf(
 val LocalSession = compositionLocalOf<MutableState<SessionData>> { error("No Storage provided") }
 
 class MainActivity : ComponentActivity() {
+    private fun getMetaDataValue(key: String): String? {
+        return try {
+            val appInfo = packageManager
+                .getApplicationInfo(packageName, PackageManager.GET_META_DATA)
+            appInfo.metaData?.getString(key)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val apiKey = getMetaDataValue("com.google.android.geo.API_KEY")
+        if (!Places.isInitialized() && apiKey != null) {
+            Places.initialize(applicationContext, apiKey)
+        }
 
         setContent {
             val context = this
