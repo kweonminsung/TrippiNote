@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.example.app.ui.theme.AppTheme
-import com.example.app.ui.pages.AlbumTab
+import com.example.app.ui.pages.album.AlbumTab
 import com.example.app.ui.pages.HomeTab
 import com.example.app.ui.pages.MapTab
 import com.example.app.ui.pages.ProfileTab
