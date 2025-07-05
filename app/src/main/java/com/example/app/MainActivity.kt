@@ -19,6 +19,7 @@ import com.example.app.ui.components.BottomBar
 import com.example.app.ui.components.top_bar.TopBar
 import com.example.app.util.KeyValueStore
 import com.google.android.libraries.places.api.Places
+//import com.example.app.ui.pages.album
 
 
 data class SessionData(val data: Map<String, Any>)
