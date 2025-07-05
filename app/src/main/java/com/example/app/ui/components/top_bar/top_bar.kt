@@ -21,7 +21,7 @@ fun TopBar(
             HomeTopBar(username)
         }
         TabType.ALBUM -> {
-            AlbumTopBar()
+            AlbumTopBar(username)
         }
         TabType.MAP -> {
             MapTopBar()
