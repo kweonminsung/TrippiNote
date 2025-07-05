@@ -17,11 +17,13 @@ import com.example.app.ui.theme.CustomColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeTopBar() {
+fun HomeTopBar(
+    username: String,
+) {
     TopAppBar(
         title = {
             Text(
-                text = "홈",
+                text = "${username}의 여행 다이어리",
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 fontSize = 22.sp
