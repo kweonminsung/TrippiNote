@@ -1,6 +1,7 @@
 package com.example.app
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -15,14 +16,88 @@ import com.example.app.ui.pages.MapTab
 import com.example.app.ui.pages.ProfileTab
 import com.example.app.ui.components.BottomBar
 import com.example.app.ui.components.top_bar.TopBar
+import com.example.app.util.KeyValueStore
+
+
+data class SessionData(val data: Map<String, Any>)
+
+val EXAMPLE_SESSION_DATA: Map<String, Any> = mapOf(
+    "user" to mapOf(
+        "name" to "John Doe",
+        "email" to "example@test.com",
+        "phone" to "123-456-7890",
+        "passport_number" to "X123456789",
+        "passport_expiry" to "2025-12-31",
+        "passport_object_id" to "passport_12345",
+    ),
+    "wishlist" to listOf(
+        mapOf(
+            "done" to true,
+            "content" to "Visit the Eiffel Tower",
+        ),
+        mapOf(
+            "done" to false,
+            "content" to "See the Northern Lights",
+        )
+    ),
+    "checklist" to listOf(
+        mapOf(
+            "done" to true,
+            "content" to "Book flight tickets",
+        ),
+        mapOf(
+            "done" to false,
+            "content" to "Reserve hotel room",
+        )
+    ),
+    "trips" to listOf(
+        mapOf(
+            "destination" to "Paris",
+            "start_date" to "2024-05-01",
+            "end_date" to "2024-05-10",
+            "notes" to "Visit the Louvre and enjoy French cuisine.",
+            "created_at" to "2024-04-01T12:00:00Z",
+        ),
+        mapOf(
+            "id" to "trip_002",
+            "destination" to "Tokyo",
+            "start_date" to "2024-06-15",
+            "end_date" to "2024-06-25",
+            "notes" to "Explore Shibuya and try sushi.",
+            "created_at" to "2024-05-01T08:30:00Z",
+        )
+    ),
+)
+
+val LocalSession = compositionLocalOf<MutableState<SessionData>> { error("No Storage provided") }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
-            AppTheme {
-                MainScreen()
+            val context = this
+
+            KeyValueStore.clear(context)
+
+            // 예시 데이터 삽입
+            KeyValueStore.saveBulk(context, EXAMPLE_SESSION_DATA)
+
+//            KeyValueStore.getAll(context).forEach { (key, value) ->
+//                Log.d("KeyValueStore", "Key: $key, Value: $value")
+//            }
+
+            // KeyValueStore에서 가져온 데이터를 LocalSession에 저장
+            val initialSessionData = KeyValueStore.getAll(context)
+            val session = remember { mutableStateOf(SessionData(initialSessionData)) }
+
+            Log.d("SessionData", "Initial Session Data: ${session.value.data}")
+
+            CompositionLocalProvider(LocalSession provides session) {
+                AppTheme {
+                    MainScreen()
+                }
             }
         }
     }

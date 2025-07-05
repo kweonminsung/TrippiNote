@@ -11,7 +11,9 @@ import com.example.app.ui.theme.CustomColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AlbumTopBar() {
+fun AlbumTopBar(
+    username: String
+) {
     TopAppBar(
         title = {
             Text(
