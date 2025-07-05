@@ -130,10 +130,7 @@ fun MapTab() {
                     state = MarkerState(position = pin.position)
                 ) {
                     CustomPin(
-                        title = pin.title,
-                        onClick = {
-                            showPinInfo = true
-                        }
+                        content = {}
                     )
                 }
             }
