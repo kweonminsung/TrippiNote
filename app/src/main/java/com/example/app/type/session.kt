@@ -24,8 +24,7 @@ data class Transport(
     val from_schedule_id: String,
     val to_schedule_id: String,
     val type: TransportType,
-    val start_date: String? = null,
-    val end_date: String? = null,
+    val duration: String? = null,
     val created_at: String,
     val memo: String = "",
 )
@@ -145,8 +144,7 @@ val EXAMPLE_SESSION_DATA = SessionData(
                             from_schedule_id = "schedule_001",
                             to_schedule_id = "schedule_002",
                             type = TransportType.WALKING,
-                            start_date = "2024-05-02T12:00:00Z",
-                            end_date = "2024-05-02T14:00:00Z",
+                            duration = "03:00:00",
                             created_at = "2024-04-01T12:00:00Z",
                             memo = "Walk from Louvre to Seine"
                         ),
@@ -155,8 +153,7 @@ val EXAMPLE_SESSION_DATA = SessionData(
                             from_schedule_id = "schedule_002",
                             to_schedule_id = "schedule_003",
                             type = TransportType.BUS,
-                            start_date = "2024-05-02T16:00:00Z",
-                            end_date = "2024-05-02T19:00:00Z",
+                            duration = "00:30:00",
                             created_at = "2024-04-01T12:00:00Z",
                             memo = "Walk from Seine to bistro"
                         )

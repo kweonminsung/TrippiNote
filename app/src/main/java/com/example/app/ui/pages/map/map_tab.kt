@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -23,10 +22,12 @@ import com.example.app.type.TransportType
 import com.example.app.type.toColor
 import com.example.app.type.toStringKor
 import com.example.app.ui.components.BottomDrawer
+import com.example.app.ui.components.buttons.TripInfoButton
 import com.example.app.ui.components.search_bar.SearchBar
 import com.example.app.ui.components.map.MapPin
 import com.example.app.ui.components.map.CustomPin
 import com.example.app.ui.components.map.CustomTransportPin
+import com.example.app.ui.components.map.MapPinType
 import com.example.app.ui.components.map.TransportPin
 import com.example.app.ui.theme.CustomColors
 import com.example.app.util.DatetimeUtil
@@ -60,7 +61,7 @@ import kotlin.coroutines.resumeWithException
 
 //val INITIAL_LAT_LNG = LatLng(36.3730, 127.3622) // 지도의 초기 위치(카이스트)
 val INITIAL_LAT_LNG = LatLng(48.866096757760225,2.348085902631283) // 지도의 초기 위치(파리)
-val INITIAL_ZOOM_LEVEL = ZOOM_LEVEL.CITY // 초기 줌 레벨
+val INITIAL_ZOOM_LEVEL = ZOOM_LEVEL.CONTINENT // 초기 줌 레벨
 
 object ZOOM_LEVEL {
     const val CONTINENT = 3f   // 대륙 수준
@@ -79,9 +80,11 @@ fun getSessionPinsByZoomRate(
             trip.regions.flatMap { region ->
                 region.schedules.map { schedule ->
                     MapPin(
+                        id = schedule.id,
+                        type = MapPinType.SCHEDULE,
                         position = LatLng(schedule.lat, schedule.lng),
                         title = schedule.title,
-                        subTitle = schedule.start_date?.let { DatetimeUtil.dateToYearMonth(it) }
+                        subtitle = schedule.start_date?.let { DatetimeUtil.dateToYearMonth(it) }
                     )
                 }
             }
@@ -89,17 +92,21 @@ fun getSessionPinsByZoomRate(
         ZOOM_LEVEL.COUNTRY -> sessionData.trips.flatMap { trip ->
             trip.regions.map { region ->
                 MapPin(
+                    id = region.id,
+                    type = MapPinType.REGION,
                     position = LatLng(region.lat, region.lng),
                     title = region.title,
-                    subTitle = region.start_date?.let { DatetimeUtil.dateToYearMonth(region.start_date) }
+                    subtitle = region.start_date?.let { DatetimeUtil.dateToYearMonth(region.start_date) }
                 )
             }
         }
         else -> sessionData.trips.map { trip ->
             MapPin(
+                id = trip.id,
+                type = MapPinType.TRIP,
                 position = LatLng(trip.lat, trip.lng),
                 title = trip.title,
-                subTitle = trip.start_date?.let { DatetimeUtil.dateToYearSeason(trip.start_date) }
+                subtitle = trip.start_date?.let { DatetimeUtil.dateToYearSeason(trip.start_date) }
             )
         }
     }
@@ -132,6 +139,9 @@ fun MapTab() {
     var sessionMapPins by remember { mutableStateOf<List<MapPin>>(emptyList()) } // 세션에 저장된 핀 목록
     var sessionTransportPin by remember { mutableStateOf<List<TransportPin>>(emptyList()) } // 세션에 저장된 교통수단 핀 목록
     var userSelectedMapPins by remember { mutableStateOf<List<MapPin>>(emptyList()) } // 유저가 선택한 핀 목록
+
+    var selectedTripId by remember { mutableStateOf<String?>(null) } // 선택된 여행 ID
+    var selectedRegionId by remember { mutableStateOf<String?>(null) } // 선택된 지역 ID
 
     var tripInfoBottomDrawerState by remember { mutableStateOf(false) } // 여행 정보 Bottom Drawer 상태
     var regionInfoBottomDrawerState by remember { mutableStateOf(false) } // 지역 정보 Bottom Drawer 상태
@@ -193,7 +203,6 @@ fun MapTab() {
             }
     }
 
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -215,15 +224,17 @@ fun MapTab() {
                     userSelectedMapPins = emptyList()
                 } else {
                     CoroutineScope(Dispatchers.IO).launch {
-                        val basicPinInfo = PlaceUtil.getLocationInfo(context, latLng)
+                        val locationInfo = PlaceUtil.getLocationInfo(context, latLng)
                         Log.d(
                             "MapTab",
-                            "Clicked location: $latLng, Title: ${basicPinInfo.title}, SubTitle: ${basicPinInfo.subTitle}"
+                            "Clicked location: $latLng, Title: ${locationInfo.title}, Snippet: ${locationInfo.snippet}"
                         )
                         val pinInfo = MapPin(
+                            id = "user_selected_${System.currentTimeMillis()}",
+                            type = MapPinType.USER_SELECTED,
                             position = latLng,
-                            title = basicPinInfo.title,
-                            subTitle = basicPinInfo.subTitle
+                            title = locationInfo.title,
+                            subtitle = locationInfo.snippet
                         )
                         userSelectedMapPins = listOf(pinInfo)
                     }
@@ -247,6 +258,12 @@ fun MapTab() {
                                 regionInfoBottomDrawerState = true
                             }
 
+                            if(pin.type == MapPinType.TRIP) {
+                                selectedTripId = pin.id
+                            } else if (pin.type == MapPinType.REGION) {
+                                selectedRegionId = pin.id
+                            }
+
                             CoroutineScope(Dispatchers.Main).launch {
                                 cameraPositionState.animate(
                                     CameraUpdateFactory.newLatLngZoom(
@@ -264,7 +281,7 @@ fun MapTab() {
                     ) {
                         CustomPin(
                             title = pin.title,
-                            subTitle = pin.subTitle
+                            subtitle = pin.subtitle
                         )
                     }
                 }
@@ -317,6 +334,8 @@ fun MapTab() {
                                     )
                                 )
                             }
+
+
                             true // 클릭 이벤트 소비
                         }
                     ) {
@@ -350,7 +369,7 @@ fun MapTab() {
                     ) {
                         CustomPin(
                             title = pin.title,
-                            subTitle = pin.subTitle
+                            subtitle = pin.subtitle
                         )
                     }
                 }
@@ -364,10 +383,6 @@ fun MapTab() {
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Button(onClick = { regionInfoBottomDrawerState = !regionInfoBottomDrawerState }) {
-                Text("지역 정보 열기/닫기")
-            }
-
             SearchBar(
                 placeholder = "원하는 장소 또는 여행 검색",
                 query = mapQuery,
@@ -472,11 +487,13 @@ fun MapTab() {
 
                                                     // 검색 결과로 핀 생성
                                                     val pinInfo = MapPin(
+                                                        id = "search_result_${System.currentTimeMillis()}",
+                                                        type = MapPinType.SEARCH_RESULT,
                                                         position = newLatLng,
                                                         title = response.place.name
                                                             ?: prediction.getPrimaryText(null)
                                                                 .toString(),
-                                                        subTitle = response.place.address
+                                                        subtitle = response.place.address
                                                             ?: prediction.getSecondaryText(null)
                                                                 .toString()
                                                     )
@@ -513,16 +530,26 @@ fun MapTab() {
             isOpen = tripInfoBottomDrawerState,
             onDismiss = { tripInfoBottomDrawerState = false }
         ) {
+            val regions = sessionData.trips.first { it.id == selectedTripId }.regions
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(8.dp)
             ) {
-                Text(text = "여행 정보")
-                Spacer(modifier = Modifier.height(8.dp))
-                // 여행 정보 내용 추가
-                Text(text = "여행 제목: ${sessionData.trips.firstOrNull()?.title ?: "없음"}")
-                // 더 많은 정보 추가 가능
+                for (region in regions) {
+                    val subtitle = if (region.start_date != null && region.end_date != null) {
+                        "${DatetimeUtil.dateToDotDate(region.start_date)} ~ ${DatetimeUtil.dateToDotDate(region.end_date)}"
+                    } else {
+                        null
+                    }
+
+                    TripInfoButton(
+                        title = region.title,
+                        subtitle = subtitle,
+                    )
+                }
+
             }
         }
 
@@ -537,7 +564,7 @@ fun MapTab() {
                     .padding(16.dp)
             ) {
                 Text(text = "지역 정보")
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 // 지역 정보 내용 추가
                 Text(text = "지역 제목: ${sessionData.trips.firstOrNull()?.regions?.firstOrNull()?.title ?: "없음"}")
                 // 더 많은 정보 추가 가능

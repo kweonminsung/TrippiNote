@@ -13,17 +13,28 @@ import androidx.compose.ui.unit.dp
 import com.example.app.ui.theme.CustomColors
 import com.google.android.gms.maps.model.LatLng
 
+enum class MapPinType {
+    TRIP,
+    REGION,
+    SCHEDULE,
+    USER_SELECTED,
+    SEARCH_RESULT,
+}
+
+
 // 핀 정보를 담는 데이터 클래스
 data class MapPin(
+    val id: String,
+    val type: MapPinType,
     val position: LatLng,
     val title: String,
-    val subTitle: String? = null,
+    val subtitle: String? = null,
 )
 
 @Composable
 fun CustomPin(
     title: String,
-    subTitle: String? = null,
+    subtitle: String? = null,
     modifier: Modifier = Modifier,
 ) {
     Box (
@@ -67,9 +78,9 @@ fun CustomPin(
                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
 
-            if (subTitle != null && subTitle.isNotEmpty()) {
+            if (subtitle != null && subtitle.isNotEmpty()) {
                 Text(
-                    text = subTitle,
+                    text = subtitle,
                     color = CustomColors.Gray,
                     modifier = Modifier
                         .fillMaxWidth()

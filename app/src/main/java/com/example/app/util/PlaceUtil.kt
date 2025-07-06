@@ -31,8 +31,14 @@ object PlaceUtil {
             }
     }
 
+    data class LocationInfo(
+        val latLng: LatLng,
+        val title: String,
+        val snippet: String,
+    )
+
     // 위치 정보를 가져오는 함수 (Geocoding API 사용)
-    suspend fun getLocationInfo(context: Context, latLng: LatLng): MapPin {
+    suspend fun getLocationInfo(context: Context, latLng: LatLng): LocationInfo {
         return try {
             val placesClient = Places.createClient(context)
 
@@ -54,10 +60,10 @@ object PlaceUtil {
                 "위도: ${String.format("%.4f", latLng.latitude)}, 경도: ${String.format("%.4f", latLng.longitude)}"
             }
 
-            MapPin(latLng, title, snippet)
+            LocationInfo(latLng, title, snippet)
         } catch (e: Exception) {
             Log.e("MapTab", "위치 정보 가져오기 ���패: $e")
-            MapPin(
+            LocationInfo(
                 latLng,
                 "선택한 위치",
                 "위도: ${String.format("%.4f", latLng.latitude)}, 경도: ${String.format("%.4f", latLng.longitude)}"

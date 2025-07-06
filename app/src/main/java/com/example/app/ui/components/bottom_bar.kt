@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,6 +26,11 @@ fun BottomBar(
         modifier = Modifier
             .fillMaxWidth()
             .height(70.dp)
+            .shadow(
+                elevation = 24.dp,
+                ambientColor = CustomColors.Black,
+                spotColor = CustomColors.Black
+            )
             .background(CustomColors.White),
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
@@ -64,7 +70,7 @@ fun BottomBarButton(
     label: String,
     iconResId: Int,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit = {},
 ) {
     val animatedIconSize = animateDpAsState(
         targetValue = if (isSelected) 28.dp else 24.dp,

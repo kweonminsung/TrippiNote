@@ -16,7 +16,7 @@ import com.example.app.ui.theme.CustomColors
 @Composable
 fun BottomButton(
     label: String,
-    onClick: () -> Unit,
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Button(

@@ -53,4 +53,20 @@ object DatetimeUtil {
             "${shortYear}년 $season"
         }
     }
+
+    fun dateToDotDate(date: String): String {
+        return if (date.isBlank()) {
+            ""
+        } else {
+            val parts = date.split("-")
+            if (parts.size < 3) return ""
+
+            val year = parts[0]
+            val shortYear = if (year.length == 4) year.substring(2, 4) else year
+            val month = parts[1].toIntOrNull()?.toString() ?: parts[1]
+            val day = parts[2].toIntOrNull()?.toString() ?: parts[2]
+
+            "$shortYear.$month.$day"
+        }
+    }
 }
