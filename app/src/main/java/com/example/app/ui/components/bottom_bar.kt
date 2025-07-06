@@ -1,5 +1,7 @@
 package com.example.app.ui.components
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import com.example.app.R
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -22,19 +24,38 @@ fun BottomBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(CustomColors.White)
-            .padding(
-                top = 6.dp,
-                bottom = 8.dp,
-            ),
+            .height(70.dp)
+            .background(CustomColors.White),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        BottomBarButton(
+            label = "홈",
+            iconResId = if (tabType == TabType.HOME) R.drawable.bottombar_home_fill else R.drawable.bottombar_home_empty,
+            isSelected = tabType == TabType.HOME,
+            onClick = { setTabType(TabType.HOME) }
+        )
 
-        BottomBarButton("홈", if (tabType == TabType.HOME) R.drawable.bottombar_home_fill else R.drawable.bottombar_home_empty , { setTabType(TabType.HOME)})
-        BottomBarButton("사진", if (tabType == TabType.ALBUM) R.drawable.bottombar_album_fill else R.drawable.bottombar_album_empty, { setTabType(TabType.ALBUM)})
-        BottomBarButton("지도", if (tabType == TabType.MAP) R.drawable.bottombar_map_fill else R.drawable.bottombar_map_empty, { setTabType(TabType.MAP)})
-        BottomBarButton("프로필", if (tabType == TabType.PROFILE) R.drawable.bottombar_profile_fill else R.drawable.bottombar_profile_empty, { setTabType(TabType.PROFILE)})
+        BottomBarButton(
+            label = "사진",
+            iconResId = if (tabType == TabType.ALBUM) R.drawable.bottombar_album_fill else R.drawable.bottombar_album_empty,
+            isSelected = tabType == TabType.ALBUM,
+            onClick = { setTabType(TabType.ALBUM) }
+        )
+
+        BottomBarButton(
+            label = "지도",
+            iconResId = if (tabType == TabType.MAP) R.drawable.bottombar_map_fill else R.drawable.bottombar_map_empty,
+            isSelected = tabType == TabType.MAP,
+            onClick = { setTabType(TabType.MAP) }
+        )
+
+        BottomBarButton(
+            label = "프로필",
+            iconResId = if (tabType == TabType.PROFILE) R.drawable.bottombar_profile_fill else R.drawable.bottombar_profile_empty,
+            isSelected = tabType == TabType.PROFILE,
+            onClick = { setTabType(TabType.PROFILE) }
+        )
     }
 }
 
@@ -42,24 +63,35 @@ fun BottomBar(
 fun BottomBarButton(
     label: String,
     iconResId: Int,
+    isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    val animatedIconSize = animateDpAsState(
+        targetValue = if (isSelected) 28.dp else 24.dp,
+        label = "iconSize"
+    )
+
+    val animatedFontSize = animateFloatAsState(
+        targetValue = if (isSelected) 11f else 10f,
+        label = "fontSize"
+    )
+
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .clickable(onClick = onClick)
-            .padding(8.dp)
     ) {
         Image(
             painter = painterResource(id = iconResId),
             contentDescription = label,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(animatedIconSize.value)
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = label,
-            fontSize = 10.sp,
-            color = Color.DarkGray
+            fontSize = animatedFontSize.value.sp,
+            color = CustomColors.DarkGray
         )
     }
 }
