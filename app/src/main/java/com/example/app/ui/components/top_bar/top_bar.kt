@@ -10,7 +10,6 @@ import kotlin.text.get
 @Composable
 fun TopBar(
     tabType: TabType,
-    modifier: Modifier = Modifier
 ) {
     val sessionData = LocalSession.current.value
     val username = sessionData.user.name

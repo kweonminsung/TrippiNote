@@ -12,6 +12,11 @@ object CustomColors {
 
     val Blue = Color(0xFF4696FF)
     val Transparent = Color(0x00000000)
+    val Blue = Color(0xFF1E85E5)
+    val Green = Color(0xFF4CAF50)
+    val Red = Color(0xFFF44336)
+    val Yellow = Color(0xFFF9E000)
+    val Orange = Color(0xFFFF9800)
 }
 
 val Purple80 = Color(0xFFD0BCFF)

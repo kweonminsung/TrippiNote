@@ -40,6 +40,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        // Places API 초기화
         val apiKey = getMetaDataValue("com.google.android.geo.API_KEY")
         if (!Places.isInitialized() && apiKey != null) {
             Places.initialize(applicationContext, apiKey)
@@ -79,7 +80,7 @@ enum class TabType {
 
 
 @Composable
-fun MainScreen(modifier: Modifier = Modifier) {
+fun MainScreen() {
     val (tabType, setTabType) = remember { mutableStateOf(TabType.MAP) }
 
     Scaffold(
@@ -87,11 +88,11 @@ fun MainScreen(modifier: Modifier = Modifier) {
             TopBar(tabType)
         },
         bottomBar = {
-            BottomBar(setTabType)
+            BottomBar(tabType, setTabType)
         }
     ) {
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(it)
         ) {
