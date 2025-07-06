@@ -35,12 +35,12 @@ class PinShape : Shape {
         val path = Path().apply {
             val width = size.width
             val height = size.height
-            val cornerRadius = 8f // 더 둥글게
+            val cornerRadius = 8f
             val triangleHeight = 30f
             val triangleWidth = 30f
             val bodyHeight = height - triangleHeight
 
-            // 4끝이 둥근 직사각형 몸체
+            // 직사각형 몸체
             addRoundRect(
                 RoundRect(
                     rect = Rect(
@@ -77,7 +77,7 @@ fun CustomPin(
     Box(
         modifier = Modifier
             .wrapContentSize()
-            .clip(PinShape()) // 핀 모양 적용
+            .clip(PinShape())
             .clickable { onClick() }
     ) {
         // 핀 몸체
