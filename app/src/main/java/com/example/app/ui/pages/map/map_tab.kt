@@ -26,14 +26,13 @@ import com.example.app.ui.components.map.CustomPin
 import com.example.app.ui.components.map.CustomTransportPin
 import com.example.app.ui.components.map.TransportPin
 import com.example.app.ui.theme.CustomColors
+import com.example.app.util.DatetimeUtil
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.Dash
 import com.google.android.gms.maps.model.Gap
 import com.google.android.gms.maps.model.JointType
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.PatternItem
-import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.tasks.Task
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.AutocompletePrediction
@@ -71,15 +70,15 @@ fun getSessionPinsByZoomRate(
     sessionData: SessionData,
     zoomLevel: Float
 ): List<MapPin> {
-    Log.d("MapTab", "getSessionPinsByZoomRate called with zoomLevel: $zoomLevel")
+//    Log.d("MapTab", "getSessionPinsByZoomRate called with zoomLevel: $zoomLevel")
     val pins = when (zoomLevel) {
         ZOOM_LEVEL.CITY -> sessionData.trips.flatMap { trip ->
             trip.regions.flatMap { region ->
                 region.schedules.map { schedule ->
                     MapPin(
                         position = LatLng(schedule.lat, schedule.lng),
-                        title = "Schedule: ${schedule.title} Lat: ${schedule.lat}, Lng: ${schedule.lng}",
-                        snippet = "Schedule"
+                        title = schedule.title,
+                        subTitle = schedule.start_date?.let { DatetimeUtil.dateToYearMonth(it) }
                     )
                 }
             }
@@ -88,16 +87,16 @@ fun getSessionPinsByZoomRate(
             trip.regions.map { region ->
                 MapPin(
                     position = LatLng(region.lat, region.lng),
-                    title = "Region: ${region.title} Lat: ${region.lat}, Lng: ${region.lng}",
-                    snippet = "Region"
+                    title = region.title,
+                    subTitle = region.start_date?.let { DatetimeUtil.dateToYearMonth(region.start_date) }
                 )
             }
         }
         else -> sessionData.trips.map { trip ->
             MapPin(
                 position = LatLng(trip.lat, trip.lng),
-                title = "Trip: ${trip.title} Lat: ${trip.lat}, Lng: ${trip.lng}",
-                snippet = "Trip"
+                title = trip.title,
+                subTitle = trip.start_date?.let { DatetimeUtil.dateToYearSeason(trip.start_date) }
             )
         }
     }
@@ -168,10 +167,6 @@ fun MapTab() {
             }
             else -> emptyList()
         }
-
-        for (pin in sessionMapPins) {
-            Log.d("MapTab", "Session pin: ${pin.title} at ${pin.position}")
-        }
     }
 
     // 줌 정도 실시간 감지
@@ -179,8 +174,7 @@ fun MapTab() {
         snapshotFlow { cameraPositionState.position.zoom }
             .distinctUntilChanged()
             .collectLatest { zoomRate ->
-                Log.d("MapTab", "Zoom rate changed: $zoomRate")
-
+//                Log.d("MapTab", "Zoom rate changed: $zoomRate")
                 zoomLevel = when {
                     zoomRate >= ZOOM_LEVEL.CITY -> ZOOM_LEVEL.CITY
                     zoomRate >= ZOOM_LEVEL.COUNTRY -> ZOOM_LEVEL.COUNTRY
@@ -195,17 +189,20 @@ fun MapTab() {
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
             uiSettings = MapUiSettings(
-                compassEnabled = false  // 나침반 비활성화
+                compassEnabled = false,  // 나침반 비활성화
+                myLocationButtonEnabled = false, // 내 위치 버튼 비활성화
+                mapToolbarEnabled = false, // 지도 툴바 비활성화
+
             ),
             onMapClick = { latLng ->
                 // 지도 클릭 시 기존 핀 대체
                 CoroutineScope(Dispatchers.IO).launch {
                     val basicPinInfo = PlaceUtil.getLocationInfo(context, latLng)
-                    Log.d("MapTab", "Clicked location: $latLng, Title: ${basicPinInfo.title}, Snippet: ${basicPinInfo.snippet}")
+                    Log.d("MapTab", "Clicked location: $latLng, Title: ${basicPinInfo.title}, SubTitle: ${basicPinInfo.subTitle}")
                     val pinInfo = MapPin(
                         position = latLng,
                         title = basicPinInfo.title,
-                        snippet = basicPinInfo.snippet
+                        subTitle = basicPinInfo.subTitle
                     )
                     userSelectedMapPins = listOf(pinInfo)
                 }
@@ -219,9 +216,11 @@ fun MapTab() {
                         zIndex = 2f
                     ) {
                         CustomPin(
-                            content = {
-                                Text(text = pin.title, color = CustomColors.Black)
-                            }
+                            title = pin.title,
+                            subTitle = pin.subTitle,
+                            onClick = {
+                                cameraTarget = pin.position // 핀 클릭 시 카메라 이동
+                            },
                         )
                     }
                 }
@@ -271,14 +270,19 @@ fun MapTab() {
 
             // 유저가 선택한 핀 목록
             userSelectedMapPins.forEach { pin ->
-                MarkerComposable(
-                    state = MarkerState(position = pin.position),
-                    zIndex = 3f
-                ) {
-                    CustomPin(
-                        content = {
-                        }
-                    )
+                key("${pin.position.latitude},${pin.position.longitude},${pin.title},user") {
+                    MarkerComposable(
+                        state = MarkerState(position = pin.position),
+                        zIndex = 3f
+                    ) {
+                        CustomPin(
+                            title = pin.title,
+                            subTitle = pin.subTitle,
+                            onClick = {
+                                cameraTarget = pin.position // 핀 클릭 시 카메라 이동
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -311,7 +315,7 @@ fun MapTab() {
                     }
                 },
                 modifier = Modifier
-                    .width(358.dp)
+                    .width(300.dp)
             )
 
             if (searchResults.isNotEmpty()) {
@@ -398,7 +402,7 @@ fun MapTab() {
                                                         title = response.place.name
                                                             ?: prediction.getPrimaryText(null)
                                                                 .toString(),
-                                                        snippet = response.place.address
+                                                        subTitle = response.place.address
                                                             ?: prediction.getSecondaryText(null)
                                                                 .toString()
                                                     )

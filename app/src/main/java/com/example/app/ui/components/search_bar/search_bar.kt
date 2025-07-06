@@ -21,42 +21,46 @@ fun SearchBar(
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    TextField(
-        value = query,
-        onValueChange = onQueryChange,
-        placeholder = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(
-                    painter = painterResource(id = R.drawable.searchbar_search),
-                    contentDescription = "",
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(placeholder)
-            }
-        },
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = CustomColors.White,
-            unfocusedContainerColor = CustomColors.White,
-            focusedPlaceholderColor = CustomColors.Gray,
-            unfocusedPlaceholderColor = CustomColors.Gray,
-            focusedTextColor = CustomColors.Black,
-            unfocusedTextColor = CustomColors.Black,
-            focusedIndicatorColor = CustomColors.Transparent,
-            unfocusedIndicatorColor = CustomColors.Transparent,
-            disabledIndicatorColor = CustomColors.Transparent,
-            errorIndicatorColor = CustomColors.Transparent
-        ),
-        shape = RoundedCornerShape(8.dp),
-        modifier = Modifier
-            .height(48.dp),
-//            .shadow(
-//                elevation = 1.dp,
-//                shape = RoundedCornerShape(8.dp),
-//                ambientColor = CustomColors.Black,
-//                spotColor = CustomColors.Black
-//            ),
-        singleLine = true,
-        maxLines = 1
-    )
+    Box(modifier = modifier
+        .height(48.dp)
+        .shadow(
+            elevation = 1.dp,
+            shape = RoundedCornerShape(8.dp),
+            clip = false
+        )
+    ) {
+        TextField(
+            value = query,
+            onValueChange = onQueryChange,
+            placeholder = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(
+                        painter = painterResource(id = R.drawable.searchbar_search),
+                        contentDescription = "",
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(placeholder)
+                }
+            },
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = CustomColors.White,
+                unfocusedContainerColor = CustomColors.White,
+                focusedPlaceholderColor = CustomColors.Gray,
+                unfocusedPlaceholderColor = CustomColors.Gray,
+                focusedTextColor = CustomColors.Black,
+                unfocusedTextColor = CustomColors.Black,
+                focusedIndicatorColor = CustomColors.Transparent,
+                unfocusedIndicatorColor = CustomColors.Transparent,
+                disabledIndicatorColor = CustomColors.Transparent,
+                errorIndicatorColor = CustomColors.Transparent
+            ),
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(),
+            singleLine = true,
+            maxLines = 1
+        )
+    }
 }

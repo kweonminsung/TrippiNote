@@ -79,7 +79,7 @@ enum class TabType {
 
 
 @Composable
-fun MainScreen(modifier: Modifier = Modifier) {
+fun MainScreen() {
     val (tabType, setTabType) = remember { mutableStateOf(TabType.MAP) }
 
     Scaffold(
@@ -91,7 +91,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
         }
     ) {
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(it)
         ) {

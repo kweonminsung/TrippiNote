@@ -24,8 +24,8 @@ data class Transport(
     val from_schedule_id: String,
     val to_schedule_id: String,
     val type: TransportType,
-    val start_date: String,
-    val end_date: String,
+    val start_date: String? = null,
+    val end_date: String? = null,
     val created_at: String,
     val memo: String = "",
 )
@@ -35,8 +35,8 @@ data class Schedule(
     val memo: String = "",
     val lat: Double,
     val lng: Double,
-    val start_date: String,
-    val end_date: String,
+    val start_date: String? = null,
+    val end_date: String? = null,
     val created_at: String,
 )
 
@@ -46,8 +46,8 @@ data class Region(
     val lat: Double,
     val lng: Double,
     val place_id: String,
-    val start_date: String,
-    val end_date: String,
+    val start_date: String? = null,
+    val end_date: String? = null,
     val created_at: String,
     val schedules: List<Schedule>,
     val transports: List<Transport>
@@ -58,8 +58,8 @@ data class Trip(
     val title: String,
     val lat: Double,
     val lng: Double,
-    val start_date: String,
-    val end_date: String,
+    val start_date: String? = null,
+    val end_date: String? = null,
     val created_at: String,
     val regions: List<Region>,
 )
@@ -124,7 +124,7 @@ val EXAMPLE_SESSION_DATA = SessionData(
                             memo = "Enjoy the view and take photos",
                             lat = 48.8566,
                             lng = 2.3522,
-                            start_date = "2024-05-02T14:00:00Z",
+//                            start_date = "2024-05-02T14:00:00Z",
                             end_date = "2024-05-02T16:00:00Z",
                             created_at = "2024-04-01T12:00:00Z"
                         ),

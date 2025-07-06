@@ -24,9 +24,9 @@ data class TransportPin(
 
 @Composable
 fun CustomTransportPin(
-    modifier: Modifier = Modifier,
     text: String,
     borderColor: Color,
+    modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier
