@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import com.example.app.LocalSession
 import com.example.app.type.SessionData
 import com.example.app.type.TransportType
+import com.example.app.type.toColor
+import com.example.app.type.toStringKor
 import com.example.app.ui.components.search_bar.SearchBar
 import com.example.app.ui.components.map.MapPin
 import com.example.app.ui.components.map.CustomPin
@@ -55,12 +57,13 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 //val INITIAL_LAT_LNG = LatLng(36.3730, 127.3622) // 지도의 초기 위치(카이스트)
-val INITIAL_LAT_LNG = LatLng(48.8566, 2.3522) // 지도의 초기 위치(파리)
+val INITIAL_LAT_LNG = LatLng(48.866096757760225,2.348085902631283) // 지도의 초기 위치(파리)
+val INITIAL_ZOOM_LEVEL = ZOOM_LEVEL.CITY // 초기 줌 레벨
 
 object ZOOM_LEVEL {
     const val CONTINENT = 3f   // 대륙 수준
     const val COUNTRY = 6f     // 나라 수준
-    const val CITY = 10f       // 도시 수준
+    const val CITY = 12f       // 도시 수준
 }
 
 // 저장된 핀 목록을 가져오기(여행, 지역, 일정)
@@ -114,12 +117,12 @@ fun MapTab() {
     var searchResults by remember { mutableStateOf<List<AutocompletePrediction>>(emptyList()) }
 
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(INITIAL_LAT_LNG, ZOOM_LEVEL.CONTINENT)
+        position = CameraPosition.fromLatLngZoom(INITIAL_LAT_LNG, INITIAL_ZOOM_LEVEL)
     } // 카메라 위치 상태
 
     var cameraTarget by remember { mutableStateOf<LatLng?>(null) } // 카메라 이동용 상태
 
-    var zoomLevel by remember { mutableStateOf(ZOOM_LEVEL.CONTINENT) } // 줌 레벨 상태
+    var zoomLevel by remember { mutableStateOf(INITIAL_ZOOM_LEVEL) } // 줌 레벨 상태
 
     var sessionMapPins by remember { mutableStateOf<List<MapPin>>(emptyList()) } // 세션에 저장된 핀 목록
     var sessionTransportPin by remember { mutableStateOf<List<TransportPin>>(emptyList()) } // 세션에 저장된 교통수단 핀 목록
@@ -212,7 +215,8 @@ fun MapTab() {
             sessionMapPins.forEach { pin ->
                 key("${pin.position.latitude},${pin.position.longitude},${pin.title}") {
                     MarkerComposable(
-                        state = MarkerState(position = pin.position)
+                        state = MarkerState(position = pin.position),
+                        zIndex = 2f
                     ) {
                         CustomPin(
                             content = {
@@ -228,16 +232,9 @@ fun MapTab() {
                 sessionTransportPin.forEach { transportPin ->
                     Polyline(
                         points = listOf(transportPin.from, transportPin.to),
-                        color = when (transportPin.transportType) {
-                            TransportType.WALKING -> CustomColors.Blue
-                            TransportType.BICYCLE -> CustomColors.Green
-                            TransportType.CAR -> CustomColors.Orange
-                            TransportType.BUS -> CustomColors.Orange
-                            TransportType.TRAIN -> CustomColors.Red
-                            TransportType.SUBWAY -> CustomColors.Red
-                            TransportType.AIRPLANE -> CustomColors.Gray
-                        },
-                        width = 20f,
+                        zIndex = 2f,
+                        color = transportPin.transportType.toColor(),
+                        width = 30f,
                         jointType = JointType.ROUND,
                         pattern = if (transportPin.transportType == TransportType.WALKING) {
                             listOf(
@@ -248,27 +245,25 @@ fun MapTab() {
                             null // 다른 교통수단은 실선
                         }
                     )
+
+                    val polylineAngle = Math.toDegrees(
+                        kotlin.math.atan2(
+                            transportPin.to.longitude - transportPin.from.longitude,
+                            transportPin.to.latitude - transportPin.from.latitude
+                        )
+                    )
+                    val cameraAngle = cameraPositionState.position.bearing
                     MarkerComposable(
+                        rotation = (polylineAngle - cameraAngle).toFloat(),
+                        zIndex = 1f,
                         state = MarkerState(position = LatLng(
                             (transportPin.from.latitude + transportPin.to.latitude) / 2,
                             (transportPin.from.longitude + transportPin.to.longitude) / 2
                         ))
                     ) {
                         CustomTransportPin(
-                            text = "${
-                                when (transportPin.transportType) {
-                                    TransportType.WALKING -> "도보"
-                                    TransportType.BICYCLE -> "자전거"
-                                    TransportType.CAR -> "자동차"
-                                    TransportType.BUS -> "버스"
-                                    TransportType.TRAIN -> "기차"
-                                    TransportType.SUBWAY -> "지하철"
-                                    TransportType.AIRPLANE -> "비행기"
-                                }
-                            }로 이동",
-                            textBgColor = CustomColors.White,
-                            textColor = CustomColors.Black,
-                            borderColor = CustomColors.White,
+                            text = "${transportPin.transportType.toStringKor()}로 이동",
+                            borderColor = transportPin.transportType.toColor()
                         )
                     }
                 }
@@ -277,7 +272,8 @@ fun MapTab() {
             // 유저가 선택한 핀 목록
             userSelectedMapPins.forEach { pin ->
                 MarkerComposable(
-                    state = MarkerState(position = pin.position)
+                    state = MarkerState(position = pin.position),
+                    zIndex = 3f
                 ) {
                     CustomPin(
                         content = {
