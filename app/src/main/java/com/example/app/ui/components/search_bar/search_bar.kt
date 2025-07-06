@@ -49,13 +49,13 @@ fun SearchBar(
         ),
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier
-            .height(48.dp)
-            .shadow(
-                elevation = 1.dp,
-                shape = RoundedCornerShape(8.dp),
-                ambientColor = CustomColors.Black,
-                spotColor = CustomColors.Black
-            ),
+            .height(48.dp),
+//            .shadow(
+//                elevation = 1.dp,
+//                shape = RoundedCornerShape(8.dp),
+//                ambientColor = CustomColors.Black,
+//                spotColor = CustomColors.Black
+//            ),
         singleLine = true,
         maxLines = 1
     )
