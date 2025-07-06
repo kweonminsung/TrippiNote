@@ -19,6 +19,16 @@ data class ChecklistItem(
     val content: String,
 )
 
+data class Transport(
+    val id: String,
+    val from_schedule_id: String,
+    val to_schedule_id: String,
+    val type: TransportType,
+    val start_date: String,
+    val end_date: String,
+    val created_at: String,
+    val memo: String = "",
+)
 data class Schedule(
     val id: String,
     val title: String,
@@ -40,6 +50,7 @@ data class Region(
     val end_date: String,
     val created_at: String,
     val schedules: List<Schedule>,
+    val transports: List<Transport>
 )
 
 data class Trip(
@@ -106,8 +117,51 @@ val EXAMPLE_SESSION_DATA = SessionData(
                             start_date = "2024-05-02T10:00:00Z",
                             end_date = "2024-05-02T12:00:00Z",
                             created_at = "2024-04-01T12:00:00Z"
+                        ),
+                        Schedule(
+                            id = "schedule_002",
+                            title = "Walk along the Seine River",
+                            memo = "Enjoy the view and take photos",
+                            lat = 48.8566,
+                            lng = 2.3522,
+                            start_date = "2024-05-02T14:00:00Z",
+                            end_date = "2024-05-02T16:00:00Z",
+                            created_at = "2024-04-01T12:00:00Z"
+                        ),
+                        Schedule(
+                            id = "schedule_003",
+                            title = "Dinner at a local bistro",
+                            memo = "Try the escargot and coq au vin",
+                            lat = 48.8956,
+                            lng = 2.3522,
+                            start_date = "2024-05-02T19:00:00Z",
+                            end_date = "2024-05-02T21:00:00Z",
+                            created_at = "2024-04-01T12:00:00Z"
+                        )
+                    ),
+                    transports = listOf(
+                        Transport(
+                            id = "transport_001",
+                            from_schedule_id = "schedule_001",
+                            to_schedule_id = "schedule_002",
+                            type = TransportType.WALKING,
+                            start_date = "2024-05-02T12:00:00Z",
+                            end_date = "2024-05-02T14:00:00Z",
+                            created_at = "2024-04-01T12:00:00Z",
+                            memo = "Walk from Louvre to Seine"
+                        ),
+                        Transport(
+                            id = "transport_002",
+                            from_schedule_id = "schedule_002",
+                            to_schedule_id = "schedule_003",
+                            type = TransportType.BUS,
+                            start_date = "2024-05-02T16:00:00Z",
+                            end_date = "2024-05-02T19:00:00Z",
+                            created_at = "2024-04-01T12:00:00Z",
+                            memo = "Walk from Seine to bistro"
                         )
                     )
+
                 ),
                 Region(
                     id = "region_001_1",
@@ -129,7 +183,8 @@ val EXAMPLE_SESSION_DATA = SessionData(
                             end_date = "2024-05-03T17:00:00Z",
                             created_at = "2024-04-01T12:00:00Z"
                         )
-                    )
+                    ),
+                    transports = emptyList<Transport>()
                 )
             )
         ),
@@ -162,7 +217,8 @@ val EXAMPLE_SESSION_DATA = SessionData(
                             end_date = "2024-06-02T17:00:00Z",
                             created_at = "2024-05-01T12:00:00Z"
                         )
-                    )
+                    ),
+                    transports = emptyList<Transport>()
                 )
             )
         )

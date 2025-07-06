@@ -17,13 +17,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.app.LocalSession
 import com.example.app.type.SessionData
+import com.example.app.type.TransportType
 import com.example.app.ui.components.search_bar.SearchBar
 import com.example.app.ui.components.map.MapPin
 import com.example.app.ui.components.map.CustomPin
+import com.example.app.ui.components.map.CustomTransportPin
+import com.example.app.ui.components.map.TransportPin
 import com.example.app.ui.theme.CustomColors
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.Dash
+import com.google.android.gms.maps.model.Gap
+import com.google.android.gms.maps.model.JointType
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.PatternItem
+import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.tasks.Task
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.AutocompletePrediction
@@ -33,6 +41,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.MarkerComposable
 import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -113,6 +122,7 @@ fun MapTab() {
     var zoomLevel by remember { mutableStateOf(ZOOM_LEVEL.CONTINENT) } // 줌 레벨 상태
 
     var sessionMapPins by remember { mutableStateOf<List<MapPin>>(emptyList()) } // 세션에 저장된 핀 목록
+    var sessionTransportPin by remember { mutableStateOf<List<TransportPin>>(emptyList()) } // 세션에 저장된 교통수단 핀 목록
     var userSelectedMapPins by remember { mutableStateOf<List<MapPin>>(emptyList()) } // 유저가 선택한 핀 목록
 
     // 카메라 이동은 여기서
@@ -135,6 +145,26 @@ fun MapTab() {
         }")
         // 줌 레벨에 따라 세션에서 핀 목록 가져오기
         sessionMapPins = getSessionPinsByZoomRate(sessionData, zoomLevel)
+
+        // 교통수단 핀 목록도 업데이트
+        sessionTransportPin = when (zoomLevel) {
+            ZOOM_LEVEL.CITY -> sessionData.trips.flatMap { trip ->
+                trip.regions.flatMap { region ->
+                    region.transports.map { transport ->
+                        val from_schedule = region.schedules.first { it.id == transport.from_schedule_id }
+                        val to_schedule = region.schedules.first { it.id == transport.to_schedule_id }
+
+                        TransportPin(
+                            from = LatLng(from_schedule.lat, from_schedule.lng),
+                            to = LatLng(to_schedule.lat, to_schedule.lng),
+                            text =  "도보로 이동 ${from_schedule.id} -> ${to_schedule.id}",
+                            transportType = transport.type,
+                        )
+                    }
+                }
+            }
+            else -> emptyList()
+        }
 
         for (pin in sessionMapPins) {
             Log.d("MapTab", "Session pin: ${pin.title} at ${pin.position}")
@@ -188,6 +218,57 @@ fun MapTab() {
                             content = {
                                 Text(text = pin.title, color = CustomColors.Black)
                             }
+                        )
+                    }
+                }
+            }
+
+            // 세션에 저장된 교통수단 핀 목록 (CITY 레벨에서만 표시)
+            if (zoomLevel == ZOOM_LEVEL.CITY) {
+                sessionTransportPin.forEach { transportPin ->
+                    Polyline(
+                        points = listOf(transportPin.from, transportPin.to),
+                        color = when (transportPin.transportType) {
+                            TransportType.WALKING -> CustomColors.Blue
+                            TransportType.BICYCLE -> CustomColors.Green
+                            TransportType.CAR -> CustomColors.Orange
+                            TransportType.BUS -> CustomColors.Orange
+                            TransportType.TRAIN -> CustomColors.Red
+                            TransportType.SUBWAY -> CustomColors.Red
+                            TransportType.AIRPLANE -> CustomColors.Gray
+                        },
+                        width = 20f,
+                        jointType = JointType.ROUND,
+                        pattern = if (transportPin.transportType == TransportType.WALKING) {
+                            listOf(
+                                Dash(20f),
+                                Gap(10f)
+                            ) // 도보는 점선
+                        } else {
+                            null // 다른 교통수단은 실선
+                        }
+                    )
+                    MarkerComposable(
+                        state = MarkerState(position = LatLng(
+                            (transportPin.from.latitude + transportPin.to.latitude) / 2,
+                            (transportPin.from.longitude + transportPin.to.longitude) / 2
+                        ))
+                    ) {
+                        CustomTransportPin(
+                            text = "${
+                                when (transportPin.transportType) {
+                                    TransportType.WALKING -> "도보"
+                                    TransportType.BICYCLE -> "자전거"
+                                    TransportType.CAR -> "자동차"
+                                    TransportType.BUS -> "버스"
+                                    TransportType.TRAIN -> "기차"
+                                    TransportType.SUBWAY -> "지하철"
+                                    TransportType.AIRPLANE -> "비행기"
+                                }
+                            }로 이동",
+                            textBgColor = CustomColors.White,
+                            textColor = CustomColors.Black,
+                            borderColor = CustomColors.White,
                         )
                     }
                 }
