@@ -15,7 +15,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.example.app.LocalSession
+import com.example.app.type.SessionData
 import com.example.app.ui.components.search_bar.SearchBar
+import com.example.app.ui.components.map.MapPin
+import com.example.app.ui.components.map.CustomPin
 import com.example.app.ui.theme.CustomColors
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -27,13 +31,15 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerComposable
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
@@ -41,26 +47,93 @@ import kotlin.coroutines.resumeWithException
 
 val INITIAL_LAT_LNG = LatLng(36.3730, 127.3622) // 지도의 초기 위치(카이스트)
 
+object ZOOM_LEVEL {
+    const val CONTINENT = 3f   // 대륙 수준
+    const val COUNTRY = 5f     // 나라 수준
+    const val CITY = 12f       // 도시 수준
+}
+
+// 저장된 핀 목록을 가져오기(여행, 지역, 일정)
+fun getSessionPinsByZoomLevel(
+    sessionData: SessionData,
+    zoomLevel: Float
+): List<MapPin> {
+    when {
+        zoomLevel > ZOOM_LEVEL.CITY -> return sessionData.trips.flatMap { trip ->
+            trip.regions.flatMap { region ->
+                region.schedules.map { schedule ->
+                    MapPin(
+                        position = LatLng(schedule.lat, schedule.lng),
+                        title = schedule.title,
+                        snippet = "Schedule"
+                    )
+                }
+            }
+        }
+        zoomLevel > ZOOM_LEVEL.COUNTRY -> return sessionData.trips.flatMap { trip ->
+            trip.regions.map { region ->
+                MapPin(
+                    position = LatLng(region.lat, region.lng),
+                    title = region.title,
+                    snippet = "Region"
+                )
+            }
+        }
+    }
+    return sessionData.trips.map {
+        MapPin(
+            position = LatLng(it.lat, it.lng),
+            title = it.title,
+            snippet = "Trip"
+        )
+    }
+}
+
 @Composable
 fun MapTab() {
-    var mapQuery by remember { mutableStateOf("") }
     val context = LocalContext.current
+
+    // 저장된 세션 데이터 불러오기
+    val sessionData = LocalSession.current.value
+
+    var mapQuery by remember { mutableStateOf("") }
     var searchJob: Job? = remember { null }
     var searchResults by remember { mutableStateOf<List<AutocompletePrediction>>(emptyList()) }
 
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(INITIAL_LAT_LNG, 10f)
-    }
+        position = CameraPosition.fromLatLngZoom(INITIAL_LAT_LNG, ZOOM_LEVEL.CONTINENT)
+    } // 카메라 위치 상태
+
+    var cameraTarget by remember { mutableStateOf<LatLng?>(null) } // 카메라 이동용 상태
+    var zoomLevel by remember { mutableStateOf(ZOOM_LEVEL.CONTINENT) } // 줌 레벨 상태
 
     var selectedLatLng by remember { mutableStateOf<LatLng?>(null) }
-    var cameraTarget by remember { mutableStateOf<LatLng?>(null) } // 👈 카메라 이동용 상태
+
+    var sessionMapPins by remember { mutableStateOf<List<MapPin>>(emptyList()) } // 세션에 저장된 핀 목록
+    var userSelectedMapPins by remember { mutableStateOf<List<MapPin>>(emptyList()) } // 유저가 선택한 핀 목록
 
     // 카메라 이동은 여기서
     LaunchedEffect(cameraTarget) {
         cameraTarget?.let {
-            val update = CameraUpdateFactory.newLatLngZoom(it, 15f)
+            val update = CameraUpdateFactory.newLatLngZoom(it, zoomLevel)
             cameraPositionState.move(update)
         }
+    }
+
+    // 줌 레벨 변경 감지
+    LaunchedEffect(zoomLevel) {
+        cameraPositionState.position = CameraPosition.fromLatLngZoom(cameraPositionState.position.target, zoomLevel)
+    }
+
+    // 줌 레벨 실시간 감지
+    LaunchedEffect(cameraPositionState) {
+        snapshotFlow { cameraPositionState.position.zoom }
+            .distinctUntilChanged()
+            .collectLatest { zoom ->
+                // 여기서 zoom 값이 바뀔 때마다 호출됨
+                Log.d("MapTab", "현재 줌 레벨: $zoom")
+                // 필요하다면 상태 업데이트 등 추가 작업
+            }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -69,15 +142,48 @@ fun MapTab() {
             cameraPositionState = cameraPositionState,
             uiSettings = MapUiSettings(
                 compassEnabled = false  // 나침반 비활성화
-            )
+            ),
+            onMapClick = { latLng ->
+                // 지도 클릭 시 기존 핀 대체
+                CoroutineScope(Dispatchers.IO).launch {
+                    val basicPinInfo = PlaceUtil.getLocationInfo(context, latLng)
+                    val pinInfo = MapPin(
+                        position = latLng,
+                        title = basicPinInfo.title,
+                        snippet = basicPinInfo.snippet
+                    )
+                    userSelectedMapPins = listOf(pinInfo)
+                    selectedLatLng = latLng
+                }
+            }
         ) {
-            Marker(
-                state = MarkerState(position = selectedLatLng ?: INITIAL_LAT_LNG),
-                title = if (selectedLatLng != null) "검색 위치" else "알 수 없는 위치",
-                snippet = if (selectedLatLng != null) "검색한 위치입니다" else "오류"
-            )
+            // 세션에 저장된 핀 목록
+            sessionMapPins.forEach { pin ->
+                MarkerComposable(
+                    state = MarkerState(position = pin.position)
+                ) {
+                    CustomPin(
+                        content = {
+                            Text(text = pin.title, color = CustomColors.Black)
+                        }
+                    )
+                }
+            }
+
+            // 유저가 선택한 핀 목록
+            userSelectedMapPins.forEach { pin ->
+                MarkerComposable(
+                    state = MarkerState(position = pin.position)
+                ) {
+                    CustomPin(
+                        content = {
+                        }
+                    )
+                }
+            }
         }
 
+        // 검색 바와 검색 결과
         Column(
             modifier = Modifier
                 .padding(top = 20.dp)
@@ -96,10 +202,8 @@ fun MapTab() {
                             try {
                                 val results = PlaceUtil.searchPlaceByText(context, mapQuery)
                                 searchResults = results
-//                                Log.d("MapTab", "검색 결과: $results")
                             } catch (e: Exception) {
                                 searchResults = emptyList()
-//                                Log.e("MapTab", "검색 실패: $e")
                             }
                         } else {
                             searchResults = emptyList()
@@ -171,12 +275,21 @@ fun MapTab() {
                                         CoroutineScope(Dispatchers.IO).launch {
                                             try {
                                                 val placesClient = Places.createClient(context)
-                                                val fields = listOf(Place.Field.LAT_LNG)
+                                                val fields = listOf(Place.Field.LAT_LNG, Place.Field.NAME, Place.Field.ADDRESS)
                                                 val request = FetchPlaceRequest.builder(prediction.placeId, fields).build()
                                                 val response = placesClient.fetchPlace(request).await()
                                                 val latLng = response.place.latLng
                                                 if (latLng != null) {
                                                     val newLatLng = LatLng(latLng.latitude, latLng.longitude)
+
+                                                    // 검색 결과로 핀 생성
+                                                    val pinInfo = MapPin(
+                                                        position = newLatLng,
+                                                        title = response.place.name ?: prediction.getPrimaryText(null).toString(),
+                                                        snippet = response.place.address ?: prediction.getSecondaryText(null).toString()
+                                                    )
+
+                                                    userSelectedMapPins = listOf(pinInfo)
                                                     selectedLatLng = newLatLng
                                                     cameraTarget = newLatLng
                                                 }
@@ -204,6 +317,7 @@ fun MapTab() {
                 }
             }
         }
+
     }
 }
 

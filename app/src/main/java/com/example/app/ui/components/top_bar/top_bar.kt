@@ -13,8 +13,7 @@ fun TopBar(
     modifier: Modifier = Modifier
 ) {
     val sessionData = LocalSession.current.value
-    val userMap = sessionData.data["user"] as? Map<*, *>
-    val username = userMap?.get("name") as? String ?: "게스트"
+    val username = sessionData.user.name
 
     when (tabType) {
         TabType.HOME -> {
