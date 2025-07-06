@@ -27,9 +27,9 @@ fun BottomDrawer(
     if (isOpen) {
         val coroutineScope = rememberCoroutineScope()
 
-        val drawerHeight = remember { mutableStateOf(0) }
+        val drawerHeight = remember { mutableIntStateOf(0) }
         val offsetY = remember { Animatable(1f) }
-        val dragOffset = remember { mutableStateOf(0f) }
+        val dragOffset = remember { mutableFloatStateOf(0f) }
 
         LaunchedEffect(isOpen) {
             offsetY.snapTo(1f) // 항상 처음은 아래에 있다가 올라오게
@@ -38,6 +38,7 @@ fun BottomDrawer(
                 animationSpec = tween(durationMillis = 350)
             )
         }
+
         Box(modifier = Modifier.fillMaxSize()) {
             Box(
                 modifier = Modifier
@@ -47,13 +48,13 @@ fun BottomDrawer(
                         drawerHeight.value = coordinates.size.height
                     }
                     .offset {
-                        val totalOffset = offsetY.value * drawerHeight.value + dragOffset.value
+                        val totalOffset = offsetY.value * drawerHeight.value + dragOffset.value.coerceAtLeast(0f) // dragOffset이 음수(위로 올림)일 때 0 이하로 못 가게 제한
                         IntOffset(0, totalOffset.roundToInt())
                     }
                     .pointerInput(Unit) {
                         detectVerticalDragGestures(
                             onVerticalDrag = { _, dragAmount ->
-                                dragOffset.value += dragAmount
+                                dragOffset.value = (dragOffset.value + dragAmount).coerceAtLeast(0f)
                             },
                             onDragEnd = {
                                 if (dragOffset.value > 100f) {
@@ -70,19 +71,27 @@ fun BottomDrawer(
                         color = Color.White,
                         shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
                     )
-                    .zIndex(101f)
-                    .padding(16.dp)
+                    .zIndex(99f)
+                    .padding(
+                        top = 8.dp,
+                    )
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .padding(
+                            horizontal = 16.dp,
+                        )
+                ) {
                     Box(
                         modifier = Modifier
-                            .width(40.dp)
+                            .width(80.dp)
                             .height(4.dp)
-                            .background(Color.LightGray, shape = RoundedCornerShape(2.dp))
+                            .background(Color.DarkGray, shape = RoundedCornerShape(2.dp))
                             .align(Alignment.CenterHorizontally)
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     content()
                 }
@@ -90,4 +99,3 @@ fun BottomDrawer(
         }
     }
 }
-
