@@ -36,8 +36,8 @@ class PinShape : Shape {
             val width = size.width
             val height = size.height
             val cornerRadius = 8f
-            val triangleHeight = 30f
-            val triangleWidth = 30f
+            val triangleHeight = 50f
+            val triangleWidth = 50f
             val bodyHeight = height - triangleHeight
 
             // 직사각형 몸체
@@ -78,6 +78,10 @@ fun CustomPin(
         modifier = Modifier
             .wrapContentSize()
             .clip(PinShape())
+            .size(
+                width = 100.dp,
+                height = 80.dp
+            )
             .clickable { onClick() }
     ) {
         // 핀 몸체

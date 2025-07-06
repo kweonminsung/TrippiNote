@@ -44,14 +44,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlin.text.compareTo
 
-val INITIAL_LAT_LNG = LatLng(36.3730, 127.3622) // 지도의 초기 위치(카이스트)
+//val INITIAL_LAT_LNG = LatLng(36.3730, 127.3622) // 지도의 초기 위치(카이스트)
+val INITIAL_LAT_LNG = LatLng(48.8566, 2.3522) // 지도의 초기 위치(파리)
 
 object ZOOM_LEVEL {
     const val CONTINENT = 3f   // 대륙 수준
     const val COUNTRY = 6f     // 나라 수준
-    const val CITY = 12f       // 도시 수준
+    const val CITY = 10f       // 도시 수준
 }
 
 // 저장된 핀 목록을 가져오기(여행, 지역, 일정)
@@ -66,7 +66,7 @@ fun getSessionPinsByZoomRate(
                 region.schedules.map { schedule ->
                     MapPin(
                         position = LatLng(schedule.lat, schedule.lng),
-                        title = schedule.title,
+                        title = "Schedule: ${schedule.title} Lat: ${schedule.lat}, Lng: ${schedule.lng}",
                         snippet = "Schedule"
                     )
                 }
@@ -76,7 +76,7 @@ fun getSessionPinsByZoomRate(
             trip.regions.map { region ->
                 MapPin(
                     position = LatLng(region.lat, region.lng),
-                    title = region.title,
+                    title = "Region: ${region.title} Lat: ${region.lat}, Lng: ${region.lng}",
                     snippet = "Region"
                 )
             }
@@ -84,7 +84,7 @@ fun getSessionPinsByZoomRate(
         else -> sessionData.trips.map { trip ->
             MapPin(
                 position = LatLng(trip.lat, trip.lng),
-                title = trip.title,
+                title = "Trip: ${trip.title} Lat: ${trip.lat}, Lng: ${trip.lng}",
                 snippet = "Trip"
             )
         }
@@ -135,7 +135,10 @@ fun MapTab() {
         }")
         // 줌 레벨에 따라 세션에서 핀 목록 가져오기
         sessionMapPins = getSessionPinsByZoomRate(sessionData, zoomLevel)
-        Log.d("MapTab", "Session map pins updated: ${sessionMapPins.size} pins")
+
+        for (pin in sessionMapPins) {
+            Log.d("MapTab", "Session pin: ${pin.title} at ${pin.position}")
+        }
     }
 
     // 줌 정도 실시간 감지
@@ -146,8 +149,8 @@ fun MapTab() {
                 Log.d("MapTab", "Zoom rate changed: $zoomRate")
 
                 zoomLevel = when {
-                    zoomRate > ZOOM_LEVEL.CITY -> ZOOM_LEVEL.CITY
-                    zoomRate > ZOOM_LEVEL.COUNTRY -> ZOOM_LEVEL.COUNTRY
+                    zoomRate >= ZOOM_LEVEL.CITY -> ZOOM_LEVEL.CITY
+                    zoomRate >= ZOOM_LEVEL.COUNTRY -> ZOOM_LEVEL.COUNTRY
                     else -> ZOOM_LEVEL.CONTINENT
                 }
 
@@ -165,6 +168,7 @@ fun MapTab() {
                 // 지도 클릭 시 기존 핀 대체
                 CoroutineScope(Dispatchers.IO).launch {
                     val basicPinInfo = PlaceUtil.getLocationInfo(context, latLng)
+                    Log.d("MapTab", "Clicked location: $latLng, Title: ${basicPinInfo.title}, Snippet: ${basicPinInfo.snippet}")
                     val pinInfo = MapPin(
                         position = latLng,
                         title = basicPinInfo.title,
@@ -176,14 +180,16 @@ fun MapTab() {
         ) {
             // 세션에 저장된 핀 목록
             sessionMapPins.forEach { pin ->
-                MarkerComposable(
-                    state = MarkerState(position = pin.position)
-                ) {
-                    CustomPin(
-                        content = {
-                            Text(text = pin.title, color = CustomColors.Black)
-                        }
-                    )
+                key("${pin.position.latitude},${pin.position.longitude},${pin.title}") {
+                    MarkerComposable(
+                        state = MarkerState(position = pin.position)
+                    ) {
+                        CustomPin(
+                            content = {
+                                Text(text = pin.title, color = CustomColors.Black)
+                            }
+                        )
+                    }
                 }
             }
 
@@ -235,7 +241,8 @@ fun MapTab() {
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Column (
-                    modifier = Modifier.width(300.dp)
+                    modifier = Modifier
+                        .width(300.dp)
                         .heightIn(max = 300.dp)
                         .shadow(
                             elevation = 1.dp,
@@ -292,18 +299,31 @@ fun MapTab() {
                                         CoroutineScope(Dispatchers.IO).launch {
                                             try {
                                                 val placesClient = Places.createClient(context)
-                                                val fields = listOf(Place.Field.LAT_LNG, Place.Field.NAME, Place.Field.ADDRESS)
-                                                val request = FetchPlaceRequest.builder(prediction.placeId, fields).build()
-                                                val response = placesClient.fetchPlace(request).await()
+                                                val fields = listOf(
+                                                    Place.Field.LAT_LNG,
+                                                    Place.Field.NAME,
+                                                    Place.Field.ADDRESS
+                                                )
+                                                val request = FetchPlaceRequest.builder(
+                                                    prediction.placeId,
+                                                    fields
+                                                ).build()
+                                                val response =
+                                                    placesClient.fetchPlace(request).await()
                                                 val latLng = response.place.latLng
                                                 if (latLng != null) {
-                                                    val newLatLng = LatLng(latLng.latitude, latLng.longitude)
+                                                    val newLatLng =
+                                                        LatLng(latLng.latitude, latLng.longitude)
 
                                                     // 검색 결과로 핀 생성
                                                     val pinInfo = MapPin(
                                                         position = newLatLng,
-                                                        title = response.place.name ?: prediction.getPrimaryText(null).toString(),
-                                                        snippet = response.place.address ?: prediction.getSecondaryText(null).toString()
+                                                        title = response.place.name
+                                                            ?: prediction.getPrimaryText(null)
+                                                                .toString(),
+                                                        snippet = response.place.address
+                                                            ?: prediction.getSecondaryText(null)
+                                                                .toString()
                                                     )
 
                                                     userSelectedMapPins = listOf(pinInfo)

@@ -54,9 +54,10 @@ fun HomeTopBar(
                         tint = CustomColors.Black
                     )
                 },
-                "새로운 여행 추가",
-                "여행 이름 입력...",
-                CustomColors.Black
+                title = "새로운 여행 추가",
+                placeholder = "여행 이름 입력...",
+                tint = CustomColors.Black,
+                label = "편집"
                 )
         },
 
