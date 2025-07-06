@@ -44,22 +44,24 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlin.text.compareTo
 
 val INITIAL_LAT_LNG = LatLng(36.3730, 127.3622) // 지도의 초기 위치(카이스트)
 
 object ZOOM_LEVEL {
     const val CONTINENT = 3f   // 대륙 수준
-    const val COUNTRY = 5f     // 나라 수준
+    const val COUNTRY = 6f     // 나라 수준
     const val CITY = 12f       // 도시 수준
 }
 
 // 저장된 핀 목록을 가져오기(여행, 지역, 일정)
-fun getSessionPinsByZoomLevel(
+fun getSessionPinsByZoomRate(
     sessionData: SessionData,
     zoomLevel: Float
 ): List<MapPin> {
-    when {
-        zoomLevel > ZOOM_LEVEL.CITY -> return sessionData.trips.flatMap { trip ->
+    Log.d("MapTab", "getSessionPinsByZoomRate called with zoomLevel: $zoomLevel")
+    val pins = when (zoomLevel) {
+        ZOOM_LEVEL.CITY -> sessionData.trips.flatMap { trip ->
             trip.regions.flatMap { region ->
                 region.schedules.map { schedule ->
                     MapPin(
@@ -70,7 +72,7 @@ fun getSessionPinsByZoomLevel(
                 }
             }
         }
-        zoomLevel > ZOOM_LEVEL.COUNTRY -> return sessionData.trips.flatMap { trip ->
+        ZOOM_LEVEL.COUNTRY -> sessionData.trips.flatMap { trip ->
             trip.regions.map { region ->
                 MapPin(
                     position = LatLng(region.lat, region.lng),
@@ -79,14 +81,16 @@ fun getSessionPinsByZoomLevel(
                 )
             }
         }
+        else -> sessionData.trips.map { trip ->
+            MapPin(
+                position = LatLng(trip.lat, trip.lng),
+                title = trip.title,
+                snippet = "Trip"
+            )
+        }
     }
-    return sessionData.trips.map {
-        MapPin(
-            position = LatLng(it.lat, it.lng),
-            title = it.title,
-            snippet = "Trip"
-        )
-    }
+
+    return pins
 }
 
 @Composable
@@ -105,9 +109,8 @@ fun MapTab() {
     } // 카메라 위치 상태
 
     var cameraTarget by remember { mutableStateOf<LatLng?>(null) } // 카메라 이동용 상태
-    var zoomLevel by remember { mutableStateOf(ZOOM_LEVEL.CONTINENT) } // 줌 레벨 상태
 
-    var selectedLatLng by remember { mutableStateOf<LatLng?>(null) }
+    var zoomLevel by remember { mutableStateOf(ZOOM_LEVEL.CONTINENT) } // 줌 레벨 상태
 
     var sessionMapPins by remember { mutableStateOf<List<MapPin>>(emptyList()) } // 세션에 저장된 핀 목록
     var userSelectedMapPins by remember { mutableStateOf<List<MapPin>>(emptyList()) } // 유저가 선택한 핀 목록
@@ -115,24 +118,39 @@ fun MapTab() {
     // 카메라 이동은 여기서
     LaunchedEffect(cameraTarget) {
         cameraTarget?.let {
-            val update = CameraUpdateFactory.newLatLngZoom(it, zoomLevel)
+            val update = CameraUpdateFactory.newLatLngZoom(it, cameraPositionState.position.zoom)
             cameraPositionState.move(update)
         }
     }
 
     // 줌 레벨 변경 감지
     LaunchedEffect(zoomLevel) {
-        cameraPositionState.position = CameraPosition.fromLatLngZoom(cameraPositionState.position.target, zoomLevel)
+        Log.d("MapTab", "Zoom level changed to: ${
+            when (zoomLevel) {
+                ZOOM_LEVEL.CONTINENT -> "Continent"
+                ZOOM_LEVEL.COUNTRY -> "Country"
+                ZOOM_LEVEL.CITY -> "City"
+                else -> "Unknown"
+            }
+        }")
+        // 줌 레벨에 따라 세션에서 핀 목록 가져오기
+        sessionMapPins = getSessionPinsByZoomRate(sessionData, zoomLevel)
+        Log.d("MapTab", "Session map pins updated: ${sessionMapPins.size} pins")
     }
 
-    // 줌 레벨 실시간 감지
+    // 줌 정도 실시간 감지
     LaunchedEffect(cameraPositionState) {
         snapshotFlow { cameraPositionState.position.zoom }
             .distinctUntilChanged()
-            .collectLatest { zoom ->
-                // 여기서 zoom 값이 바뀔 때마다 호출됨
-                Log.d("MapTab", "현재 줌 레벨: $zoom")
-                // 필요하다면 상태 업데이트 등 추가 작업
+            .collectLatest { zoomRate ->
+                Log.d("MapTab", "Zoom rate changed: $zoomRate")
+
+                zoomLevel = when {
+                    zoomRate > ZOOM_LEVEL.CITY -> ZOOM_LEVEL.CITY
+                    zoomRate > ZOOM_LEVEL.COUNTRY -> ZOOM_LEVEL.COUNTRY
+                    else -> ZOOM_LEVEL.CONTINENT
+                }
+
             }
     }
 
@@ -153,7 +171,6 @@ fun MapTab() {
                         snippet = basicPinInfo.snippet
                     )
                     userSelectedMapPins = listOf(pinInfo)
-                    selectedLatLng = latLng
                 }
             }
         ) {
@@ -290,7 +307,6 @@ fun MapTab() {
                                                     )
 
                                                     userSelectedMapPins = listOf(pinInfo)
-                                                    selectedLatLng = newLatLng
                                                     cameraTarget = newLatLng
                                                 }
                                             } catch (e: Exception) {
