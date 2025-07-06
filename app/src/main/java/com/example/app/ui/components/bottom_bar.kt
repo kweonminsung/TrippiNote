@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import com.example.app.R
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -26,7 +27,7 @@ fun BottomBar(
             .fillMaxWidth()
             .height(70.dp)
             .background(CustomColors.White),
-        horizontalArrangement = Arrangement.SpaceEvenly,
+        horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
         BottomBarButton(

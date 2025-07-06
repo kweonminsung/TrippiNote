@@ -3,6 +3,7 @@ package com.example.app.ui.pages.map
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -14,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import com.example.app.LocalSession
 import com.example.app.type.SessionData
@@ -108,6 +110,8 @@ fun getSessionPinsByZoomRate(
 fun MapTab() {
     val context = LocalContext.current
 
+    val focusManager = LocalFocusManager.current
+
     // 저장된 세션 데이터 불러오기
     val sessionData = LocalSession.current.value
 
@@ -184,7 +188,10 @@ fun MapTab() {
             }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
@@ -195,6 +202,9 @@ fun MapTab() {
 
             ),
             onMapClick = { latLng ->
+                // 지도 클릭 시 키보드 내리기
+                focusManager.clearFocus()
+
                 // 지도 클릭 시 기존 핀 대체
                 CoroutineScope(Dispatchers.IO).launch {
                     val basicPinInfo = PlaceUtil.getLocationInfo(context, latLng)
