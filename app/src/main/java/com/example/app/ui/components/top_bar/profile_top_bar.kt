@@ -20,19 +20,23 @@ import com.example.app.ui.theme.CustomColors
 fun ProfileTopBar() {
     TopAppBar(
         title = {
-            Row {
+            Row (
+
+            ){
+                Text(
+                    text = "프로필",
+                    fontSize = 21.sp
+                )
                 Icon(
                     imageVector = Icons.Default.Settings,
                     contentDescription = null,
                     modifier = Modifier.padding(end = 8.dp)
                 )
-                Text(
-                    text = "프로필",
-                    fontSize = 21.sp
-                )
             }
         },
-        actions = {},
+        actions = {
+
+        },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = CustomColors.White,
             titleContentColor = CustomColors.Black,
