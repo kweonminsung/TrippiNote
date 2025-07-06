@@ -29,10 +29,12 @@ import com.example.app.ui.theme.CustomColors
 fun PopupWindow(
     icon: @Composable () -> Unit,
     title: String,
-    label: String,
-    placeholder: String,
+    label1: String, // 편집 or 완료
+    label2: String, // 닫기 or 삭제
     tint: Color = CustomColors.Black,
-    transform: @Composable () -> Unit = {} // 팝업창에 추가할 함수...
+    transform1: @Composable () -> Unit = {}, //편집 or 완료
+    transform2: @Composable () -> Unit = {}, //닫기 or 삭제
+    content: @Composable () -> Unit = {} // 팝업창 내부에 추가할 내용
 )
 {
     var showDialog by remember { mutableStateOf(false) }
@@ -59,7 +61,7 @@ fun PopupWindow(
                             showDialog = false
                             inputText = ""
                         }) {
-                            Text("닫기")
+                            Text(label1, color = CustomColors.Blue, fontSize = 14.sp)
                         }
 
                         Spacer(modifier = Modifier.weight(1f))  // 가운데 정렬 효과
@@ -73,23 +75,17 @@ fun PopupWindow(
                         Spacer(modifier = Modifier.weight(1f))  // 가운데 정렬 효과
 
                         TextButton(onClick = {
-                            println("여행 이름: $inputText")
                             showDialog = false
                             inputText = ""
                         }) {
-                            Text(label)
+                            Text(label2, color = CustomColors.Blue, fontSize = 14.sp)
                         }
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
 
 
-//                    )// 텍스트 필드
-////                    TextField(
-////                        value = inputText,
-////                        onValueChange = { inputText = it },
-////                        placeholder = { Text(placeholder) },
-////                        modifier = Modifier.fillMaxWidth()
+
                 }
             }
         }

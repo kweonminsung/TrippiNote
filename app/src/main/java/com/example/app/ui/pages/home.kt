@@ -33,7 +33,7 @@ fun HomeTab() {
         modifier = Modifier
             .fillMaxSize()
             .clickable(
-                indication = { rememberRipple() },  // 클릭 효과 제거
+                indication = null,  // 클릭 효과 제거
                 interactionSource = remember { MutableInteractionSource() }
             ) {
                 focusManager.clearFocus()  // 👉 키보드 내리기

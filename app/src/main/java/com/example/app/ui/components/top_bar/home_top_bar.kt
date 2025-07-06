@@ -55,8 +55,9 @@ fun HomeTopBar(
                     )
                 },
                 "새로운 여행 추가",
-                "여행 이름 입력...",
-                CustomColors.Black
+                "완료",
+                "닫기",
+                tint = CustomColors.Black
                 )
         },
 

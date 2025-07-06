@@ -9,6 +9,8 @@ object CustomColors {
     val LightGray = Color(0xFFEAEAEA)
     val Gray = Color(0xFFB3B3B3)
     val DarkGray = Color(0xFF666666)
+
+    val Blue = Color(0xFF4696FF)
     val Transparent = Color(0x00000000)
 }
 
