@@ -40,6 +40,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        // Places API 초기화
         val apiKey = getMetaDataValue("com.google.android.geo.API_KEY")
         if (!Places.isInitialized() && apiKey != null) {
             Places.initialize(applicationContext, apiKey)

@@ -3,11 +3,11 @@ package com.example.app.ui.pages.map
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -22,6 +22,7 @@ import com.example.app.type.SessionData
 import com.example.app.type.TransportType
 import com.example.app.type.toColor
 import com.example.app.type.toStringKor
+import com.example.app.ui.components.BottomDrawer
 import com.example.app.ui.components.search_bar.SearchBar
 import com.example.app.ui.components.map.MapPin
 import com.example.app.ui.components.map.CustomPin
@@ -64,7 +65,7 @@ val INITIAL_ZOOM_LEVEL = ZOOM_LEVEL.CITY // 초기 줌 레벨
 object ZOOM_LEVEL {
     const val CONTINENT = 3f   // 대륙 수준
     const val COUNTRY = 6f     // 나라 수준
-    const val CITY = 12f       // 도시 수준
+    const val CITY = 13f       // 도시 수준
 }
 
 // 저장된 핀 목록을 가져오기(여행, 지역, 일정)
@@ -119,9 +120,10 @@ fun MapTab() {
     var searchJob: Job? = remember { null }
     var searchResults by remember { mutableStateOf<List<AutocompletePrediction>>(emptyList()) }
 
+    // 카메라 위치 상태
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(INITIAL_LAT_LNG, INITIAL_ZOOM_LEVEL)
-    } // 카메라 위치 상태
+    }
 
     var cameraTarget by remember { mutableStateOf<LatLng?>(null) } // 카메라 이동용 상태
 
@@ -130,6 +132,9 @@ fun MapTab() {
     var sessionMapPins by remember { mutableStateOf<List<MapPin>>(emptyList()) } // 세션에 저장된 핀 목록
     var sessionTransportPin by remember { mutableStateOf<List<TransportPin>>(emptyList()) } // 세션에 저장된 교통수단 핀 목록
     var userSelectedMapPins by remember { mutableStateOf<List<MapPin>>(emptyList()) } // 유저가 선택한 핀 목록
+
+    var tripInfoBottomDrawerState by remember { mutableStateOf(false) } // 여행 정보 Bottom Drawer 상태
+    var regionInfoBottomDrawerState by remember { mutableStateOf(false) } // 지역 정보 Bottom Drawer 상태
 
     // 카메라 이동은 여기서
     LaunchedEffect(cameraTarget) {
@@ -188,6 +193,7 @@ fun MapTab() {
             }
     }
 
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -202,19 +208,25 @@ fun MapTab() {
 
             ),
             onMapClick = { latLng ->
-                // 지도 클릭 시 키보드 내리기
-                focusManager.clearFocus()
+                focusManager.clearFocus() // 키보드 내리기
 
-                // 지도 클릭 시 기존 핀 대체
-                CoroutineScope(Dispatchers.IO).launch {
-                    val basicPinInfo = PlaceUtil.getLocationInfo(context, latLng)
-                    Log.d("MapTab", "Clicked location: $latLng, Title: ${basicPinInfo.title}, SubTitle: ${basicPinInfo.subTitle}")
-                    val pinInfo = MapPin(
-                        position = latLng,
-                        title = basicPinInfo.title,
-                        subTitle = basicPinInfo.subTitle
-                    )
-                    userSelectedMapPins = listOf(pinInfo)
+                // 핀이 있으면 삭제, 없으면 새로 추가
+                if (userSelectedMapPins.isNotEmpty()) {
+                    userSelectedMapPins = emptyList()
+                } else {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val basicPinInfo = PlaceUtil.getLocationInfo(context, latLng)
+                        Log.d(
+                            "MapTab",
+                            "Clicked location: $latLng, Title: ${basicPinInfo.title}, SubTitle: ${basicPinInfo.subTitle}"
+                        )
+                        val pinInfo = MapPin(
+                            position = latLng,
+                            title = basicPinInfo.title,
+                            subTitle = basicPinInfo.subTitle
+                        )
+                        userSelectedMapPins = listOf(pinInfo)
+                    }
                 }
             }
         ) {
@@ -223,14 +235,36 @@ fun MapTab() {
                 key("${pin.position.latitude},${pin.position.longitude},${pin.title}") {
                     MarkerComposable(
                         state = MarkerState(position = pin.position),
-                        zIndex = 2f
+                        zIndex = 2f,
+                        onClick = {
+                            focusManager.clearFocus() // 키보드 내리기
+
+                            Log.d("MapTab", "Clicked pin: ${pin.title} at ${pin.position}")
+
+                            if (zoomLevel == ZOOM_LEVEL.CONTINENT) {
+                                tripInfoBottomDrawerState = true
+                            } else if (zoomLevel == ZOOM_LEVEL.COUNTRY) {
+                                regionInfoBottomDrawerState = true
+                            }
+
+                            CoroutineScope(Dispatchers.Main).launch {
+                                cameraPositionState.animate(
+                                    CameraUpdateFactory.newLatLngZoom(
+                                        pin.position,
+                                        when (zoomLevel) {
+                                            ZOOM_LEVEL.CONTINENT -> ZOOM_LEVEL.COUNTRY
+                                            ZOOM_LEVEL.COUNTRY -> ZOOM_LEVEL.CITY
+                                            else -> zoomLevel
+                                        }
+                                    )
+                                )
+                            }
+                            true // 클릭 이벤트 소비
+                        }
                     ) {
                         CustomPin(
                             title = pin.title,
-                            subTitle = pin.subTitle,
-                            onClick = {
-                                cameraTarget = pin.position // 핀 클릭 시 카메라 이동
-                            },
+                            subTitle = pin.subTitle
                         )
                     }
                 }
@@ -268,11 +302,27 @@ fun MapTab() {
                         state = MarkerState(position = LatLng(
                             (transportPin.from.latitude + transportPin.to.latitude) / 2,
                             (transportPin.from.longitude + transportPin.to.longitude) / 2
-                        ))
+                        )),
+                        onClick = {
+                            focusManager.clearFocus() // 키보드 내리기
+                            // 핀 클릭 시 카메라 위치 변경
+                            CoroutineScope(Dispatchers.Main).launch {
+                                cameraPositionState.animate(
+                                    CameraUpdateFactory.newLatLngZoom(
+                                        LatLng(
+                                            (transportPin.from.latitude + transportPin.to.latitude) / 2,
+                                            (transportPin.from.longitude + transportPin.to.longitude) / 2
+                                        ),
+                                        cameraPositionState.position.zoom
+                                    )
+                                )
+                            }
+                            true // 클릭 이벤트 소비
+                        }
                     ) {
                         CustomTransportPin(
                             text = "${transportPin.transportType.toStringKor()}로 이동",
-                            borderColor = transportPin.transportType.toColor()
+                            borderColor = transportPin.transportType.toColor(),
                         )
                     }
                 }
@@ -283,14 +333,24 @@ fun MapTab() {
                 key("${pin.position.latitude},${pin.position.longitude},${pin.title},user") {
                     MarkerComposable(
                         state = MarkerState(position = pin.position),
-                        zIndex = 3f
+                        zIndex = 3f,
+                        onClick = {
+                            focusManager.clearFocus() // 키보드 내리기
+                            // 핀 클릭 시 카메라 위치 변경
+                            CoroutineScope(Dispatchers.Main).launch {
+                                cameraPositionState.animate(
+                                    CameraUpdateFactory.newLatLngZoom(
+                                        pin.position,
+                                        cameraPositionState.position.zoom
+                                    )
+                                )
+                            }
+                            true // 클릭 이벤트 소비
+                        }
                     ) {
                         CustomPin(
                             title = pin.title,
-                            subTitle = pin.subTitle,
-                            onClick = {
-                                cameraTarget = pin.position // 핀 클릭 시 카메라 이동
-                            }
+                            subTitle = pin.subTitle
                         )
                     }
                 }
@@ -304,6 +364,10 @@ fun MapTab() {
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Button(onClick = { regionInfoBottomDrawerState = !regionInfoBottomDrawerState }) {
+                Text("지역 정보 열기/닫기")
+            }
+
             SearchBar(
                 placeholder = "원하는 장소 또는 여행 검색",
                 query = mapQuery,
@@ -444,8 +508,43 @@ fun MapTab() {
                 }
             }
         }
+        // 여행 정보 Bottom Drawer
+        BottomDrawer (
+            isOpen = tripInfoBottomDrawerState,
+            onDismiss = { tripInfoBottomDrawerState = false }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text(text = "여행 정보")
+                Spacer(modifier = Modifier.height(8.dp))
+                // 여행 정보 내용 추가
+                Text(text = "여행 제목: ${sessionData.trips.firstOrNull()?.title ?: "없음"}")
+                // 더 많은 정보 추가 가능
+            }
+        }
 
+        // 지역 정보 Bottom Drawer
+        BottomDrawer(
+            isOpen = regionInfoBottomDrawerState,
+            onDismiss = { regionInfoBottomDrawerState = false }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text(text = "지역 정보")
+                Spacer(modifier = Modifier.height(8.dp))
+                // 지역 정보 내용 추가
+                Text(text = "지역 제목: ${sessionData.trips.firstOrNull()?.regions?.firstOrNull()?.title ?: "없음"}")
+                // 더 많은 정보 추가 가능
+            }
+        }
     }
+
 }
 
 

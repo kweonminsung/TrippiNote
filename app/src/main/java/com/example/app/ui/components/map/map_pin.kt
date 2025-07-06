@@ -24,7 +24,6 @@ data class MapPin(
 fun CustomPin(
     title: String,
     subTitle: String? = null,
-    onClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Box (
@@ -53,7 +52,6 @@ fun CustomPin(
                     shape = RoundedCornerShape(8.dp)
                 )
                 .padding(8.dp)
-                .clickable { onClick() }
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
