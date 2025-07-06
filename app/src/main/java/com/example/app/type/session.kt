@@ -124,7 +124,7 @@ val EXAMPLE_SESSION_DATA = SessionData(
                             memo = "Enjoy the view and take photos",
                             lat = 48.8566,
                             lng = 2.3522,
-//                            start_date = "2024-05-02T14:00:00Z",
+                            start_date = "2024-05-02T14:00:00Z",
                             end_date = "2024-05-02T16:00:00Z",
                             created_at = "2024-04-01T12:00:00Z"
                         ),
