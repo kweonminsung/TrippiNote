@@ -12,24 +12,29 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.app.TabType
+import com.example.app.ui.theme.CustomColors
 
 @Composable
 fun BottomBar(
+    tabType: TabType,
     setTabType: (TabType) -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFFF0F0F0))
-            .padding(vertical = 8.dp),
+            .background(CustomColors.White)
+            .padding(
+                top = 6.dp,
+                bottom = 8.dp,
+            ),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        BottomBarButton("홈", R.drawable.bottombar_home, { setTabType(TabType.HOME)})
-        BottomBarButton("사진", R.drawable.bottombar_album, { setTabType(TabType.ALBUM)})
-        BottomBarButton("지도", R.drawable.bottombar_map, { setTabType(TabType.MAP)})
-        BottomBarButton("프로필", R.drawable.bottombar_profile, { setTabType(TabType.PROFILE)})
+        BottomBarButton("홈", if (tabType == TabType.HOME) R.drawable.bottombar_home_fill else R.drawable.bottombar_home_empty , { setTabType(TabType.HOME)})
+        BottomBarButton("사진", if (tabType == TabType.ALBUM) R.drawable.bottombar_album_fill else R.drawable.bottombar_album_empty, { setTabType(TabType.ALBUM)})
+        BottomBarButton("지도", if (tabType == TabType.MAP) R.drawable.bottombar_map_fill else R.drawable.bottombar_map_empty, { setTabType(TabType.MAP)})
+        BottomBarButton("프로필", if (tabType == TabType.PROFILE) R.drawable.bottombar_profile_fill else R.drawable.bottombar_profile_empty, { setTabType(TabType.PROFILE)})
     }
 }
 
@@ -53,8 +58,8 @@ fun BottomBarButton(
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = label,
-            fontSize = 12.sp,
-            color = Color.Black
+            fontSize = 10.sp,
+            color = Color.DarkGray
         )
     }
 }

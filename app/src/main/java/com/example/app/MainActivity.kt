@@ -87,7 +87,7 @@ fun MainScreen() {
             TopBar(tabType)
         },
         bottomBar = {
-            BottomBar(setTabType)
+            BottomBar(tabType, setTabType)
         }
     ) {
         Column(
