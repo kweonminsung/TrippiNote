@@ -1,9 +1,5 @@
 package com.example.app.util.database
 
-import androidx.compose.ui.graphics.Color
-import com.example.app.ui.theme.CustomColors
-import com.example.app.util.database.model.TransportType
-
 class model {
     data class Wishlist(
         val done: Boolean,
@@ -21,21 +17,22 @@ class model {
         val from_schedule_id: Int,
         val to_schedule_id: Int,
         val type: TransportType,
-        val duration: String? = null,
-        val created_at: String,
+        val duration: String? = null, // 00:30:00
+        val created_at: String, // 2024-04-01T12:00:00Z
         val memo: String = "",
     )
     data class Schedule(
         val id: Int,
+        val type: ScheduleType,
         val region_id: Int,
         val place_id: Int? = null,
         val title: String,
         val memo: String = "",
         val lat: Double,
         val lng: Double,
-        val start_date: String? = null,
-        val end_date: String? = null,
-        val created_at: String,
+        val start_datetime: String? = null, // 2024-04-01T12:00:00Z
+        val end_datetime: String? = null, // 2024-04-01T12:00:00Z
+        val created_at: String, // 2024-04-01T12:00:00Z
     )
 
     data class Region(
@@ -44,8 +41,8 @@ class model {
         val title: String,
         val lat: Double,
         val lng: Double,
-        val start_date: String? = null,
-        val end_date: String? = null,
+        val start_date: String? = null, // 2024-04-01
+        val end_date: String? = null, // 2024-04-01
         val created_at: String,
     )
 
@@ -54,9 +51,9 @@ class model {
         val title: String,
         val lat: Double,
         val lng: Double,
-        val start_date: String? = null,
-        val end_date: String? = null,
-        val created_at: String,
+        val start_date: String? = null, // 2024-04-01
+        val end_date: String? = null, // 2024-04-01
+        val created_at: String, // 2024-04-01T12:00:00Z
     )
 
     enum class TransportType {
@@ -69,4 +66,10 @@ class model {
         AIRPLANE;
     }
 
+    enum class ScheduleType {
+        SIGHTS,
+        HOTEL,
+        RESTAURANT,
+        ETC,
+    }
 }

@@ -1,7 +1,11 @@
 package com.example.app.util.database
 
+import android.content.Context
+
 object WishlistRepository {
-    fun getAllWishlists(dbHelper: SQLiteHelper): List<model.Wishlist> {
+    fun getAllWishlists(context: Context): List<model.Wishlist> {
+        val dbHelper = SQLiteHelper(context)
+        
         val wishlists = mutableListOf<model.Wishlist>()
         dbHelper.readableDatabase.use { db ->
             val cursor = db.rawQuery("SELECT * FROM wishlist", null)

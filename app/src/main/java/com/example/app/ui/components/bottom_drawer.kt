@@ -44,6 +44,7 @@ fun BottomDrawer(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
+                    .heightIn(max = 300.dp)
                     .onGloballyPositioned { coordinates ->
                         drawerHeight.value = coordinates.size.height
                     }

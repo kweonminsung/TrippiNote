@@ -1,7 +1,11 @@
 package com.example.app.util.database
 
+import android.content.Context
+
 object ChecklistRepository {
-    fun getChecklistItems(dbHelper: SQLiteHelper): List<model.ChecklistItem> {
+    fun getChecklistItems(context: Context): List<model.ChecklistItem> {
+        val dbHelper = SQLiteHelper(context)
+
         val checklistItems = mutableListOf<model.ChecklistItem>()
         dbHelper.readableDatabase.use { db ->
             val cursor = db.rawQuery("SELECT * FROM checklist", null)

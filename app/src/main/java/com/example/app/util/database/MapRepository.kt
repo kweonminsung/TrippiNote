@@ -1,7 +1,11 @@
 package com.example.app.util.database
 
+import android.content.Context
+
 object MapRepository {
-    fun getTrips(dbHelper: SQLiteHelper): List<model.Trip> {
+    fun getTrips(context: Context): List<model.Trip> {
+        val dbHelper = SQLiteHelper(context)
+
         val trips = mutableListOf<model.Trip>()
         dbHelper.readableDatabase.use { db ->
             val cursor = db.rawQuery("SELECT * FROM trip", null)
@@ -30,7 +34,9 @@ object MapRepository {
         return trips
     }
 
-    fun getAllRegions(dbHelper: SQLiteHelper): List<model.Region> {
+    fun getAllRegions(context: Context): List<model.Region> {
+        val dbHelper = SQLiteHelper(context)
+
         val regions = mutableListOf<model.Region>()
         dbHelper.readableDatabase.use { db ->
             val cursor = db.rawQuery("SELECT * FROM region", null)
@@ -61,7 +67,9 @@ object MapRepository {
         return regions
     }
 
-    fun getRegions(dbHelper: SQLiteHelper, tripId: Int): List<model.Region> {
+    fun getRegions(context: Context, tripId: Int): List<model.Region> {
+        val dbHelper = SQLiteHelper(context)
+
         val regions = mutableListOf<model.Region>()
         dbHelper.readableDatabase.use { db ->
             val cursor = db.rawQuery("SELECT * FROM region WHERE trip_id = ?", arrayOf(tripId.toString()))
@@ -91,30 +99,34 @@ object MapRepository {
         return regions
     }
 
-    fun getAllSchedules(dbHelper: SQLiteHelper): List<model.Schedule> {
+    fun getAllSchedules(context: Context): List<model.Schedule> {
+        val dbHelper = SQLiteHelper(context)
+
         val schedules = mutableListOf<model.Schedule>()
         dbHelper.readableDatabase.use { db ->
             val cursor = db.rawQuery("SELECT * FROM schedule", null)
             val idIdx = cursor.getColumnIndex("id")
+            val typeIdx = cursor.getColumnIndex("type")
             val regionIdIdx = cursor.getColumnIndex("region_id")
             val titleIdx = cursor.getColumnIndex("title")
             val memoIdx = cursor.getColumnIndex("memo")
             val latIdx = cursor.getColumnIndex("lat")
             val lngIdx = cursor.getColumnIndex("lng")
-            val startDateIdx = cursor.getColumnIndex("start_date")
-            val endDateIdx = cursor.getColumnIndex("end_date")
+            val startDatetimeIdx = cursor.getColumnIndex("start_datetime")
+            val endDatetimeIdx = cursor.getColumnIndex("end_datetime")
             val createdAtIdx = cursor.getColumnIndex("created_at")
             while (cursor.moveToNext()) {
                 schedules.add(
                     model.Schedule(
                         id = cursor.getInt(idIdx),
+                        type = model.ScheduleType.valueOf(cursor.getString(typeIdx)),
                         region_id = cursor.getInt(regionIdIdx),
                         title = cursor.getString(titleIdx),
                         memo = cursor.getString(memoIdx),
                         lat = cursor.getDouble(latIdx),
                         lng = cursor.getDouble(lngIdx),
-                        start_date = cursor.getString(startDateIdx),
-                        end_date = cursor.getString(endDateIdx),
+                        start_datetime = cursor.getString(startDatetimeIdx),
+                        end_datetime = cursor.getString(endDatetimeIdx),
                         created_at = cursor.getString(createdAtIdx)
                     )
                 )
@@ -124,29 +136,33 @@ object MapRepository {
         return schedules
     }
 
-    fun getSchedules(dbHelper: SQLiteHelper, regionId: Int): List<model.Schedule> {
+    fun getSchedules(context: Context, regionId: Int): List<model.Schedule> {
+        val dbHelper = SQLiteHelper(context)
+
         val schedules = mutableListOf<model.Schedule>()
         dbHelper.readableDatabase.use { db ->
             val cursor = db.rawQuery("SELECT * FROM schedule WHERE region_id = ?", arrayOf(regionId.toString()))
             val idIdx = cursor.getColumnIndex("id")
+            val typeIdx = cursor.getColumnIndex("type")
             val titleIdx = cursor.getColumnIndex("title")
             val memoIdx = cursor.getColumnIndex("memo")
             val latIdx = cursor.getColumnIndex("lat")
             val lngIdx = cursor.getColumnIndex("lng")
-            val startDateIdx = cursor.getColumnIndex("start_date")
-            val endDateIdx = cursor.getColumnIndex("end_date")
+            val startDatetimeIdx = cursor.getColumnIndex("start_datetime")
+            val endDatetimeIdx = cursor.getColumnIndex("end_datetime")
             val createdAtIdx = cursor.getColumnIndex("created_at")
             while (cursor.moveToNext()) {
                 schedules.add(
                     model.Schedule(
                         id = cursor.getInt(idIdx),
+                        type = model.ScheduleType.valueOf(cursor.getString(typeIdx)),
                         region_id = regionId,
                         title = cursor.getString(titleIdx),
                         memo = cursor.getString(memoIdx),
                         lat = cursor.getDouble(latIdx),
                         lng = cursor.getDouble(lngIdx),
-                        start_date = cursor.getString(startDateIdx),
-                        end_date = cursor.getString(endDateIdx),
+                        start_datetime = cursor.getString(startDatetimeIdx),
+                        end_datetime = cursor.getString(endDatetimeIdx),
                         created_at = cursor.getString(createdAtIdx)
                     )
                 )
@@ -156,29 +172,33 @@ object MapRepository {
         return schedules
     }
 
-    fun getScheduleById(dbHelper: SQLiteHelper, scheduleId: Int): model.Schedule? {
+    fun getScheduleById(context: Context, scheduleId: Int): model.Schedule? {
+        val dbHelper = SQLiteHelper(context)
+
         dbHelper.readableDatabase.use { db ->
             val cursor = db.rawQuery("SELECT * FROM schedule WHERE id = ?", arrayOf(scheduleId.toString()))
             if (cursor.moveToFirst()) {
                 val idIdx = cursor.getColumnIndex("id")
+                val typeIdx = cursor.getColumnIndex("type")
                 val regionIdIdx = cursor.getColumnIndex("region_id")
                 val titleIdx = cursor.getColumnIndex("title")
                 val memoIdx = cursor.getColumnIndex("memo")
                 val latIdx = cursor.getColumnIndex("lat")
                 val lngIdx = cursor.getColumnIndex("lng")
-                val startDateIdx = cursor.getColumnIndex("start_date")
-                val endDateIdx = cursor.getColumnIndex("end_date")
+                val startDatetimeIdx = cursor.getColumnIndex("start_datetime")
+                val endDatetimeIdx = cursor.getColumnIndex("end_datetime")
                 val createdAtIdx = cursor.getColumnIndex("created_at")
 
                 return model.Schedule(
                     id = cursor.getInt(idIdx),
+                    type = model.ScheduleType.valueOf(cursor.getString(typeIdx)),
                     region_id = cursor.getInt(regionIdIdx),
                     title = cursor.getString(titleIdx),
                     memo = cursor.getString(memoIdx),
                     lat = cursor.getDouble(latIdx),
                     lng = cursor.getDouble(lngIdx),
-                    start_date = cursor.getString(startDateIdx),
-                    end_date = cursor.getString(endDateIdx),
+                    start_datetime = cursor.getString(startDatetimeIdx),
+                    end_datetime = cursor.getString(endDatetimeIdx),
                     created_at = cursor.getString(createdAtIdx)
                 )
             }
@@ -187,7 +207,9 @@ object MapRepository {
         return null
     }
 
-    fun getAllTransports(dbHelper: SQLiteHelper): List<model.Transport> {
+    fun getAllTransports(context: Context): List<model.Transport> {
+        val dbHelper = SQLiteHelper(context)
+
         val transports = mutableListOf<model.Transport>()
         dbHelper.readableDatabase.use { db ->
             val cursor = db.rawQuery("SELECT * FROM transport", null)
@@ -218,7 +240,9 @@ object MapRepository {
         return transports
     }
 
-    fun getTransports(dbHelper: SQLiteHelper, regionId: Int): List<model.Transport> {
+    fun getTransports(context: Context, regionId: Int): List<model.Transport> {
+        val dbHelper = SQLiteHelper(context)
+
         val transports = mutableListOf<model.Transport>()
         dbHelper.readableDatabase.use { db ->
             val cursor = db.rawQuery("SELECT * FROM transport WHERE region_id = ?", arrayOf(regionId.toString()))
@@ -246,5 +270,41 @@ object MapRepository {
             cursor.close()
         }
         return transports
+    }
+
+    fun getTransportByFromTo(
+        context: Context,
+        regionId: Int,
+        fromScheduleId: Int,
+        toScheduleId: Int
+    ): model.Transport? {
+        val dbHelper = SQLiteHelper(context)
+
+        dbHelper.readableDatabase.use { db ->
+            val cursor = db.rawQuery(
+                "SELECT * FROM transport WHERE region_id = ? AND from_schedule_id = ? AND to_schedule_id = ?",
+                arrayOf(regionId.toString(), fromScheduleId.toString(), toScheduleId.toString())
+            )
+            if (cursor.moveToFirst()) {
+                val idIdx = cursor.getColumnIndex("id")
+                val typeIdx = cursor.getColumnIndex("type")
+                val durationIdx = cursor.getColumnIndex("duration")
+                val createdAtIdx = cursor.getColumnIndex("created_at")
+                val memoIdx = cursor.getColumnIndex("memo")
+
+                return model.Transport(
+                    id = cursor.getInt(idIdx),
+                    region_id = regionId,
+                    from_schedule_id = fromScheduleId,
+                    to_schedule_id = toScheduleId,
+                    type = model.TransportType.valueOf(cursor.getString(typeIdx)),
+                    duration = cursor.getString(durationIdx),
+                    created_at = cursor.getString(createdAtIdx),
+                    memo = cursor.getString(memoIdx)
+                )
+            }
+            cursor.close()
+        }
+        return null
     }
 }

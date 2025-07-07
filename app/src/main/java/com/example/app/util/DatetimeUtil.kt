@@ -1,11 +1,11 @@
 package com.example.app.util
 
 object DatetimeUtil {
-    fun timestampToMonthDay(timestamp: String): String {
-        return if (timestamp.isBlank()) {
+    fun datetimeToMonthDay(datetime: String): String {
+        return if (datetime.isBlank()) {
             ""
         } else {
-            val parts = timestamp.split("T")
+            val parts = datetime.split("T")
             if (parts.size < 2) return ""
             val datePart = parts[0]
             val dateParts = datePart.split("-")
@@ -67,6 +67,23 @@ object DatetimeUtil {
             val day = parts[2].toIntOrNull()?.toString() ?: parts[2]
 
             "$shortYear.$month.$day"
+        }
+    }
+
+    fun datetimeToTime(datetime: String): String {
+        return if (datetime.isBlank()) {
+            ""
+        } else {
+            val parts = datetime.split("T")
+            if (parts.size < 2) return ""
+            val timePart = parts[1]
+            val timeParts = timePart.split(":")
+            if (timeParts.size < 2) return ""
+
+            val hour = timeParts[0].toIntOrNull()?.toString() ?: timeParts[0]
+            val minute = timeParts[1].padStart(2, '0')
+
+            "$hour:$minute"
         }
     }
 }

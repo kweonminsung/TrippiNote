@@ -5,7 +5,6 @@ import com.example.app.ui.components.map.MapPinType
 import com.example.app.ui.components.map.TransportPin
 import com.example.app.util.DatetimeUtil
 import com.example.app.util.database.MapRepository
-import com.example.app.util.database.SQLiteHelper
 import com.example.app.util.database.model
 import com.google.android.gms.maps.model.LatLng
 
@@ -14,17 +13,15 @@ object MapTabData {
         context: android.content.Context,
         zoomLevel: Float
     ): List<TransportPin> {
-        val dbHelper = SQLiteHelper(context)
-
         return when (zoomLevel) {
             ZOOM_LEVEL.CITY -> {
-                MapRepository.getAllTransports(dbHelper).map { transport ->
+                MapRepository.getAllTransports(context).map { transport ->
                     val fromSchedule = MapRepository.getScheduleById(
-                        dbHelper,
+                        context,
                         transport.from_schedule_id
                     ) as model.Schedule
                     val toSchedule = MapRepository.getScheduleById(
-                        dbHelper,
+                        context,
                         transport.to_schedule_id
                     ) as model.Schedule
 
@@ -46,26 +43,24 @@ object MapTabData {
         context: android.content.Context,
         zoomLevel: Float
     ): List<MapPin> {
-        val dbHelper = SQLiteHelper(context)
-
         val pins = when (zoomLevel) {
             ZOOM_LEVEL.CITY -> {
-                val schedules = MapRepository.getAllSchedules(dbHelper)
+                val schedules = MapRepository.getAllSchedules(context)
                 schedules.map { schedule ->
                     MapPin(
                         id = schedule.id,
                         type = MapPinType.SCHEDULE,
                         position = LatLng(schedule.lat, schedule.lng),
                         title = schedule.title,
-                        subtitle = schedule.start_date?.let {
-                            DatetimeUtil.timestampToMonthDay(it)
+                        subtitle = schedule.start_datetime?.let {
+                            DatetimeUtil.datetimeToMonthDay(it)
                         }
                     )
                 }
             }
 
             ZOOM_LEVEL.COUNTRY -> {
-                val regions = MapRepository.getAllRegions(dbHelper)
+                val regions = MapRepository.getAllRegions(context)
                 regions.map { region ->
                     MapPin(
                         id = region.id,
@@ -80,7 +75,7 @@ object MapTabData {
             }
 
             else -> {
-                val trips = MapRepository.getTrips(dbHelper)
+                val trips = MapRepository.getTrips(context)
                 trips.map { trip ->
                     MapPin(
                         id = trip.id,
@@ -102,15 +97,34 @@ object MapTabData {
         context: android.content.Context,
         regionId: Int
     ): List<model.Region> {
-        val dbHelper = SQLiteHelper(context)
-        return MapRepository.getRegions(dbHelper, regionId)
+        return MapRepository.getRegions(context, regionId)
     }
 
     fun getSessionSchedules(
         context: android.content.Context,
         regionId: Int
     ): List<model.Schedule> {
-        val dbHelper = SQLiteHelper(context)
-        return MapRepository.getSchedules(dbHelper, regionId)
+        return MapRepository.getSchedules(context, regionId)
+    }
+
+    fun getSessionTransports(
+        context: android.content.Context,
+        regionId: Int
+    ): List<model.Transport> {
+        return MapRepository.getTransports(context, regionId)
+    }
+
+    fun getSessionTransportByFromTo(
+        context: android.content.Context,
+        regionId: Int,
+        fromScheduleId: Int,
+        toScheduleId: Int
+    ): model.Transport? {
+        return MapRepository.getTransportByFromTo(
+            context,
+            regionId,
+            fromScheduleId,
+            toScheduleId
+        )
     }
 }

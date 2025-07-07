@@ -1,4 +1,4 @@
-package com.example.app.ui.components.buttons
+package com.example.app.ui.components.map
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -17,7 +17,7 @@ import com.example.app.R
 import com.example.app.ui.theme.CustomColors
 
 @Composable
-fun TripInfoButton(
+fun RegionInfoButton(
     onClick: () -> Unit = {},
     title: String,
     subtitle: String? = null,

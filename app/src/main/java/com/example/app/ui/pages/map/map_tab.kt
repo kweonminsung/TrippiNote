@@ -17,12 +17,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import com.example.app.ui.components.BottomDrawer
-import com.example.app.ui.components.buttons.TripInfoButton
 import com.example.app.ui.components.search_bar.SearchBar
 import com.example.app.ui.components.map.MapPin
 import com.example.app.ui.components.map.CustomPin
 import com.example.app.ui.components.map.CustomTransportPin
 import com.example.app.ui.components.map.MapPinType
+import com.example.app.ui.components.map.RegionInfoButton
+import com.example.app.ui.components.map.ScheduleInfoButton
+import com.example.app.ui.components.map.TransportInfoButton
 import com.example.app.ui.components.map.TransportPin
 import com.example.app.ui.theme.CustomColors
 import com.example.app.util.DatetimeUtil
@@ -514,7 +516,7 @@ fun MapTab() {
                         null
                     }
 
-                    TripInfoButton(
+                    RegionInfoButton(
                         title = region.title,
                         subtitle = subtitle,
                         onClick = {
@@ -542,15 +544,61 @@ fun MapTab() {
             isOpen = regionInfoBottomDrawerState,
             onDismiss = { regionInfoBottomDrawerState = false }
         ) {
-            val schedules = MapTabData.getSessionSchedules(LocalContext.current, selectedRegionId as Int)
+            val regionId = selectedRegionId ?: return@BottomDrawer
+            val schedules = MapTabData.getSessionSchedules(LocalContext.current, regionId)
 
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(8.dp)
             ) {
-                Text(text = "지역 정보")
-                Spacer(modifier = Modifier.height(4.dp))
+                for((index, schedule) in schedules.withIndex()) {
+                    val subtitle = if (schedule.start_datetime != null && schedule.end_datetime != null) {
+                        "${DatetimeUtil.datetimeToTime(schedule.start_datetime)} ~ ${
+                            DatetimeUtil.datetimeToTime(schedule.end_datetime)
+                        }"
+                    } else {
+                        null
+                    }
+
+                    ScheduleInfoButton(
+                        type = schedule.type,
+                        title = schedule.title,
+                        subtitle = subtitle,
+                        onClick = {
+                            focusManager.clearFocus() // 키보드 내리기
+                            CoroutineScope(Dispatchers.Main).launch {
+                                cameraPositionState.animate(
+                                    CameraUpdateFactory.newLatLngZoom(
+                                        LatLng(schedule.lat, schedule.lng),
+                                        ZOOM_LEVEL.CITY
+                                    )
+                                )
+                            }
+                        }
+                    )
+                    if (index != schedules.lastIndex) {
+                        val nextSchedule = schedules.getOrNull(index + 1) as model.Schedule
+                        val transport = MapTabData.getSessionTransportByFromTo(
+                            LocalContext.current,
+                            regionId,
+                            schedule.id,
+                            nextSchedule.id
+                        )
+//                        Spacer(modifier = Modifier.height(8.dp))
+                        if (transport != null) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            TransportInfoButton(
+                                type = transport.type,
+                                subtitle = transport.duration,
+                            )
+                        } else {
+                            TransportInfoButton(
+                                type = null,
+                            )
+                        }
+                    }
+                }
             }
         }
     }

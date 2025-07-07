@@ -26,7 +26,7 @@ import androidx.compose.ui.window.Dialog
 import com.example.app.ui.theme.CustomColors
 
 @Composable
-fun <T : Any>PopupWindow(
+fun PopupWindow(
     icon: @Composable () -> Unit,
     title: String,
     label1: String, // 편집 or 완료

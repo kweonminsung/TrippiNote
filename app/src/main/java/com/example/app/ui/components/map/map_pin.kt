@@ -23,7 +23,7 @@ enum class MapPinType {
 
 // 핀 정보를 담는 데이터 클래스
 data class MapPin(
-    val id: Int?,
+    val id: Int? = null,
     val type: MapPinType,
     val position: LatLng,
     val title: String,
