@@ -1,5 +1,6 @@
 package com.example.app.ui.components.pop_up_contents
 
+import android.app.DatePickerDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import com.example.app.R
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -29,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.app.ui.components.PopupWindow
@@ -36,26 +39,11 @@ import com.example.app.ui.theme.CustomColors
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 import kotlin.Boolean
 
-
-//@Composable
-//fun LocationPickerMap(
-//    onLocationPicked: (LatLng) -> Unit
-//) {
-//    val singapore = LatLng(1.35, 103.87)
-//    var pickedLocation by remember { mutableStateOf(singapore) }
-//
-//    GoogleMap (
-//        modifier = Modifier.fillMaxSize(),
-//        onMapClick = {
-//            pickedLocation = it
-//            onLocationPicked(it)
-//        }
-//    ) {
-//        Marker(position = pickedLocation)
-//    }
-//}
 
 @Composable
 fun AddSampleContent(
@@ -64,10 +52,16 @@ fun AddSampleContent(
     start_label: String = "",
     end_label: String = "",
 ) {
+    val context = LocalContext.current
+    val calendar = Calendar.getInstance()
+    val nameValue = remember { mutableStateOf("") }
+    val mapValue = remember { mutableStateOf("") }
+    val startValue = remember { mutableStateOf("") }
+    val endValue = remember { mutableStateOf("") }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .width(60.dp) // 원하는 너비로 조정
+            .fillMaxWidth()
             .padding(8.dp)
     ){
 
@@ -75,12 +69,12 @@ fun AddSampleContent(
 
         //여행 이름
         TextField(
-            value = "",
-            onValueChange = {},
+            value = nameValue.value,
+            onValueChange = { nameValue.value = it },
             placeholder = { Text("이름을 입력하세요...", color = CustomColors.Gray) },
             leadingIcon = {
                 Text(
-                    text = name_label,
+                    text = "이름",
                     modifier = Modifier.padding(start = 8.dp),
                     color = CustomColors.Black
                 )
@@ -89,7 +83,9 @@ fun AddSampleContent(
                 focusedContainerColor = CustomColors.LightGray,
                 unfocusedContainerColor = CustomColors.LighterGray,
                 focusedIndicatorColor =  CustomColors.White,
-                unfocusedIndicatorColor = CustomColors.White
+                unfocusedIndicatorColor = CustomColors.White,
+                focusedTextColor = CustomColors.DarkGray,      // 입력값 색상 (포커스 O)
+                unfocusedTextColor = CustomColors.DarkGray
             ),
             modifier = androidx.compose.ui.Modifier.fillMaxWidth()
         )
@@ -103,13 +99,13 @@ fun AddSampleContent(
         ) {
             // 위치 보이는 필드
             TextField(
-                value = "",
-                onValueChange = {  },
+                value = mapValue.value,
+                onValueChange = {},
                 modifier = Modifier.weight(1f), // TextField가 남는 공간 채움
-                // placeholder = { Text("위치를 선택하세요...", color = CustomColors.Gray) },
+                placeholder = { Text("위치를 선택하세요...", color = CustomColors.Gray) },
                 leadingIcon = {
                     Text(
-                        text = map_label,
+                        text = "위치",
                         modifier = Modifier.padding(start = 8.dp),
                         color = CustomColors.Black
                     )
@@ -118,7 +114,9 @@ fun AddSampleContent(
                     focusedContainerColor = CustomColors.LightGray,
                     unfocusedContainerColor = CustomColors.LighterGray,
                     focusedIndicatorColor =  CustomColors.White,
-                    unfocusedIndicatorColor = CustomColors.White
+                    unfocusedIndicatorColor = CustomColors.White,
+                    focusedTextColor = CustomColors.DarkGray,      // 입력값 색상 (포커스 O)
+                    unfocusedTextColor = CustomColors.DarkGray
                 ),
                 readOnly = true
             )
@@ -127,13 +125,75 @@ fun AddSampleContent(
 
             // 지도에서 위치 선택 버튼
             IconButton(
-                onClick = {},
+                onClick = { /* map 연동 */ },
                 modifier = Modifier
                     .height(45.dp)
                     .width(45.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Place,
+                    contentDescription = "위치 선택"
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp)) // 여백
+
+        // start 날짜 선택
+        Row (
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // 날짜 보이는 필드
+            TextField(
+                value = startValue.value,
+                onValueChange = {},
+                modifier = Modifier.weight(1f), // TextField가 남는 공간 채움
+                placeholder = { Text("날짜를 선택하세요...", color = CustomColors.Gray) },
+                leadingIcon = {
+                    Text(
+                        text = "시작",
+                        modifier = Modifier.padding(start = 8.dp),
+                        color = CustomColors.Black
+                    )
+                },
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = CustomColors.LightGray,
+                    unfocusedContainerColor = CustomColors.LighterGray,
+                    focusedIndicatorColor =  CustomColors.White,
+                    unfocusedIndicatorColor = CustomColors.White,
+                    focusedTextColor = CustomColors.DarkGray,      // 입력값 색상 (포커스 O)
+                    unfocusedTextColor = CustomColors.DarkGray
+                ),
+                readOnly = true
+            )
+
+            Spacer(modifier = Modifier.width(8.dp)) // 여백
+
+            // 캘린더에서 날짜 선택 버튼
+            IconButton(
+                onClick = {
+                    val datePicker = DatePickerDialog(
+                        context,
+                        { _, year, month, dayOfMonth ->
+                            val pickedCal = Calendar.getInstance().apply {
+                                set(year, month, dayOfMonth)
+                            }
+                            val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                            startValue.value = format.format(pickedCal.time)
+                        },
+                        calendar.get(Calendar.YEAR),
+                        calendar.get(Calendar.MONTH),
+                        calendar.get(Calendar.DAY_OF_MONTH)
+                    )
+                    datePicker.show()
+                },
+                modifier = Modifier
+                    .height(45.dp)
+                    .width(45.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.DateRange,
                     contentDescription = "추가"
                 )
             }
@@ -141,10 +201,66 @@ fun AddSampleContent(
 
         Spacer(modifier = Modifier.height(8.dp)) // 여백
 
+        Row (
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // 날짜 보이는 필드
+            TextField(
+                value = endValue.value,
+                onValueChange = {},
+                modifier = Modifier.weight(1f), // TextField가 남는 공간 채움
+                placeholder = { Text("날짜를 선택하세요...", color = CustomColors.Gray) },
+                leadingIcon = {
+                    Text(
+                        text = "종료",
+                        modifier = Modifier.padding(start = 8.dp),
+                        color = CustomColors.Black
+                    )
+                },
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = CustomColors.LightGray,
+                    unfocusedContainerColor = CustomColors.LighterGray,
+                    focusedIndicatorColor =  CustomColors.White,
+                    unfocusedIndicatorColor = CustomColors.White,
+                    focusedTextColor = CustomColors.DarkGray,      // 입력값 색상 (포커스 O)
+                    unfocusedTextColor = CustomColors.DarkGray
+                ),
+                readOnly = true
+            )
+
+            Spacer(modifier = Modifier.width(8.dp)) // 여백
+
+            // 캘린더에서 날짜 선택 버튼
+            IconButton(
+                onClick = {
+                    val datePicker = DatePickerDialog(
+                        context,
+                        { _, year, month, dayOfMonth ->
+                            val pickedCal = Calendar.getInstance().apply {
+                                set(year, month, dayOfMonth)
+                            }
+                            val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                            endValue.value = format.format(pickedCal.time)
+                        },
+                        calendar.get(Calendar.YEAR),
+                        calendar.get(Calendar.MONTH),
+                        calendar.get(Calendar.DAY_OF_MONTH)
+                    )
+                    datePicker.show()
+                },
+                modifier = Modifier
+                    .height(45.dp)
+                    .width(45.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.DateRange,
+                    contentDescription = "추가"
+                )
+            }
+        }
+
     }
-
-
-
 
 }
 
@@ -163,6 +279,6 @@ fun AddSampleForm(
         CustomColors.Blue,
         onSubmit,
         onCancel,
-        { AddSampleContent("여행 이름", "위치", ) }// 팝업창 내부에 추가할 내용
+        { AddSampleContent() }// 팝업창 내부에 추가할 내용
     )
 }
