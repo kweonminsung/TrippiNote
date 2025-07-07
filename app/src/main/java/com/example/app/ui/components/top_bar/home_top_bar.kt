@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import com.example.app.ui.components.PopupWindow
+import com.example.app.ui.components.pop_up_contents.AddSampleForm
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,20 +46,22 @@ fun HomeTopBar(
             )
         },
         actions = {
-            PopupWindow(
-                icon = {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Add",
-                        modifier = Modifier.padding(8.dp),
-                        tint = CustomColors.Black
-                    )
-                },
-                "새로운 여행 추가",
-                "완료",
-                "닫기",
-                tint = CustomColors.Black
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(end = 8.dp)
+            ) {
+                AddSampleForm(
+                    button = { onClick ->
+                        IconButton(onClick = onClick) {
+                            Icon(Icons.Default.Add, contentDescription = "추가")
+                        }
+                    },
+                    title = "새 여행 추가",
+                    onSubmit = { /* TODO: Handle submit action */ },
+                    onCancel = { /* TODO: Handle cancel action */ }
                 )
+            }
+
         },
 
         colors = TopAppBarDefaults.topAppBarColors(

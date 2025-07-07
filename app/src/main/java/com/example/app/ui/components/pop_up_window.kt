@@ -27,28 +27,26 @@ import com.example.app.ui.theme.CustomColors
 
 @Composable
 fun PopupWindow(
-    icon: @Composable () -> Unit,
+    button: @Composable (onClick: () -> Unit) -> Unit = {},
     title: String,
     label1: String, // 편집 or 완료
     label2: String, // 닫기 or 삭제
     tint: Color = CustomColors.Black,
-    // transform 말고 DB에 올리고 내리는 함수 받아야 할 듯
-    // 편집 버튼이면 새 팝업 창이 떠야하는데 어떻게 구현 할지 고민 해봐야 할 듯
-//    transform1: @Composable () -> Unit = {}, //편집 or 완료
-//    transform2: @Composable () -> Unit = {}, //닫기 or 삭제
+    onSubmit: () -> Unit = {},
+    onCancel: () -> Unit = {},
     content: @Composable () -> Unit = {} // 팝업창 내부에 추가할 내용
 )
 {
     var showDialog by remember { mutableStateOf(false) }
-    var inputText by remember { mutableStateOf("") }
 
-    IconButton (onClick = { showDialog = true }) {
-        icon()
-    }
+    // 팝업창을 띄우는 버튼
+    button{ showDialog = true }
+
     if (showDialog) {
         Dialog (onDismissRequest = { showDialog = false }) {
             Surface (
                 shape = RoundedCornerShape(8.dp),
+                color = CustomColors.White,
                 tonalElevation = 4.dp,
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -61,7 +59,7 @@ fun PopupWindow(
                     ) {
                         TextButton (onClick = {
                             showDialog = false
-                            inputText = ""
+                            onSubmit()
                         }) {
                             Text(label1, color = CustomColors.Blue, fontSize = 14.sp)
                         }
@@ -77,13 +75,8 @@ fun PopupWindow(
                         Spacer(modifier = Modifier.weight(1f))  // 가운데 정렬 효과
 
                         TextButton(onClick = {
-                            if( label2 == "삭제") {
-                            /* 삭제 로직 */
-                            }   else {
-                            /* 닫기 로직 */
-                            }
                             showDialog = false
-                            inputText = ""
+                            onCancel()
                         }) {
                             Text(label2, color = CustomColors.Blue, fontSize = 14.sp)
                         }
@@ -91,7 +84,7 @@ fun PopupWindow(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-
+                    content()
 
                 }
             }
