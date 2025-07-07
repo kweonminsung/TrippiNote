@@ -47,10 +47,6 @@ import kotlin.Boolean
 
 @Composable
 fun AddSampleContent(
-    name_label: String = "",
-    map_label: String = "",
-    start_label: String = "",
-    end_label: String = "",
 ) {
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
