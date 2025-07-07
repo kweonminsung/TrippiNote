@@ -36,7 +36,9 @@ fun BottomDrawer(
     LaunchedEffect(isOpen) {
         if (isOpen) {
             isVisible.value = true
-            offsetY.snapTo(1f)
+
+            offsetY.snapTo(1f) // offsetY를 항상 1f로 초기화
+            dragOffset.value = 0f // 드래그 오프셋도 초기화
             offsetY.animateTo(
                 targetValue = 0f,
                 animationSpec = tween(durationMillis = BOTTOM_DRAWER_ANIMATION_DURATION)
