@@ -1,28 +1,21 @@
 package com.example.app.ui.pages.map
 
 import android.util.Log
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Divider
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import com.example.app.ui.components.BOTTOM_DRAWER_ANIMATION_DURATION
 import com.example.app.ui.components.BottomDrawer
-import com.example.app.ui.components.search_bar.SearchBar
 import com.example.app.ui.components.map.MapPin
 import com.example.app.ui.components.map.CustomPin
 import com.example.app.ui.components.map.CustomTransportPin
 import com.example.app.ui.components.map.MapPinType
+import com.example.app.ui.components.map.MapSearchBar
+import com.example.app.ui.components.map.MapSearchResults
 import com.example.app.ui.components.map.RegionInfoButton
 import com.example.app.ui.components.map.ScheduleInfoButton
 import com.example.app.ui.components.map.TransportInfoButton
@@ -40,7 +33,6 @@ import com.google.android.gms.maps.model.JointType
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.Task
 import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.AutocompletePrediction
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.maps.android.compose.GoogleMap
@@ -70,6 +62,13 @@ object ZOOM_LEVEL {
     const val CITY = 12f       // 도시 수준
 }
 
+data class MapSearchResult(
+    val id: Int? = null,
+    val title: String,
+    val subtitle: String? = null,
+    val type: MapPinType,
+    val placeId: String? = null,
+)
 
 @Composable
 fun MapTab() {
@@ -79,7 +78,7 @@ fun MapTab() {
 
     var mapQuery by remember { mutableStateOf("") }
     var searchJob: Job? = remember { null }
-    var searchResults by remember { mutableStateOf<List<AutocompletePrediction>>(emptyList()) }
+    var searchResults by remember { mutableStateOf<Pair<List<MapSearchResult>, List<MapSearchResult>>>(Pair(emptyList(), emptyList())) }
 
     // 카메라 위치 상태
     val cameraPositionState = rememberCameraPositionState {
@@ -232,9 +231,9 @@ fun MapTab() {
                                 cameraPositionState.animate(
                                     CameraUpdateFactory.newLatLngZoom(
                                         pin.position,
-                                        when (zoomLevel) {
-                                            ZOOM_LEVEL.CONTINENT -> ZOOM_LEVEL.COUNTRY
-                                            ZOOM_LEVEL.COUNTRY -> ZOOM_LEVEL.CITY
+                                        when (pin.type) {
+                                            MapPinType.TRIP  -> ZOOM_LEVEL.COUNTRY
+                                            MapPinType.REGION -> ZOOM_LEVEL.CITY
                                             else -> zoomLevel
                                         }
                                     )
@@ -373,147 +372,120 @@ fun MapTab() {
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            SearchBar(
-                placeholder = "원하는 장소 또는 여행 검색",
+            MapSearchBar(
                 query = mapQuery,
-                onQueryChange = {
-                    mapQuery = it
+                onQueryChange = { newQuery, jobSetter ->
+                    mapQuery = newQuery
                     searchJob?.cancel()
-                    searchJob = CoroutineScope(Dispatchers.IO).launch {
-                        delay(400)
-                        if (mapQuery.isNotBlank()) {
-                            try {
-                                val results = PlaceUtil.searchPlaceByText(context, mapQuery)
-                                searchResults = results
-                            } catch (e: Exception) {
-                                searchResults = emptyList()
-                            }
-                        } else {
-                            searchResults = emptyList()
-                        }
-                    }
+                    searchJob = jobSetter
                 },
-                modifier = Modifier
-                    .width(300.dp)
+                onSearchResults = { results ->
+                    searchResults = results
+                }
             )
 
-            if (searchResults.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(4.dp))
+            MapSearchResults(
+                searchResults = searchResults,
+                onDbResultClick = { searchResult ->
+                    focusManager.clearFocus() // 키보드 내리기
+                    when(searchResult.type) {
+                        MapPinType.TRIP -> {
+                            val tripId = searchResult.id as Int
 
-                Column(
-                    modifier = Modifier
-                        .width(300.dp)
-                        .heightIn(max = 300.dp)
-                        .shadow(
-                            elevation = 1.dp,
-                            shape = RoundedCornerShape(8.dp),
-                            ambientColor = CustomColors.Black,
-                            spotColor = CustomColors.Black
-                        )
-                        .background(
-                            CustomColors.White
-                        )
-                ) {
-                    Text(
-                        text = "여행에서 검색 결과",
-                        modifier = Modifier.padding(10.dp),
-                        color = CustomColors.Black
-                    )
+                            selectedTripId = tripId
+                            selectedRegionId = null
+                            tripInfoBottomDrawerState = true
+                            regionInfoBottomDrawerState = false
+                            val trip = MapRepository.getTripById(context, tripId) as model.Trip
 
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp)
-                    ) {
-                        item {
-                            Text(
-                                text = "여행 기록 ㅇㅇ",
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                color = CustomColors.Black
+                            CoroutineScope(Dispatchers.Main).launch {
+                                cameraPositionState.animate(
+                                    CameraUpdateFactory.newLatLngZoom(
+                                        LatLng(trip.lat, trip.lng),
+                                        ZOOM_LEVEL.COUNTRY
+                                    )
+                                )
+                            }
+                        }
+                        MapPinType.REGION -> {
+                            val regionId = searchResult.id as Int
+
+                            selectedRegionId = regionId
+                            selectedTripId = null
+                            tripInfoBottomDrawerState = false
+                            regionInfoBottomDrawerState = true
+                            val region = MapRepository.getRegionById(context, regionId) as model.Region
+
+                            CoroutineScope(Dispatchers.Main).launch {
+                                cameraPositionState.animate(
+                                    CameraUpdateFactory.newLatLngZoom(
+                                        LatLng(region.lat, region.lng),
+                                        ZOOM_LEVEL.CITY
+                                    )
+                                )
+                            }
+                        }
+                        else -> {
+                            val schedule = MapRepository.getScheduleById(context, searchResult.id as Int) as model.Schedule
+                            selectedRegionId = schedule.region_id
+                            selectedTripId = null
+                            tripInfoBottomDrawerState = false
+                            regionInfoBottomDrawerState = true
+
+                            CoroutineScope(Dispatchers.Main).launch {
+                                cameraPositionState.animate(
+                                    CameraUpdateFactory.newLatLngZoom(
+                                        LatLng(schedule.lat, schedule.lng),
+                                        ZOOM_LEVEL.CITY
+                                    )
+                                )
+                            }
+                        }
+                    }
+                    searchResults = Pair(emptyList(), emptyList())
+                    mapQuery = "" // 검색어 초기화
+                },
+                onMapResultClick = { searchResult ->
+                    focusManager.clearFocus() // 키보드 내리기
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            val placesClient = Places.createClient(context)
+                            val fields = listOf(
+                                Place.Field.LAT_LNG,
+                                Place.Field.NAME,
+                                Place.Field.ADDRESS
                             )
+                            val request = FetchPlaceRequest.builder(
+                                searchResult.placeId,
+                                fields
+                            ).build()
+                            val response = placesClient.fetchPlace(request).await()
+                            val latLng = response.place.latLng
+                            if (latLng != null) {
+                                val newLatLng = LatLng(latLng.latitude, latLng.longitude)
+
+                                // 검색 결과로 핀 생성
+                                val pinInfo = MapPin(
+                                    id = null,
+                                    type = MapPinType.SEARCH_RESULT,
+                                    position = newLatLng,
+                                    title = response.place.name
+                                        ?: searchResult.title,
+                                    subtitle = response.place.address
+                                        ?: searchResult.subtitle
+                                )
+
+                                userSelectedMapPins = listOf(pinInfo)
+                                cameraTarget = newLatLng
+                            }
+                        } catch (e: Exception) {
+                            Log.e("MapTab", "장소 이동 실패: $e")
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Divider(
-                        color = CustomColors.LightGray,
-                        thickness = 1.dp
-                    )
-
-                    Text(
-                        text = "지도에서 검색 결과",
-                        modifier = Modifier.padding(10.dp),
-                        color = CustomColors.Black
-                    )
-
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        itemsIndexed(searchResults) { index, prediction ->
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            try {
-                                                val placesClient = Places.createClient(context)
-                                                val fields = listOf(
-                                                    Place.Field.LAT_LNG,
-                                                    Place.Field.NAME,
-                                                    Place.Field.ADDRESS
-                                                )
-                                                val request = FetchPlaceRequest.builder(
-                                                    prediction.placeId,
-                                                    fields
-                                                ).build()
-                                                val response =
-                                                    placesClient.fetchPlace(request).await()
-                                                val latLng = response.place.latLng
-                                                if (latLng != null) {
-                                                    val newLatLng =
-                                                        LatLng(latLng.latitude, latLng.longitude)
-
-                                                    // 검색 결과로 핀 생성
-                                                    val pinInfo = MapPin(
-                                                        id = null,
-                                                        type = MapPinType.SEARCH_RESULT,
-                                                        position = newLatLng,
-                                                        title = response.place.name
-                                                            ?: prediction.getPrimaryText(null)
-                                                                .toString(),
-                                                        subtitle = response.place.address
-                                                            ?: prediction.getSecondaryText(null)
-                                                                .toString()
-                                                    )
-
-                                                    userSelectedMapPins = listOf(pinInfo)
-                                                    cameraTarget = newLatLng
-                                                }
-                                            } catch (e: Exception) {
-                                                Log.e("MapTab", "장소 이동 실패: $e")
-                                            }
-                                        }
-                                        searchResults = emptyList()
-                                    }
-                                    .padding(10.dp)
-                            ) {
-                                Text(
-                                    text = prediction.getFullText(null).toString(),
-                                    color = CustomColors.Black
-                                )
-                            }
-                            if (index != searchResults.lastIndex) {
-                                Divider(
-                                    color = CustomColors.LightGray,
-                                    thickness = 1.dp
-                                )
-                            }
-                        }
-                    }
+                    searchResults = Pair(emptyList(), emptyList())
+                    mapQuery = "" // 검색어 초기화
                 }
-            }
+            )
         }
         // 여행 정보 Bottom Drawer
         BottomDrawer (

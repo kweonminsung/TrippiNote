@@ -1,6 +1,8 @@
 package com.example.app.util.database
 
 import android.content.Context
+import com.example.app.ui.components.map.MapPinType
+import com.example.app.ui.pages.map.MapSearchResult
 
 object MapRepository {
     fun getTrips(context: Context): List<model.Trip> {
@@ -32,6 +34,35 @@ object MapRepository {
             cursor.close()
         }
         return trips
+    }
+
+    fun getTripById(context: Context, tripId: Int): model.Trip? {
+        val dbHelper = SQLiteHelper(context)
+
+        dbHelper.readableDatabase.use { db ->
+            val cursor = db.rawQuery("SELECT * FROM trip WHERE id = ?", arrayOf(tripId.toString()))
+            if (cursor.moveToFirst()) {
+                val idIdx = cursor.getColumnIndex("id")
+                val titleIdx = cursor.getColumnIndex("title")
+                val latIdx = cursor.getColumnIndex("lat")
+                val lngIdx = cursor.getColumnIndex("lng")
+                val startDateIdx = cursor.getColumnIndex("start_date")
+                val endDateIdx = cursor.getColumnIndex("end_date")
+                val createdAtIdx = cursor.getColumnIndex("created_at")
+
+                return model.Trip(
+                    id = cursor.getInt(idIdx),
+                    title = cursor.getString(titleIdx),
+                    lat = cursor.getDouble(latIdx),
+                    lng = cursor.getDouble(lngIdx),
+                    start_date = cursor.getString(startDateIdx),
+                    end_date = cursor.getString(endDateIdx),
+                    created_at = cursor.getString(createdAtIdx)
+                )
+            }
+            cursor.close()
+        }
+        return null
     }
 
     fun getAllRegions(context: Context): List<model.Region> {
@@ -97,6 +128,37 @@ object MapRepository {
             cursor.close()
         }
         return regions
+    }
+
+    fun getRegionById(context: Context, regionId: Int): model.Region? {
+        val dbHelper = SQLiteHelper(context)
+
+        dbHelper.readableDatabase.use { db ->
+            val cursor = db.rawQuery("SELECT * FROM region WHERE id = ?", arrayOf(regionId.toString()))
+            if (cursor.moveToFirst()) {
+                val idIdx = cursor.getColumnIndex("id")
+                val tripIdIdx = cursor.getColumnIndex("trip_id")
+                val titleIdx = cursor.getColumnIndex("title")
+                val latIdx = cursor.getColumnIndex("lat")
+                val lngIdx = cursor.getColumnIndex("lng")
+                val startDateIdx = cursor.getColumnIndex("start_date")
+                val endDateIdx = cursor.getColumnIndex("end_date")
+                val createdAtIdx = cursor.getColumnIndex("created_at")
+
+                return model.Region(
+                    id = cursor.getInt(idIdx),
+                    trip_id = cursor.getInt(tripIdIdx),
+                    title = cursor.getString(titleIdx),
+                    lat = cursor.getDouble(latIdx),
+                    lng = cursor.getDouble(lngIdx),
+                    start_date = cursor.getString(startDateIdx),
+                    end_date = cursor.getString(endDateIdx),
+                    created_at = cursor.getString(createdAtIdx)
+                )
+            }
+            cursor.close()
+        }
+        return null
     }
 
     fun getAllSchedules(context: Context): List<model.Schedule> {
@@ -463,6 +525,60 @@ fun deleteSchedule(context: Context, scheduleId: Int) {
         val dbHelper = SQLiteHelper(context)
         dbHelper.writableDatabase.use { db ->
             db.delete("transport", "id = ?", arrayOf(transportId.toString()))
+        }
+    }
+
+    fun searchFromAll(
+        context: Context,
+        query: String,
+    ): List<MapSearchResult>
+    {
+        if (query.isBlank()) return emptyList()
+
+        val dbHelper = SQLiteHelper(context)
+        dbHelper.readableDatabase.use { db ->
+            val cursor = db.rawQuery("""
+                SELECT id, title, "TRIP" AS type
+                FROM trip
+                WHERE title LIKE ?
+                UNION
+                SELECT id, title, "REGION" AS type
+                FROM region
+                WHERE title LIKE ?
+                UNION
+                SELECT id, title, "SCHEDULE" AS type
+                FROM schedule
+                WHERE title LIKE ?
+                LIMIT 10
+                """.trimIndent(),
+                arrayOf("%$query%", "%$query%", "%$query%")
+            )
+            val results = mutableListOf<MapSearchResult>()
+            val idIdx = cursor.getColumnIndex("id")
+            val titleIdx = cursor.getColumnIndex("title")
+            val typeIdx = cursor.getColumnIndex("type")
+            while (cursor.moveToNext()) {
+                val id = cursor.getInt(idIdx)
+                val title = cursor.getString(titleIdx)
+                val type = cursor.getString(typeIdx)
+
+                results.add(
+                    MapSearchResult(
+                        id = id,
+                        title = title,
+                        type = when (type) {
+                            "TRIP" -> MapPinType.TRIP
+                            "REGION" -> MapPinType.REGION
+                            "SCHEDULE" -> MapPinType.SCHEDULE
+                            else -> MapPinType.USER_SELECTED
+                        }
+                    )
+                )
+            }
+
+            cursor.close()
+
+            return results
         }
     }
 }
