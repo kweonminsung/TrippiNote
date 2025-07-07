@@ -40,9 +40,10 @@ fun HomeTopBar(
         title = {
             Text(
                 text = "${username}의 여행 다이어리",
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                fontSize = 22.sp
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 12.dp),
+                fontSize = 20.sp
             )
         },
         actions = {
@@ -58,7 +59,7 @@ fun HomeTopBar(
                     },
                     title = "새 여행 추가",
                     onSubmit = { /* TODO: Handle submit action */ },
-                    onCancel = { /* TODO: Handle cancel action */ }
+                    onCancel = {}
                 )
             }
 

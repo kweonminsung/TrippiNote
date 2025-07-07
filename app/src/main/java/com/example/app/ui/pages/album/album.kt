@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 import java.io.File
 import java.io.FileOutputStream
 
-@Composable
+//@Composable
 //fun createAlbumFolder(baseDir: File, trip: Trip, region: Region, schedule: Schedule): File {
 //    val tripFolder = File(baseDir, trip.name)
 //    val regionFolder = File(tripFolder, region.name)

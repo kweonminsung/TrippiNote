@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -77,7 +78,10 @@ data class MapSearchResult(
 )
 
 @Composable
-fun MapTab(preselectedPin: PreselectedPin? = null, setPreselectedPin: (PreselectedPin?) -> Unit) {
+fun MapTab(
+    preselectedPin: PreselectedPin? = null,
+    setPreselectedPin: (PreselectedPin?) -> Unit
+) {
     val context = LocalContext.current
 
     val focusManager = LocalFocusManager.current
@@ -147,13 +151,14 @@ fun MapTab(preselectedPin: PreselectedPin? = null, setPreselectedPin: (Preselect
                 }
             }"
         )
+
         // 줌 레벨에 따라 세션에서 핀 목록 가져오기
         sessionMapPins = MapTabData.getSessionPinsByZoomRate(context, zoomLevel)
 
         // 교통수단 핀 목록도 업데이트
         sessionTransportPin = when (zoomLevel) {
             ZOOM_LEVEL.CITY -> MapTabData.getSessionTransportPinsByZoomRate(context, zoomLevel)
-            else -> emptyList()
+        else -> emptyList()
         }
     }
 
@@ -536,7 +541,10 @@ fun MapTab(preselectedPin: PreselectedPin? = null, setPreselectedPin: (Preselect
                         focusManager.clearFocus() // 키보드 내리기
                         CoroutineScope(Dispatchers.Main).launch {
                             cameraPositionState.animate(
-                                CameraUpdateFactory.newLatLngZoom(INITIAL_LAT_LNG, INITIAL_ZOOM_LEVEL)
+                                CameraUpdateFactory.newLatLngZoom(
+                                    INITIAL_LAT_LNG,
+                                    INITIAL_ZOOM_LEVEL
+                                )
                             )
                         }
                         selectedTripId = null
