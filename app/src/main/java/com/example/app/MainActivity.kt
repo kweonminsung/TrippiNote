@@ -20,6 +20,7 @@ import com.example.app.ui.pages.profile.ProfileTab
 import com.example.app.ui.components.BottomBar
 import com.example.app.ui.components.top_bar.TopBar
 import com.example.app.util.KeyValueStore
+import com.example.app.util.database.SQLiteHelper
 import com.google.android.libraries.places.api.Places
 
 val LocalSession = compositionLocalOf<MutableState<SessionData>> { error("No Storage provided") }
@@ -46,6 +47,12 @@ class MainActivity : ComponentActivity() {
             Places.initialize(applicationContext, apiKey)
         }
 
+        // Database 초기화
+        SQLiteHelper(this).writableDatabase.use { db ->
+            // 데이터베이스 초기화 작업이 필요하다면 여기에 작성
+            Log.d("Database", "Database initialized successfully")
+        }
+
         setContent {
             val context = this
 
@@ -54,9 +61,6 @@ class MainActivity : ComponentActivity() {
             // 예시 데이터 삽입
             KeyValueStore.saveBulk(context, EXAMPLE_SESSION_DATA)
 
-//            KeyValueStore.getAll(context).forEach { (key, value) ->
-//                Log.d("KeyValueStore", "Key: $key, Value: $value")
-//            }
 
             // KeyValueStore에서 가져온 데이터를 LocalSession에 저장
             val initialSessionData = KeyValueStore.loadBulk(context) as SessionData

@@ -12,15 +12,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.app.type.TransportType
 import com.example.app.ui.theme.CustomColors
+import com.example.app.util.database.model
 import com.google.android.gms.maps.model.LatLng
 
 data class TransportPin(
     val from: LatLng,
     val to: LatLng,
     val text: String,
-    val transportType: TransportType,
+    val transportType: model.TransportType,
 )
 
 @Composable

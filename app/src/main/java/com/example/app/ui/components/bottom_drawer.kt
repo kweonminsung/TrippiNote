@@ -73,7 +73,7 @@ fun BottomDrawer(
                     )
                     .zIndex(99f)
                     .padding(
-                        top = 8.dp,
+                        top = 12.dp,
                     )
             ) {
                 Column(

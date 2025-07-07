@@ -1,7 +1,6 @@
 package com.example.app.ui.components.map
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -24,7 +23,7 @@ enum class MapPinType {
 
 // 핀 정보를 담는 데이터 클래스
 data class MapPin(
-    val id: String,
+    val id: Int?,
     val type: MapPinType,
     val position: LatLng,
     val title: String,
