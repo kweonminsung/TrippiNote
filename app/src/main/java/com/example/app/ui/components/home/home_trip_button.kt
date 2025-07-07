@@ -73,6 +73,7 @@ fun HomeTripButton(
                         Text(
                             text = subtitle,
                             color = CustomColors.Gray,
+                            modifier = Modifier.padding(top = 4.dp),
                         )
                     }
                 }

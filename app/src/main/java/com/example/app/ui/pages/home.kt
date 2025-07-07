@@ -141,7 +141,11 @@ fun HomeTab() {
                     allTrips.forEach { trip ->
                         HomeTripButton(
                             title = trip.title,
-                            subtitle = "",
+                            subtitle = if (trip.start_date == null && trip.end_date == null) {
+                                "날짜 정보 없음"
+                            } else {
+                                "${trip.start_date?.let { DatetimeUtil.dateToDotDate(it) }}${if (trip.end_date != null) " - ${DatetimeUtil.dateToDotDate(trip.end_date)}" else ""}"
+                            },
                             imageId = "",
                             onClick = { /* TODO: Navigate to trip details */ }
                         )
