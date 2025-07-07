@@ -5,7 +5,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,6 +20,7 @@ import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
+const val BOTTOM_DRAWER_ANIMATION_DURATION = 200L // BottomDrawer 애니메이션 시간
 @Composable
 fun BottomDrawer(
     isOpen: Boolean,
@@ -83,6 +86,7 @@ fun BottomDrawer(
                         .padding(
                             horizontal = 16.dp,
                         )
+                        .verticalScroll(rememberScrollState())
                 ) {
                     Box(
                         modifier = Modifier

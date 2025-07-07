@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
+import com.example.app.ui.components.BOTTOM_DRAWER_ANIMATION_DURATION
 import com.example.app.ui.components.BottomDrawer
 import com.example.app.ui.components.search_bar.SearchBar
 import com.example.app.ui.components.map.MapPin
@@ -28,6 +29,7 @@ import com.example.app.ui.components.map.TransportInfoButton
 import com.example.app.ui.components.map.TransportPin
 import com.example.app.ui.theme.CustomColors
 import com.example.app.util.DatetimeUtil
+import com.example.app.util.database.MapRepository
 import com.example.app.util.database.model
 import com.example.app.util.database.model.TransportType
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -65,7 +67,7 @@ val INITIAL_ZOOM_LEVEL = ZOOM_LEVEL.CONTINENT // 초기 줌 레벨
 object ZOOM_LEVEL {
     const val CONTINENT = 3f   // 대륙 수준
     const val COUNTRY = 6f     // 나라 수준
-    const val CITY = 13f       // 도시 수준
+    const val CITY = 12f       // 도시 수준
 }
 
 
@@ -192,18 +194,38 @@ fun MapTab() {
 
 //                            Log.d("MapTab", "Clicked pin: ${pin.title} at ${pin.position}")
 
-                            if (zoomLevel == ZOOM_LEVEL.CONTINENT) {
-                                tripInfoBottomDrawerState = true
-                                regionInfoBottomDrawerState = false
-                            } else if (zoomLevel == ZOOM_LEVEL.COUNTRY) {
-                                tripInfoBottomDrawerState = false
-                                regionInfoBottomDrawerState = true
-                            }
-
                             if (pin.type == MapPinType.TRIP) {
+                                if (selectedTripId != pin.id) {
+                                    tripInfoBottomDrawerState = false
+                                    regionInfoBottomDrawerState = false
+                                }
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    delay(BOTTOM_DRAWER_ANIMATION_DURATION) // BottomDrawer가 닫히는 애니메이션 대기
+                                    tripInfoBottomDrawerState = true
+                                }
                                 selectedTripId = pin.id
                             } else if (pin.type == MapPinType.REGION) {
+                                if (selectedRegionId != pin.id) {
+                                    tripInfoBottomDrawerState = false
+                                    regionInfoBottomDrawerState = false
+                                }
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    delay(BOTTOM_DRAWER_ANIMATION_DURATION) // BottomDrawer가 닫히는 애니메이션 대기
+                                    regionInfoBottomDrawerState = true
+                                }
                                 selectedRegionId = pin.id
+                            } else {
+                                val regionId = (MapRepository.getScheduleById(context, pin.id as Int) as model.Schedule).region_id
+                                if (regionId != selectedRegionId) {
+                                    tripInfoBottomDrawerState = false
+                                    regionInfoBottomDrawerState = false
+                                }
+                                selectedRegionId = regionId
+
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    delay(BOTTOM_DRAWER_ANIMATION_DURATION) // BottomDrawer가 닫히는 애니메이션 대기
+                                    regionInfoBottomDrawerState = true
+                                }
                             }
 
                             CoroutineScope(Dispatchers.Main).launch {
