@@ -95,9 +95,9 @@ object MapTabData {
 
     fun getSessionRegions(
         context: android.content.Context,
-        regionId: Int
+        tripId: Int
     ): List<model.Region> {
-        return MapRepository.getRegions(context, regionId)
+        return MapRepository.getRegions(context, tripId)
     }
 
     fun getSessionSchedules(

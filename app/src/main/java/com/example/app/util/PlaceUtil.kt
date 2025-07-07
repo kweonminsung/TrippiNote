@@ -1,6 +1,5 @@
 import android.content.Context
 import android.util.Log
-import com.example.app.ui.components.map.MapPin
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
@@ -12,17 +11,25 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 object PlaceUtil {
+    private var placesClient: PlacesClient? = null
+
+    fun getPlacesClient(context: Context): PlacesClient {
+        return placesClient ?: synchronized(this) {
+            placesClient ?: Places.createClient(context).also { placesClient = it }
+        }
+    }
+
     suspend fun searchPlaceByText(
         context: Context,
         query: String
     ): List<AutocompletePrediction> = suspendCancellableCoroutine { cont ->
-        val placesClient: PlacesClient = Places.createClient(context)
+        val client = getPlacesClient(context)
         val token = AutocompleteSessionToken.newInstance()
         val request = FindAutocompletePredictionsRequest.builder()
             .setSessionToken(token)
             .setQuery(query)
             .build()
-        placesClient.findAutocompletePredictions(request)
+        client.findAutocompletePredictions(request)
             .addOnSuccessListener { response ->
                 cont.resume(response.autocompletePredictions)
             }
@@ -40,8 +47,6 @@ object PlaceUtil {
     // 위치 정보를 가져오는 함수 (Geocoding API 사용)
     suspend fun getLocationInfo(context: Context, latLng: LatLng): LocationInfo {
         return try {
-            val placesClient = Places.createClient(context)
-
             // Geocoding API를 통해 역방향 지오코딩 수행
             val geocoder = android.location.Geocoder(context, java.util.Locale.getDefault())
             val addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
@@ -62,7 +67,7 @@ object PlaceUtil {
 
             LocationInfo(latLng, title, snippet)
         } catch (e: Exception) {
-            Log.e("MapTab", "위치 정보 가져오기 ���패: $e")
+            Log.e("MapTab", "위치 정보 가져오기 실패: $e")
             LocationInfo(
                 latLng,
                 "선택한 위치",
