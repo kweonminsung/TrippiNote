@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.app.ui.theme.CustomColors
@@ -43,9 +45,10 @@ fun ScheduleInfoButton(
                 spotColor = CustomColors.Black
             )
             .fillMaxWidth()
+            .height(64.dp)
             .background(color = CustomColors.White, shape = RoundedCornerShape(8.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(8.dp),
         contentAlignment = Alignment.CenterStart
     ) {
         Row(
@@ -62,9 +65,11 @@ fun ScheduleInfoButton(
                         model.ScheduleType.ETC -> R.drawable.map_etc
                     }),
                     contentDescription = null,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(40.dp)
                 )
-                Column() {
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                ) {
                     Text(
                         text = when (type) {
                             model.ScheduleType.SIGHTS -> "관광"
@@ -72,20 +77,42 @@ fun ScheduleInfoButton(
                             model.ScheduleType.RESTAURANT -> "음식점"
                             model.ScheduleType.ETC -> "기타"
                         },
+                        color = CustomColors.Gray,
+                        fontSize = 10.sp,
+                        modifier = Modifier.padding(bottom = 4.dp)
                     )
                     Text(
                         text = title,
                         color = CustomColors.Black,
                         fontSize = 16.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = if(subtitle != null && subtitle.isNotEmpty()) Modifier.width(155.dp) else Modifier
                     )
                 }
             }
-            Box() {
-                Text(
-                    text = subtitle ?: "",
-                    color = CustomColors.Gray,
-                    fontSize = 12.sp
-                )
+
+            if(subtitle != null && subtitle.isNotEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .background(
+                            color = CustomColors.LightGray,
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                        .width(80.dp)
+                        .height(24.dp)
+                        .padding(
+                            horizontal = 8.dp,
+                            vertical = 4.dp
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = subtitle,
+                        color = CustomColors.DarkGray,
+                        fontSize = 9.sp
+                    )
+                }
             }
         }
     }

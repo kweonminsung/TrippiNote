@@ -104,7 +104,7 @@ fun MapTab() {
     LaunchedEffect(cameraTarget) {
         cameraTarget?.let {
             val update = CameraUpdateFactory.newLatLngZoom(it, cameraPositionState.position.zoom)
-            cameraPositionState.move(update)
+            cameraPositionState.animate(update)
         }
     }
 
@@ -195,9 +195,9 @@ fun MapTab() {
 //                            Log.d("MapTab", "Clicked pin: ${pin.title} at ${pin.position}")
 
                             if (pin.type == MapPinType.TRIP) {
+                                regionInfoBottomDrawerState = false
                                 if (selectedTripId != pin.id) {
                                     tripInfoBottomDrawerState = false
-                                    regionInfoBottomDrawerState = false
                                 }
                                 CoroutineScope(Dispatchers.Main).launch {
                                     delay(BOTTOM_DRAWER_ANIMATION_DURATION.toLong()) // BottomDrawer가 닫히는 애니메이션 대기
@@ -205,8 +205,8 @@ fun MapTab() {
                                 }
                                 selectedTripId = pin.id
                             } else if (pin.type == MapPinType.REGION) {
+                                tripInfoBottomDrawerState = false
                                 if (selectedRegionId != pin.id) {
-                                    tripInfoBottomDrawerState = false
                                     regionInfoBottomDrawerState = false
                                 }
                                 CoroutineScope(Dispatchers.Main).launch {
@@ -607,7 +607,6 @@ fun MapTab() {
                             schedule.id,
                             nextSchedule.id
                         )
-//                        Spacer(modifier = Modifier.height(8.dp))
                         if (transport != null) {
                             Spacer(modifier = Modifier.height(8.dp))
                             TransportInfoButton(

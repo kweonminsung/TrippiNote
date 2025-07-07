@@ -86,4 +86,18 @@ object DatetimeUtil {
             "$hour:$minute"
         }
     }
+
+    fun timeToHourMinute(time: String): String {
+        if (time.isBlank()) return ""
+        val parts = time.split(":")
+        if (parts.size < 2) return ""
+        val hour = parts[0].toIntOrNull() ?: return ""
+        val minute = parts[1].toIntOrNull() ?: 0
+        return when {
+            hour > 0 && minute > 0 -> "${hour}시간 ${minute}분"
+            hour > 0 -> "${hour}시간"
+            minute > 0 -> "${minute}분"
+            else -> "0분"
+        }
+    }
 }

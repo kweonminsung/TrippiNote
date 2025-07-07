@@ -176,8 +176,8 @@ object DatabaseUtil {
         db.execSQL("INSERT INTO schedule (id, type, region_id, title, memo, lat, lng, start_datetime, end_datetime, created_at) VALUES (5, 'HOTEL', 1, 'Stay at a hotel in Versailles', 'Book in advance for better rates', 48.9049, 2.1204, '2024-05-03T18:00:00Z', '2024-05-03T20:00:00Z', '2024-04-01T12:00:00Z');")
         db.execSQL("INSERT INTO schedule (id, type, region_id, title, memo, lat, lng, start_datetime, end_datetime, created_at) VALUES (6, 'ETC', 3, 'Visit Shibuya Crossing', 'Experience the busiest pedestrian crossing', 35.6586, 139.7012, '2024-06-02T15:00:00Z', '2024-06-02T17:00:00Z', '2024-05-01T12:00:00Z');")
         db.execSQL("INSERT INTO transport (id, region_id, from_schedule_id, to_schedule_id, type, duration, created_at, memo) VALUES (1, 1, 1, 2, 'WALKING', '03:00:00', '2024-04-01T12:00:00Z', 'Walk from Louvre to Seine');")
-        db.execSQL("INSERT INTO transport (id, region_id, from_schedule_id, to_schedule_id, type, duration, created_at, memo) VALUES (2, 1, 2, 3, 'BUS', '00:30:00', '2024-04-01T12:00:00Z', 'Walk from Seine to bistro');")
-        db.execSQL("INSERT INTO transport (id, region_id, from_schedule_id, to_schedule_id, type, duration, created_at, memo) VALUES (3, 1, 3, 5, 'TRAIN', NULL, '2024-04-01T12:00:00Z', 'Walk from Versailles to hotel');")
+        db.execSQL("INSERT INTO transport (id, region_id, from_schedule_id, to_schedule_id, type, duration, created_at, memo) VALUES (2, 1, 2, 3, 'BUS', NULL, '2024-04-01T12:00:00Z', 'Walk from Seine to bistro');")
+//        db.execSQL("INSERT INTO transport (id, region_id, from_schedule_id, to_schedule_id, type, duration, created_at, memo) VALUES (3, 1, 3, 5, 'TRAIN', NULL, '2024-04-01T12:00:00Z', 'Walk from Versailles to hotel');")
         db.close()
     }
 

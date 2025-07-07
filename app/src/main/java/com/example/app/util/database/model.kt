@@ -2,11 +2,13 @@ package com.example.app.util.database
 
 class model {
     data class Wishlist(
+        val id: Int,
         val done: Boolean,
         val content: String,
     )
 
-    data class ChecklistItem(
+    data class Checklist(
+        val id: Int,
         val done: Boolean,
         val content: String,
     )
