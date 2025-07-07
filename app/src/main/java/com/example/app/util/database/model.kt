@@ -74,4 +74,5 @@ class model {
         RESTAURANT,
         ETC,
     }
+
 }
