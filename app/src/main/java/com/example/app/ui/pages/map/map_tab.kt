@@ -200,7 +200,7 @@ fun MapTab() {
                                     regionInfoBottomDrawerState = false
                                 }
                                 CoroutineScope(Dispatchers.Main).launch {
-                                    delay(BOTTOM_DRAWER_ANIMATION_DURATION) // BottomDrawer가 닫히는 애니메이션 대기
+                                    delay(BOTTOM_DRAWER_ANIMATION_DURATION.toLong()) // BottomDrawer가 닫히는 애니메이션 대기
                                     tripInfoBottomDrawerState = true
                                 }
                                 selectedTripId = pin.id
@@ -210,7 +210,7 @@ fun MapTab() {
                                     regionInfoBottomDrawerState = false
                                 }
                                 CoroutineScope(Dispatchers.Main).launch {
-                                    delay(BOTTOM_DRAWER_ANIMATION_DURATION) // BottomDrawer가 닫히는 애니메이션 대기
+                                    delay(BOTTOM_DRAWER_ANIMATION_DURATION.toLong()) // BottomDrawer가 닫히는 애니메이션 대기
                                     regionInfoBottomDrawerState = true
                                 }
                                 selectedRegionId = pin.id
@@ -223,7 +223,7 @@ fun MapTab() {
                                 selectedRegionId = regionId
 
                                 CoroutineScope(Dispatchers.Main).launch {
-                                    delay(BOTTOM_DRAWER_ANIMATION_DURATION) // BottomDrawer가 닫히는 애니메이션 대기
+                                    delay(BOTTOM_DRAWER_ANIMATION_DURATION.toLong()) // BottomDrawer가 닫히는 애니메이션 대기
                                     regionInfoBottomDrawerState = true
                                 }
                             }

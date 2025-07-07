@@ -20,28 +20,37 @@ import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-const val BOTTOM_DRAWER_ANIMATION_DURATION = 200L // BottomDrawer 애니메이션 시간
+const val BOTTOM_DRAWER_ANIMATION_DURATION = 200 // BottomDrawer 애니메이션 시간
 @Composable
 fun BottomDrawer(
     isOpen: Boolean,
     onDismiss: () -> Unit,
     content: @Composable () -> Unit
 ) {
-    if (isOpen) {
-        val coroutineScope = rememberCoroutineScope()
+    val isVisible = remember { mutableStateOf(isOpen) }
+    val coroutineScope = rememberCoroutineScope()
+    val drawerHeight = remember { mutableIntStateOf(0) }
+    val offsetY = remember { Animatable(1f) }
+    val dragOffset = remember { mutableFloatStateOf(0f) }
 
-        val drawerHeight = remember { mutableIntStateOf(0) }
-        val offsetY = remember { Animatable(1f) }
-        val dragOffset = remember { mutableFloatStateOf(0f) }
-
-        LaunchedEffect(isOpen) {
-            offsetY.snapTo(1f) // 항상 처음은 아래에 있다가 올라오게
+    LaunchedEffect(isOpen) {
+        if (isOpen) {
+            isVisible.value = true
+            offsetY.snapTo(1f)
             offsetY.animateTo(
                 targetValue = 0f,
-                animationSpec = tween(durationMillis = 350)
+                animationSpec = tween(durationMillis = BOTTOM_DRAWER_ANIMATION_DURATION)
             )
+        } else {
+            offsetY.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = BOTTOM_DRAWER_ANIMATION_DURATION)
+            )
+            isVisible.value = false
         }
+    }
 
+    if (isVisible.value) {
         Box(modifier = Modifier.fillMaxSize()) {
             Box(
                 modifier = Modifier
@@ -52,7 +61,7 @@ fun BottomDrawer(
                         drawerHeight.value = coordinates.size.height
                     }
                     .offset {
-                        val totalOffset = offsetY.value * drawerHeight.value + dragOffset.value.coerceAtLeast(0f) // dragOffset이 음수(위로 올림)일 때 0 이하로 못 가게 제한
+                        val totalOffset = offsetY.value * drawerHeight.value + dragOffset.value.coerceAtLeast(0f)
                         IntOffset(0, totalOffset.roundToInt())
                     }
                     .pointerInput(Unit) {
