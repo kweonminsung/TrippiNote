@@ -1,6 +1,7 @@
 package com.example.app.ui.components.pop_up_contents
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import com.example.app.R
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,11 +10,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -55,62 +58,93 @@ import kotlin.Boolean
 //}
 
 @Composable
-fun AddSampleContent() {
-    Box(){
+fun AddSampleContent(
+    name_label: String = "",
+    map_label: String = "",
+    start_label: String = "",
+    end_label: String = "",
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .width(60.dp) // 원하는 너비로 조정
+            .padding(8.dp)
+    ){
+
+        Spacer(modifier = Modifier.height(8.dp)) // 여백
+
         //여행 이름
         TextField(
             value = "",
             onValueChange = {},
-            label = { Text("여행 이름") },
             placeholder = { Text("이름을 입력하세요...", color = CustomColors.Gray) },
+            leadingIcon = {
+                Text(
+                    text = name_label,
+                    modifier = Modifier.padding(start = 8.dp),
+                    color = CustomColors.Black
+                )
+            },
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = CustomColors.LightGray,
-                unfocusedContainerColor = CustomColors.White,
-                focusedIndicatorColor = CustomColors.Gray,
-                unfocusedIndicatorColor = CustomColors.DarkGray
+                unfocusedContainerColor = CustomColors.LighterGray,
+                focusedIndicatorColor =  CustomColors.White,
+                unfocusedIndicatorColor = CustomColors.White
             ),
             modifier = androidx.compose.ui.Modifier.fillMaxWidth()
         )
-    }
+
+        Spacer(modifier = Modifier.height(8.dp)) // 여백
+
         //지도에서 선택
-    Row (
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // 위치 보이는 필드
-        TextField(
-            value = "",
-            onValueChange = {  },
-            modifier = Modifier.weight(1f), // TextField가 남는 공간 채움
-            placeholder = { Text("위치를 선택하세요...", color = CustomColors.Gray) },
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = CustomColors.LightGray,
-                unfocusedContainerColor = CustomColors.White,
-                focusedIndicatorColor = CustomColors.Gray,
-                unfocusedIndicatorColor = CustomColors.DarkGray
-            ),
-            readOnly = true
-        )
-
-        Spacer(modifier = Modifier.width(8.dp)) // 여백
-
-        // 지도에서 위치 선택 버튼
-        IconButton(
-            onClick = {},
-            modifier = Modifier
-                .height(45.dp)
-                .width(45.dp)
-                .background(
-                    color = CustomColors.White,
-                    shape = RoundedCornerShape(4.dp)
-                )
+        Row (
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.map_etc),
-                contentDescription = "추가"
+            // 위치 보이는 필드
+            TextField(
+                value = "",
+                onValueChange = {  },
+                modifier = Modifier.weight(1f), // TextField가 남는 공간 채움
+                // placeholder = { Text("위치를 선택하세요...", color = CustomColors.Gray) },
+                leadingIcon = {
+                    Text(
+                        text = map_label,
+                        modifier = Modifier.padding(start = 8.dp),
+                        color = CustomColors.Black
+                    )
+                },
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = CustomColors.LightGray,
+                    unfocusedContainerColor = CustomColors.LighterGray,
+                    focusedIndicatorColor =  CustomColors.White,
+                    unfocusedIndicatorColor = CustomColors.White
+                ),
+                readOnly = true
             )
+
+            Spacer(modifier = Modifier.width(8.dp)) // 여백
+
+            // 지도에서 위치 선택 버튼
+            IconButton(
+                onClick = {},
+                modifier = Modifier
+                    .height(45.dp)
+                    .width(45.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Place,
+                    contentDescription = "추가"
+                )
+            }
         }
+
+        Spacer(modifier = Modifier.height(8.dp)) // 여백
+
     }
+
+
+
 
 }
 
@@ -129,6 +163,6 @@ fun AddSampleForm(
         CustomColors.Blue,
         onSubmit,
         onCancel,
-        { AddSampleContent() }// 팝업창 내부에 추가할 내용
+        { AddSampleContent("여행 이름", "위치", ) }// 팝업창 내부에 추가할 내용
     )
 }

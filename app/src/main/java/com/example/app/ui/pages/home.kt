@@ -46,13 +46,7 @@ fun HomeTab() {
             .padding(top = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally) {
 
-            SearchBar(
-                placeholder = "나의 여행 검색",
-                query = "",
-                onQueryChange = {},
-                modifier = Modifier
-                    .fillMaxWidth()
-            )
+
 
         }
     }
