@@ -85,7 +85,7 @@ enum class TabType {
 
 @Composable
 fun MainScreen() {
-    val (tabType, setTabType) = remember { mutableStateOf(TabType.MAP) }
+    val (tabType, setTabType) = remember { mutableStateOf(TabType.HOME) }
 
     Scaffold(
         topBar = {

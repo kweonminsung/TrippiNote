@@ -32,9 +32,7 @@ fun MapSearchResults(
                 .heightIn(max = 300.dp)
                 .shadow(
                     elevation = 1.dp,
-                    shape = RoundedCornerShape(8.dp),
-                    ambientColor = CustomColors.Black,
-                    spotColor = CustomColors.Black
+                    shape = RoundedCornerShape(8.dp)
                 )
                 .background(
                     CustomColors.White

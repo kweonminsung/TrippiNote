@@ -28,9 +28,7 @@ fun RegionInfoButton(
             .padding(8.dp)
             .shadow(
                 elevation = 1.dp,
-                shape = RoundedCornerShape(8.dp),
-                ambientColor = CustomColors.Black,
-                spotColor = CustomColors.Black
+                shape = RoundedCornerShape(8.dp)
             )
             .fillMaxWidth()
             .background(color = CustomColors.White, shape = RoundedCornerShape(8.dp))

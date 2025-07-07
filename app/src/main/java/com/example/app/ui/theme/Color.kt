@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Color
 object CustomColors {
     val White = Color(0xFFFFFFFF)
     val Black = Color(0xFF000000)
-    val LighterGray = Color(0xFFB3B3B3)
+    val LighterGray = Color(0xFFF9F9F9)
     val LightGray = Color(0xFFEAEAEA)
     val Gray = Color(0xFFB3B3B3)
     val DarkGray = Color(0xFF666666)

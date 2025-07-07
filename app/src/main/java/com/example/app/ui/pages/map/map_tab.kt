@@ -51,7 +51,6 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-//val INITIAL_LAT_LNG = LatLng(36.3730, 127.3622) // 지도의 초기 위치(카이스트)
 val INITIAL_LAT_LNG = LatLng(48.866096757760225, 2.348085902631283) // 지도의 초기 위치(파리)
 val INITIAL_ZOOM_LEVEL = ZOOM_LEVEL.CONTINENT // 초기 줌 레벨
 
