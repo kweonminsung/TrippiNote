@@ -45,7 +45,6 @@ fun MapSearchResults(
                 modifier = Modifier.padding(10.dp),
                 color = CustomColors.Black
             )
-
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -59,10 +58,30 @@ fun MapSearchResults(
                             }
                             .padding(10.dp)
                     ) {
-                        Text(
-                            text = searchResult.title,
-                            color = CustomColors.Black
-                        )
+                        Row(
+
+                        ) {
+                            Text(
+                                text = when(searchResult.type) {
+                                    MapPinType.TRIP -> "여행"
+                                    MapPinType.REGION -> "지역"
+                                    MapPinType.SCHEDULE -> "일정"
+                                    else -> "기타"
+                                },
+                                color = when (searchResult.type) {
+                                    MapPinType.TRIP -> CustomColors.Blue
+                                    MapPinType.REGION -> CustomColors.Green
+                                    MapPinType.SCHEDULE -> CustomColors.Orange
+                                    else -> CustomColors.Gray
+                                },
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                            Text(
+                                text = searchResult.title,
+                                color = CustomColors.Black
+                            )
+                        }
+
                     }
                     if (index != searchResults.second.lastIndex) {
                         Divider(
@@ -73,10 +92,9 @@ fun MapSearchResults(
                 }
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
             Divider(
                 color = CustomColors.LightGray,
-                thickness = 1.dp
+                thickness = 2.dp
             )
 
             Text(
@@ -84,7 +102,6 @@ fun MapSearchResults(
                 modifier = Modifier.padding(10.dp),
                 color = CustomColors.Black
             )
-
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
