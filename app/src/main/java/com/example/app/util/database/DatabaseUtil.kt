@@ -37,7 +37,6 @@ object DatabaseUtil {
         } else {
             db.execSQL(sql)
         }
-        db.close()
     }
 
     fun rawQuery(context: Context, sql: String, args: Array<String>? = null): List<Map<String, Any?>> {
@@ -60,7 +59,6 @@ object DatabaseUtil {
             result.add(row)
         }
         cursor.close()
-        db.close()
         return result
     }
 
@@ -139,7 +137,6 @@ object DatabaseUtil {
                 done BOOLEAN DEFAULT 0
             );
         """)
-        db.close()
     }
 
     fun dropAllTables(context: Context) {
@@ -154,7 +151,6 @@ object DatabaseUtil {
         db.execSQL("DROP TABLE IF EXISTS schedule")
         db.execSQL("DROP TABLE IF EXISTS wishlist")
         db.execSQL("DROP TABLE IF EXISTS checklist")
-        db.close()
     }
 
     // mock data insert
@@ -178,7 +174,6 @@ object DatabaseUtil {
         db.execSQL("INSERT INTO transport (id, region_id, from_schedule_id, to_schedule_id, type, duration, created_at, memo) VALUES (1, 1, 1, 2, 'WALKING', '03:00:00', '2024-04-01T12:00:00Z', 'Walk from Louvre to Seine');")
         db.execSQL("INSERT INTO transport (id, region_id, from_schedule_id, to_schedule_id, type, duration, created_at, memo) VALUES (2, 1, 2, 3, 'BUS', NULL, '2024-04-01T12:00:00Z', 'Walk from Seine to bistro');")
 //        db.execSQL("INSERT INTO transport (id, region_id, from_schedule_id, to_schedule_id, type, duration, created_at, memo) VALUES (3, 1, 3, 5, 'TRAIN', NULL, '2024-04-01T12:00:00Z', 'Walk from Versailles to hotel');")
-        db.close()
     }
 
 //    inline fun <T> getFirstRow(context: Context, sql: String, args: Array<String>? = null, rowMapper: (Map<String, Any?>) -> T): T? {
