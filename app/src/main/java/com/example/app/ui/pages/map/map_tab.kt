@@ -32,7 +32,6 @@ import com.google.android.gms.maps.model.Gap
 import com.google.android.gms.maps.model.JointType
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.Task
-import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.maps.android.compose.GoogleMap
@@ -393,7 +392,6 @@ fun MapTab() {
                             val tripId = searchResult.id as Int
 
                             selectedTripId = tripId
-                            selectedRegionId = null
                             tripInfoBottomDrawerState = true
                             regionInfoBottomDrawerState = false
                             val trip = MapRepository.getTripById(context, tripId) as model.Trip
@@ -411,7 +409,6 @@ fun MapTab() {
                             val regionId = searchResult.id as Int
 
                             selectedRegionId = regionId
-                            selectedTripId = null
                             tripInfoBottomDrawerState = false
                             regionInfoBottomDrawerState = true
                             val region = MapRepository.getRegionById(context, regionId) as model.Region
@@ -428,7 +425,6 @@ fun MapTab() {
                         else -> {
                             val schedule = MapRepository.getScheduleById(context, searchResult.id as Int) as model.Schedule
                             selectedRegionId = schedule.region_id
-                            selectedTripId = null
                             tripInfoBottomDrawerState = false
                             regionInfoBottomDrawerState = true
 
@@ -447,39 +443,38 @@ fun MapTab() {
                 },
                 onMapResultClick = { searchResult ->
                     focusManager.clearFocus() // 키보드 내리기
+                    tripInfoBottomDrawerState = false
+                    regionInfoBottomDrawerState = false
+
                     CoroutineScope(Dispatchers.IO).launch {
-                        try {
-                            val placesClient = Places.createClient(context)
-                            val fields = listOf(
+                        val placesClient = PlaceUtil.getPlacesClient(context)
+
+                        val request = FetchPlaceRequest.builder(
+                            searchResult.placeId as String,
+                            listOf(
                                 Place.Field.LAT_LNG,
                                 Place.Field.NAME,
                                 Place.Field.ADDRESS
                             )
-                            val request = FetchPlaceRequest.builder(
-                                searchResult.placeId,
-                                fields
-                            ).build()
-                            val response = placesClient.fetchPlace(request).await()
-                            val latLng = response.place.latLng
-                            if (latLng != null) {
-                                val newLatLng = LatLng(latLng.latitude, latLng.longitude)
+                        ).build()
+                        val response = placesClient.fetchPlace(request).await()
+                        val latLng = response.place.latLng
 
-                                // 검색 결과로 핀 생성
-                                val pinInfo = MapPin(
-                                    id = null,
-                                    type = MapPinType.SEARCH_RESULT,
-                                    position = newLatLng,
-                                    title = response.place.name
-                                        ?: searchResult.title,
-                                    subtitle = response.place.address
-                                        ?: searchResult.subtitle
-                                )
+                        if (latLng != null) {
+                            val newLatLng = LatLng(latLng.latitude, latLng.longitude)
 
-                                userSelectedMapPins = listOf(pinInfo)
-                                cameraTarget = newLatLng
-                            }
-                        } catch (e: Exception) {
-                            Log.e("MapTab", "장소 이동 실패: $e")
+                            userSelectedMapPins = listOf(MapPin(
+                                id = null,
+                                type = MapPinType.SEARCH_RESULT,
+                                position = newLatLng,
+                                title = response.place.name
+                                    ?: searchResult.title,
+                                subtitle = response.place.address
+                                    ?: searchResult.subtitle
+                            ))
+                            cameraTarget = newLatLng
+                        } else {
+                            Log.e("MapTab", "LatLng is null for place: ${searchResult.title}")
                         }
                     }
                     searchResults = Pair(emptyList(), emptyList())
