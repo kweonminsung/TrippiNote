@@ -25,9 +25,7 @@ fun BottomButton(
             .width(203.dp)
             .shadow(
                 elevation = 1.dp,
-                shape = RectangleShape,
-                ambientColor = CustomColors.Black,
-                spotColor = CustomColors.Black,
+                shape = RectangleShape
             )
         ,
         colors = ButtonDefaults.buttonColors(

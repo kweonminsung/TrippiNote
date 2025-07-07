@@ -27,9 +27,7 @@ fun BottomBar(
             .fillMaxWidth()
             .height(70.dp)
             .shadow(
-                elevation = 24.dp,
-                ambientColor = CustomColors.Black,
-                spotColor = CustomColors.Black
+                elevation = 24.dp
             )
             .background(CustomColors.White),
         horizontalArrangement = Arrangement.SpaceAround,

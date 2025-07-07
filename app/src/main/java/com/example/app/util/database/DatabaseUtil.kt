@@ -124,6 +124,24 @@ object DatabaseUtil {
             );
         """)
         db.execSQL("""
+            CREATE TABLE IF NOT EXISTS schedule_image (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                schedule_id INTEGER NOT NULL,
+                file_id TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY(schedule_id) REFERENCES schedule(id)
+            );
+        """)
+        db.execSQL("""
+            CREATE TABLE IF NOT EXISTS file (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                size INTEGER NOT NULL,
+                mime_type TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            );
+        """)
+        db.execSQL("""
             CREATE TABLE IF NOT EXISTS wishlist (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 content TEXT NOT NULL,
@@ -149,6 +167,8 @@ object DatabaseUtil {
         db.execSQL("DROP TABLE IF EXISTS region")
         db.execSQL("DROP TABLE IF EXISTS transport")
         db.execSQL("DROP TABLE IF EXISTS schedule")
+        db.execSQL("DROP TABLE IF EXISTS schedule_image")
+        db.execSQL("DROP TABLE IF EXISTS file")
         db.execSQL("DROP TABLE IF EXISTS wishlist")
         db.execSQL("DROP TABLE IF EXISTS checklist")
     }
@@ -160,7 +180,7 @@ object DatabaseUtil {
         db.execSQL("INSERT INTO wishlist (id, content, done) VALUES (2, 'See the Northern Lights', 0);")
         db.execSQL("INSERT INTO checklist (id, content, done) VALUES (1, 'Book flight tickets', 1);")
         db.execSQL("INSERT INTO checklist (id, content, done) VALUES (2, 'Reserve hotel room', 0);")
-        db.execSQL("INSERT INTO trip (id, title, lat, lng, start_date, end_date, created_at) VALUES (1, 'Trip to Paris', 48.8566, 2.3522, '2024-05-01', '2024-05-10', '2024-04-01T12:00:00Z');")
+        db.execSQL("INSERT INTO trip (id, title, lat, lng, start_date, end_date, created_at) VALUES (1, 'Trip to Paris', 48.8566, 2.3522, '2026-05-01', '2026-05-10', '2024-04-01T12:00:00Z');")
         db.execSQL("INSERT INTO trip (id, title, lat, lng, start_date, end_date, created_at) VALUES (2, 'Trip to Tokyo', 35.6762, 139.6503, '2024-06-01', '2024-06-10', '2024-05-01T12:00:00Z');")
         db.execSQL("INSERT INTO region (id, trip_id, title, lat, lng, start_date, end_date, created_at) VALUES (1, 1, 'Region of Paris', 48.8566, 2.3522, '2024-05-01', '2024-05-10', '2024-04-01T12:00:00Z');")
         db.execSQL("INSERT INTO region (id, trip_id, title, lat, lng, start_date, end_date, created_at) VALUES (2, 1, 'Region of Versailles', 48.8049, 2.1204, '2024-05-03', '2024-05-04', '2024-04-01T12:00:00Z');")

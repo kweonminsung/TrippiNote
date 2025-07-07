@@ -37,6 +37,21 @@ class model {
         val created_at: String, // 2024-04-01T12:00:00Z
     )
 
+    data class ScheduleImage(
+        val id: Int,
+        val schedule_id: Int,
+        val file_id: String,
+        val created_at: String, // 2024-04-01T12:00:00Z
+    )
+
+    data class File(
+        val id: String, // UUID
+        val name: String, // original file name
+        val size: Long, // file size in bytes
+        val mime_type: String, // e.g., "image/jpeg"
+        val created_at: String, // 2024-04-01T12:00:00Z
+    )
+
     data class Region(
         val id: Int,
         val trip_id: Int,

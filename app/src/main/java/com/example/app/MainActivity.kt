@@ -18,9 +18,11 @@ import com.example.app.ui.pages.HomeTab
 import com.example.app.ui.pages.map.MapTab
 import com.example.app.ui.pages.profile.ProfileTab
 import com.example.app.ui.components.BottomBar
+import com.example.app.ui.components.map.MapPinType
 import com.example.app.ui.components.top_bar.TopBar
 import com.example.app.util.KeyValueStore
 import com.example.app.util.database.DatabaseUtil
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.api.Places
 
 val LocalSession = compositionLocalOf<MutableState<SessionData>> { error("No Storage provided") }
@@ -82,10 +84,17 @@ enum class TabType {
     HOME, ALBUM, MAP, PROFILE
 }
 
+data class PreselectedPin(
+    val type: MapPinType,
+    val id: Int?,
+    val position: LatLng? = null,
+)
 
 @Composable
 fun MainScreen() {
-    val (tabType, setTabType) = remember { mutableStateOf(TabType.MAP) }
+    val (tabType, setTabType) = remember { mutableStateOf(TabType.HOME) }
+
+    val (preselectedPin, setPreselectedPin) = remember { mutableStateOf<PreselectedPin?>(null) }
 
     Scaffold(
         topBar = {
@@ -101,9 +110,9 @@ fun MainScreen() {
                 .padding(it)
         ) {
             when (tabType) {
-                TabType.HOME -> HomeTab()
+                TabType.HOME -> HomeTab(setTabType = setTabType, setPreselectedPin = setPreselectedPin)
                 TabType.ALBUM -> AlbumTab()
-                TabType.MAP -> MapTab()
+                TabType.MAP -> MapTab(preselectedPin = preselectedPin, setPreselectedPin = setPreselectedPin)
                 TabType.PROFILE -> ProfileTab()
             }
         }

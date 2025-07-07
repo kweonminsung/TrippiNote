@@ -100,4 +100,24 @@ object DatetimeUtil {
             else -> "0분"
         }
     }
+
+    fun daysBetween(startDate: String, endDate: String): Int {
+        if (startDate.isBlank() || endDate.isBlank()) return 0
+        val startParts = startDate.split("-")
+        val endParts = endDate.split("-")
+        if (startParts.size < 3 || endParts.size < 3) return 0
+
+        val startYear = startParts[0].toIntOrNull() ?: return 0
+        val startMonth = startParts[1].toIntOrNull() ?: return 0
+        val startDay = startParts[2].toIntOrNull() ?: return 0
+
+        val endYear = endParts[0].toIntOrNull() ?: return 0
+        val endMonth = endParts[1].toIntOrNull() ?: return 0
+        val endDay = endParts[2].toIntOrNull() ?: return 0
+
+        val startDateObj = java.time.LocalDate.of(startYear, startMonth, startDay)
+        val endDateObj = java.time.LocalDate.of(endYear, endMonth, endDay)
+
+        return java.time.temporal.ChronoUnit.DAYS.between(startDateObj, endDateObj).toInt()
+    }
 }

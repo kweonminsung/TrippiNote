@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- 배경 -->
+    <path
+        android:fillColor="#64B5F6"
+        android:pathData="M0,0h200v200h-200z" />
+
+    <!-- 산 -->
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M0,200 L60,120 L90,150 L140,90 L200,140 L200,200 Z" />
+
+    <!-- 태양 -->
+    <path
+        android:fillColor="#FFEB3B"
+        android:pathData="M150,40 A20,20 0 1,1 150,39.9 Z" />
+
+    <!-- 구름 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M40,50 A15,15 0 1,1 40,49.9 A10,10 0 1,1 60,50 A20,20 0 1,1 90,50 Z" />
+</vector>
+

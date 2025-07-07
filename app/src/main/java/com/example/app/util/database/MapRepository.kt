@@ -3,6 +3,8 @@ package com.example.app.util.database
 import android.content.Context
 import com.example.app.ui.components.map.MapPinType
 import com.example.app.ui.pages.map.MapSearchResult
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 object MapRepository {
     fun getTrips(context: Context): List<model.Trip> {
@@ -41,6 +43,47 @@ object MapRepository {
 
         dbHelper.readableDatabase.use { db ->
             val cursor = db.rawQuery("SELECT * FROM trip WHERE id = ?", arrayOf(tripId.toString()))
+            if (cursor.moveToFirst()) {
+                val idIdx = cursor.getColumnIndex("id")
+                val titleIdx = cursor.getColumnIndex("title")
+                val latIdx = cursor.getColumnIndex("lat")
+                val lngIdx = cursor.getColumnIndex("lng")
+                val startDateIdx = cursor.getColumnIndex("start_date")
+                val endDateIdx = cursor.getColumnIndex("end_date")
+                val createdAtIdx = cursor.getColumnIndex("created_at")
+
+                return model.Trip(
+                    id = cursor.getInt(idIdx),
+                    title = cursor.getString(titleIdx),
+                    lat = cursor.getDouble(latIdx),
+                    lng = cursor.getDouble(lngIdx),
+                    start_date = cursor.getString(startDateIdx),
+                    end_date = cursor.getString(endDateIdx),
+                    created_at = cursor.getString(createdAtIdx)
+                )
+            }
+            cursor.close()
+        }
+        return null
+    }
+
+    fun getPlannedTrip(context: Context): model.Trip? {
+        val dbHelper = SQLiteHelper(context)
+
+        val today = LocalDate.now()
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val todayString = today.format(formatter)
+
+        dbHelper.readableDatabase.use { db ->
+            val cursor = db.rawQuery(
+                """
+                SELECT * FROM trip 
+                WHERE start_date >= ? 
+                ORDER BY start_date ASC 
+                LIMIT 1
+                """.trimIndent(),
+                arrayOf(todayString)
+            )
             if (cursor.moveToFirst()) {
                 val idIdx = cursor.getColumnIndex("id")
                 val titleIdx = cursor.getColumnIndex("title")

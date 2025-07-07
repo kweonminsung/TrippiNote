@@ -40,9 +40,7 @@ fun ScheduleInfoButton(
             .padding(8.dp)
             .shadow(
                 elevation = 1.dp,
-                shape = RoundedCornerShape(8.dp),
-                ambientColor = CustomColors.Black,
-                spotColor = CustomColors.Black
+                shape = RoundedCornerShape(8.dp)
             )
             .fillMaxWidth()
             .height(64.dp)

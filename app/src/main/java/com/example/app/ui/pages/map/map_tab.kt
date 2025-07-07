@@ -1,13 +1,20 @@
 package com.example.app.ui.pages.map
 
 import android.util.Log
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.example.app.PreselectedPin
 import com.example.app.ui.components.BOTTOM_DRAWER_ANIMATION_DURATION
 import com.example.app.ui.components.BottomDrawer
 import com.example.app.ui.components.map.MapPin
@@ -50,8 +57,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import com.example.app.R
 
-//val INITIAL_LAT_LNG = LatLng(36.3730, 127.3622) // 지도의 초기 위치(카이스트)
 val INITIAL_LAT_LNG = LatLng(48.866096757760225, 2.348085902631283) // 지도의 초기 위치(파리)
 val INITIAL_ZOOM_LEVEL = ZOOM_LEVEL.CONTINENT // 초기 줌 레벨
 
@@ -70,7 +77,7 @@ data class MapSearchResult(
 )
 
 @Composable
-fun MapTab() {
+fun MapTab(preselectedPin: PreselectedPin? = null, setPreselectedPin: (PreselectedPin?) -> Unit) {
     val context = LocalContext.current
 
     val focusManager = LocalFocusManager.current
@@ -79,9 +86,18 @@ fun MapTab() {
     var searchJob: Job? = remember { null }
     var searchResults by remember { mutableStateOf<Pair<List<MapSearchResult>, List<MapSearchResult>>>(Pair(emptyList(), emptyList())) }
 
+
     // 카메라 위치 상태
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(INITIAL_LAT_LNG, INITIAL_ZOOM_LEVEL)
+        position = CameraPosition.fromLatLngZoom(
+            preselectedPin?.position ?: INITIAL_LAT_LNG,
+            when (preselectedPin?.type) {
+                MapPinType.TRIP -> ZOOM_LEVEL.COUNTRY
+                MapPinType.REGION -> ZOOM_LEVEL.CITY
+                MapPinType.SCHEDULE -> ZOOM_LEVEL.CITY
+                else -> INITIAL_ZOOM_LEVEL
+            }
+        )
     }
 
     var cameraTarget by remember { mutableStateOf<LatLng?>(null) } // 카메라 이동용 상태
@@ -92,11 +108,24 @@ fun MapTab() {
     var sessionTransportPin by remember { mutableStateOf<List<TransportPin>>(emptyList()) } // 세션에 저장된 교통수단 핀 목록
     var userSelectedMapPins by remember { mutableStateOf<List<MapPin>>(emptyList()) } // 유저가 선택한 핀 목록
 
-    var selectedTripId by remember { mutableStateOf<Int?>(null) } // 선택된 여행 ID
-    var selectedRegionId by remember { mutableStateOf<Int?>(null) } // 선택된 지역 ID
+    var selectedTripId by remember { mutableStateOf<Int?>(
+            if (preselectedPin?.type == MapPinType.TRIP) preselectedPin.id else null
+        ) } // 선택된 여행 ID
+    var selectedRegionId by remember { mutableStateOf<Int?>(
+        when (preselectedPin?.type) {
+            MapPinType.REGION -> preselectedPin.id
+            MapPinType.SCHEDULE -> (MapRepository.getScheduleById(context, preselectedPin.id as Int) as model.Schedule).region_id
+            else -> null
+        }
+    ) } // 선택된 지역 ID
 
-    var tripInfoBottomDrawerState by remember { mutableStateOf(false) } // 여행 정보 Bottom Drawer 상태
-    var regionInfoBottomDrawerState by remember { mutableStateOf(false) } // 지역 정보 Bottom Drawer 상태
+    var tripInfoBottomDrawerState by remember { mutableStateOf(
+        selectedTripId != null && preselectedPin?.type == MapPinType.TRIP
+    ) } // 여행 정보 Bottom Drawer 상태
+    var regionInfoBottomDrawerState by remember { mutableStateOf(
+        selectedRegionId != null && preselectedPin?.type == MapPinType.REGION
+            || (preselectedPin?.type == MapPinType.SCHEDULE && (MapRepository.getScheduleById(context, preselectedPin.id as Int) as model.Schedule).region_id == selectedRegionId)
+    ) } // 지역 정보 Bottom Drawer 상태
 
     // 카메라 이동은 여기서
     LaunchedEffect(cameraTarget) {
@@ -189,6 +218,12 @@ fun MapTab() {
                         zIndex = 2f,
                         onClick = {
                             focusManager.clearFocus() // 키보드 내리기
+
+                            setPreselectedPin(PreselectedPin(
+                                type = pin.type,
+                                id = pin.id,
+                                position = pin.position
+                            ))
 
 //                            Log.d("MapTab", "Clicked pin: ${pin.title} at ${pin.position}")
 
@@ -482,12 +517,51 @@ fun MapTab() {
                 }
             )
         }
+
+        // 초기화 버튼
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+        ) {
+            Box(
+                modifier = Modifier
+                    .padding(start = 16.dp, bottom = 24.dp)
+                    .size(40.dp)
+                    .align(Alignment.BottomStart)
+                    .background(
+                        color = CustomColors.White,
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                    .clickable {
+                        focusManager.clearFocus() // 키보드 내리기
+                        CoroutineScope(Dispatchers.Main).launch {
+                            cameraPositionState.animate(
+                                CameraUpdateFactory.newLatLngZoom(INITIAL_LAT_LNG, INITIAL_ZOOM_LEVEL)
+                            )
+                        }
+                        selectedTripId = null
+                        selectedRegionId = null
+                        tripInfoBottomDrawerState = false
+                        regionInfoBottomDrawerState = false
+                        setPreselectedPin(null) // 선택된 핀 초기화
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.map_globe),
+                    contentDescription = "",
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+
         // 여행 정보 Bottom Drawer
         BottomDrawer (
             isOpen = tripInfoBottomDrawerState,
             onDismiss = { tripInfoBottomDrawerState = false }
         ) {
-            val regions = MapTabData.getSessionRegions(context, selectedTripId as Int)
+            val tripId = selectedTripId ?: return@BottomDrawer
+            val regions = MapTabData.getSessionRegions(context, tripId)
 
             Column(
                 modifier = Modifier
@@ -510,6 +584,15 @@ fun MapTab() {
                         subtitle = subtitle,
                         onClick = {
                             focusManager.clearFocus() // 키보드 내리기
+
+                            setPreselectedPin(
+                                PreselectedPin(
+                                    type = MapPinType.REGION,
+                                    id = region.id,
+                                    position = LatLng(region.lat, region.lng)
+                                )
+                            )
+
                             selectedRegionId = region.id
                             tripInfoBottomDrawerState = false
                             regionInfoBottomDrawerState = true
@@ -556,6 +639,15 @@ fun MapTab() {
                         subtitle = subtitle,
                         onClick = {
                             focusManager.clearFocus() // 키보드 내리기
+
+                            setPreselectedPin(
+                                PreselectedPin(
+                                    type = MapPinType.SCHEDULE,
+                                    id = schedule.id,
+                                    position = LatLng(schedule.lat, schedule.lng)
+                                )
+                            )
+
                             CoroutineScope(Dispatchers.Main).launch {
                                 cameraPositionState.animate(
                                     CameraUpdateFactory.newLatLngZoom(
