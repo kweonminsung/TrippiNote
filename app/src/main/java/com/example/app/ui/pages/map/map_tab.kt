@@ -104,7 +104,7 @@ fun MapTab() {
     LaunchedEffect(cameraTarget) {
         cameraTarget?.let {
             val update = CameraUpdateFactory.newLatLngZoom(it, cameraPositionState.position.zoom)
-            cameraPositionState.move(update)
+            cameraPositionState.animate(update)
         }
     }
 

@@ -307,4 +307,162 @@ object MapRepository {
         }
         return null
     }
+
+    fun createTrip(context: Context, trip: model.Trip): Long {
+        val dbHelper = SQLiteHelper(context)
+        dbHelper.writableDatabase.use { db ->
+            val values = android.content.ContentValues().apply {
+                put("title", trip.title)
+                put("lat", trip.lat)
+                put("lng", trip.lng)
+                put("start_date", trip.start_date)
+                put("end_date", trip.end_date)
+                put("created_at", trip.created_at)
+            }
+            return db.insert("trip", null, values)
+        }
+    }
+
+    fun updateTrip(context: Context, trip: model.Trip) {
+        val dbHelper = SQLiteHelper(context)
+        dbHelper.writableDatabase.use { db ->
+            val values = android.content.ContentValues().apply {
+                put("title", trip.title)
+                put("lat", trip.lat)
+                put("lng", trip.lng)
+                put("start_date", trip.start_date)
+                put("end_date", trip.end_date)
+                put("created_at", trip.created_at)
+            }
+            db.update("trip", values, "id = ?", arrayOf(trip.id.toString()))
+        }
+    }
+
+    fun deleteTrip(context: Context, tripId: Int) {
+        val dbHelper = SQLiteHelper(context)
+        dbHelper.writableDatabase.use { db ->
+            db.delete("trip", "id = ?", arrayOf(tripId.toString()))
+        }
+    }
+
+    fun createRegion(context: Context, region: model.Region): Long {
+        val dbHelper = SQLiteHelper(context)
+        dbHelper.writableDatabase.use { db ->
+            val values = android.content.ContentValues().apply {
+                put("trip_id", region.trip_id)
+                put("title", region.title)
+                put("lat", region.lat)
+                put("lng", region.lng)
+                put("start_date", region.start_date)
+                put("end_date", region.end_date)
+                put("created_at", region.created_at)
+            }
+            return db.insert("region", null, values)
+        }
+    }
+
+    fun updateRegion(context: Context, region: model.Region) {
+        val dbHelper = SQLiteHelper(context)
+        dbHelper.writableDatabase.use { db ->
+            val values = android.content.ContentValues().apply {
+                put("trip_id", region.trip_id)
+                put("title", region.title)
+                put("lat", region.lat)
+                put("lng", region.lng)
+                put("start_date", region.start_date)
+                put("end_date", region.end_date)
+                put("created_at", region.created_at)
+            }
+            db.update("region", values, "id = ?", arrayOf(region.id.toString()))
+        }
+    }
+
+    fun deleteRegion(context: Context, regionId: Int) {
+        val dbHelper = SQLiteHelper(context)
+        dbHelper.writableDatabase.use { db ->
+            db.delete("region", "id = ?", arrayOf(regionId.toString()))
+        }
+    }
+
+    fun createSchedule(context: Context, schedule: model.Schedule): Long {
+        val dbHelper = SQLiteHelper(context)
+        dbHelper.writableDatabase.use { db ->
+            val values = android.content.ContentValues().apply {
+                put("type", schedule.type.name)
+                put("region_id", schedule.region_id)
+                put("title", schedule.title)
+                put("memo", schedule.memo)
+                put("lat", schedule.lat)
+                put("lng", schedule.lng)
+                put("start_datetime", schedule.start_datetime)
+                put("end_datetime", schedule.end_datetime)
+                put("created_at", schedule.created_at)
+            }
+            return db.insert("schedule", null, values)
+        }
+    }
+
+fun updateSchedule(context: Context, schedule: model.Schedule) {
+        val dbHelper = SQLiteHelper(context)
+        dbHelper.writableDatabase.use { db ->
+            val values = android.content.ContentValues().apply {
+                put("type", schedule.type.name)
+                put("region_id", schedule.region_id)
+                put("title", schedule.title)
+                put("memo", schedule.memo)
+                put("lat", schedule.lat)
+                put("lng", schedule.lng)
+                put("start_datetime", schedule.start_datetime)
+                put("end_datetime", schedule.end_datetime)
+                put("created_at", schedule.created_at)
+            }
+            db.update("schedule", values, "id = ?", arrayOf(schedule.id.toString()))
+        }
+    }
+
+fun deleteSchedule(context: Context, scheduleId: Int) {
+        val dbHelper = SQLiteHelper(context)
+        dbHelper.writableDatabase.use { db ->
+            db.delete("schedule", "id = ?", arrayOf(scheduleId.toString()))
+        }
+    }
+
+    fun createTransport(context: Context, transport: model.Transport): Long {
+        val dbHelper = SQLiteHelper(context)
+        dbHelper.writableDatabase.use { db ->
+            val values = android.content.ContentValues().apply {
+                put("region_id", transport.region_id)
+                put("from_schedule_id", transport.from_schedule_id)
+                put("to_schedule_id", transport.to_schedule_id)
+                put("type", transport.type.name)
+                put("duration", transport.duration)
+                put("created_at", transport.created_at)
+                put("memo", transport.memo)
+            }
+            return db.insert("transport", null, values)
+        }
+    }
+
+    fun updateTransport(context: Context, transport: model.Transport) {
+        val dbHelper = SQLiteHelper(context)
+        dbHelper.writableDatabase.use { db ->
+            val values = android.content.ContentValues().apply {
+                put("region_id", transport.region_id)
+                put("from_schedule_id", transport.from_schedule_id)
+                put("to_schedule_id", transport.to_schedule_id)
+                put("type", transport.type.name)
+                put("duration", transport.duration)
+                put("created_at", transport.created_at)
+                put("memo", transport.memo)
+            }
+            db.update("transport", values, "id = ?", arrayOf(transport.id.toString()))
+        }
+    }
+
+    fun deleteTransport(context: Context, transportId: Int) {
+        val dbHelper = SQLiteHelper(context)
+        dbHelper.writableDatabase.use { db ->
+            db.delete("transport", "id = ?", arrayOf(transportId.toString()))
+        }
+    }
 }
