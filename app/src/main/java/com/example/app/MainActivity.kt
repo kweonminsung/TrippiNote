@@ -66,12 +66,12 @@ class MainActivity : ComponentActivity() {
 
             // KeyValueStore에서 가져온 데이터를 LocalSession에 저장
             val initialSessionData = KeyValueStore.loadBulk(context) as SessionData
-
             val session = remember { mutableStateOf(initialSessionData) }
-
             Log.d("SessionData", "Initial Session Data: ${session.value}")
 
-            CompositionLocalProvider(LocalSession provides session) {
+            CompositionLocalProvider(
+                LocalSession provides session,
+            ) {
                 AppTheme {
                     MainScreen()
                 }
@@ -110,9 +110,15 @@ fun MainScreen() {
                 .padding(it)
         ) {
             when (tabType) {
-                TabType.HOME -> HomeTab(setTabType = setTabType, setPreselectedPin = setPreselectedPin)
+                TabType.HOME -> HomeTab(
+                    setTabType = setTabType,
+                    setPreselectedPin = setPreselectedPin
+                )
                 TabType.ALBUM -> AlbumTab()
-                TabType.MAP -> MapTab(preselectedPin = preselectedPin, setPreselectedPin = setPreselectedPin)
+                TabType.MAP -> MapTab(
+                    preselectedPin = preselectedPin,
+                    setPreselectedPin = setPreselectedPin
+                )
                 TabType.PROFILE -> ProfileTab()
             }
         }
