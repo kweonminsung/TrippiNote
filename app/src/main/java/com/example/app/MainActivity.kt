@@ -101,7 +101,7 @@ fun MainScreen() {
                 .padding(it)
         ) {
             when (tabType) {
-                TabType.HOME -> HomeTab()
+                TabType.HOME -> HomeTab(setTabType = setTabType)
                 TabType.ALBUM -> AlbumTab()
                 TabType.MAP -> MapTab()
                 TabType.PROFILE -> ProfileTab()

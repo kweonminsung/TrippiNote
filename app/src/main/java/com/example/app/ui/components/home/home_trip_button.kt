@@ -37,7 +37,6 @@ fun HomeTripButton(
             .clickable(onClick = onClick)
             .background(color = CustomColors.White)
             .padding(12.dp)
-            .width(280.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),

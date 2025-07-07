@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import com.example.app.R
+import com.example.app.TabType
 import com.example.app.ui.components.home.HomeTripButton
 import com.example.app.ui.theme.CustomColors
 import com.example.app.util.DatetimeUtil
@@ -25,11 +26,13 @@ import com.example.app.util.database.MapRepository
 import com.example.app.util.database.model
 
 @Composable
-fun HomeTab() {
+fun HomeTab(
+    setTabType: (TabType) -> Unit,
+) {
     val plannedTrip = MapRepository.getPlannedTrip(LocalContext.current)
 //    val plannedTrip = null as model.Trip?
     val allTrips = MapRepository.getTrips(LocalContext.current)
-//    val allTrips = null as List<model.Trip>?
+//    val allTrips = emptyList<model.Trip>()
 
     Box(
         modifier = Modifier
@@ -37,7 +40,7 @@ fun HomeTab() {
             .background(
                 color = CustomColors.LighterGray
             ),
-        contentAlignment = Alignment.TopCenter  // Box 내의 콘텐츠를 상단 중앙 정렬
+        contentAlignment = Alignment.TopCenter
     ) {
         Column(
             modifier = Modifier
@@ -123,18 +126,21 @@ fun HomeTab() {
             Column(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
+                    .width(300.dp)
                     .background(color = CustomColors.White),
             ) {
                 if (allTrips.isEmpty()) {
                     Box(
                         modifier = Modifier
-                            .height(100.dp),
+                            .height(100.dp)
+                            .fillMaxWidth()
+                        ,
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "여행 기록이 없습니다",
                             color = CustomColors.DarkGray,
-                            fontSize = 18.sp,
+                            fontSize = 18.sp
                         )
                     }
                 } else {
@@ -147,7 +153,9 @@ fun HomeTab() {
                                 "${trip.start_date?.let { DatetimeUtil.dateToDotDate(it) }}${if (trip.end_date != null) " - ${DatetimeUtil.dateToDotDate(trip.end_date)}" else ""}"
                             },
                             imageId = "",
-                            onClick = { /* TODO: Navigate to trip details */ }
+                            onClick = {
+                                setTabType(TabType.MAP)
+                            }
                         )
                     }
                 }
