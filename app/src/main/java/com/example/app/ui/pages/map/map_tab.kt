@@ -1,12 +1,18 @@
 package com.example.app.ui.pages.map
 
 import android.util.Log
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.app.PreselectedPin
 import com.example.app.ui.components.BOTTOM_DRAWER_ANIMATION_DURATION
@@ -51,6 +57,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import com.example.app.R
 
 val INITIAL_LAT_LNG = LatLng(48.866096757760225, 2.348085902631283) // 지도의 초기 위치(파리)
 val INITIAL_ZOOM_LEVEL = ZOOM_LEVEL.CONTINENT // 초기 줌 레벨
@@ -510,12 +517,51 @@ fun MapTab(preselectedPin: PreselectedPin? = null, setPreselectedPin: (Preselect
                 }
             )
         }
+
+        // 초기화 버튼
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+        ) {
+            Box(
+                modifier = Modifier
+                    .padding(start = 16.dp, bottom = 24.dp)
+                    .size(40.dp)
+                    .align(Alignment.BottomStart)
+                    .background(
+                        color = CustomColors.White,
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                    .clickable {
+                        focusManager.clearFocus() // 키보드 내리기
+                        CoroutineScope(Dispatchers.Main).launch {
+                            cameraPositionState.animate(
+                                CameraUpdateFactory.newLatLngZoom(INITIAL_LAT_LNG, INITIAL_ZOOM_LEVEL)
+                            )
+                        }
+                        selectedTripId = null
+                        selectedRegionId = null
+                        tripInfoBottomDrawerState = false
+                        regionInfoBottomDrawerState = false
+                        setPreselectedPin(null) // 선택된 핀 초기화
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.map_globe),
+                    contentDescription = "",
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+
         // 여행 정보 Bottom Drawer
         BottomDrawer (
             isOpen = tripInfoBottomDrawerState,
             onDismiss = { tripInfoBottomDrawerState = false }
         ) {
-            val regions = MapTabData.getSessionRegions(context, selectedTripId as Int)
+            val tripId = selectedTripId ?: return@BottomDrawer
+            val regions = MapTabData.getSessionRegions(context, tripId)
 
             Column(
                 modifier = Modifier
