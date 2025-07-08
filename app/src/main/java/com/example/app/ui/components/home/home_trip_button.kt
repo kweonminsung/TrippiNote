@@ -18,11 +18,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.app.R
+import com.example.app.R.drawable.sample_image
+import com.example.app.ui.pages.album.drawableResToByteArray
 import com.example.app.ui.theme.CustomColors
+import com.example.app.util.ObjectStorage
 
 @Composable
 fun HomeTripButton(
@@ -32,6 +38,8 @@ fun HomeTripButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+
     Box(
         modifier = modifier
             .clickable(onClick = onClick)
@@ -46,19 +54,38 @@ fun HomeTripButton(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.sample_trip),
-                    contentDescription = "",
-                    modifier = Modifier
-                        .width(50.dp)
-                        .height(50.dp)
-                        .background(color = CustomColors.White)
-                        .shadow(
-                            elevation = 1.dp,
-                            shape = RoundedCornerShape(8.dp),
-                        )
-                        .clickable(onClick = onClick)
-                )
+                if (imageId != null) {
+                    AsyncImage(
+                        model = ObjectStorage.read(context, imageId),
+                        contentDescription = "Planned Trip Image",
+                        modifier = Modifier
+                            .width(50.dp)
+                            .height(50.dp)
+                            .background(color = CustomColors.White)
+                            .shadow(
+                                elevation = 1.dp,
+                                shape = RoundedCornerShape(8.dp),
+                            )
+                            .clickable(onClick = onClick),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    val sampleImageByteArray = drawableResToByteArray(context, sample_image)
+                    AsyncImage(
+                        model = sampleImageByteArray,
+                        contentDescription = "Sample Trip Image",
+                        modifier = Modifier
+                            .width(50.dp)
+                            .height(50.dp)
+                            .background(color = CustomColors.White)
+                            .shadow(
+                                elevation = 1.dp,
+                                shape = RoundedCornerShape(8.dp),
+                            )
+                            .clickable(onClick = onClick),
+                        contentScale = ContentScale.Crop
+                    )
+                }
                 Column(
                     modifier = Modifier
                         .padding(start = 12.dp)

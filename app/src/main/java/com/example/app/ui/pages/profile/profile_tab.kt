@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -19,6 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.app.LocalSession
+import com.example.app.ui.components.animations.FireworkDialog
 import com.example.app.ui.components.profile.ProfileCard
 import com.example.app.ui.components.profile.ProfileCountBox
 import com.example.app.ui.components.profile.ProfileSpecific
@@ -32,6 +34,7 @@ fun ProfileTab() {
     val sessionData = LocalSession.current.value
     val username = sessionData.user.name
     val email = sessionData.user.email
+    val imageId = sessionData.user.image_id
 
     val tripsCount = MapRepository.countTrips(context)
     val regionsCount = MapRepository.countRegions(context)
@@ -43,6 +46,8 @@ fun ProfileTab() {
             onDismiss = { setSpecificOpen(false) },
         )
     }
+
+    val (showFireworks, setShowFireworks) = remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -63,7 +68,7 @@ fun ProfileTab() {
                 name = username,
                 email = email,
                 onClick = { setSpecificOpen(true) },
-                image_id = null
+                imageId = imageId
             )
 
             Text(
@@ -85,7 +90,7 @@ fun ProfileTab() {
                     count = tripsCount,
                     label = "Trips",
                     onClick = {
-
+                        setShowFireworks(true)
                     },
                     modifier = Modifier.weight(1f)
                 )
@@ -93,10 +98,19 @@ fun ProfileTab() {
                 ProfileCountBox(
                     count = regionsCount,
                     label = "Regions",
-                    onClick = {},
+                    onClick = {
+                        setShowFireworks(true)
+                    },
                     modifier = Modifier.weight(1f)
                 )
             }
+        }
+
+        if(showFireworks) {
+            FireworkDialog(
+                onDismissRequest = { setShowFireworks(false) },
+                autoDismissMillis = 2000L
+            )
         }
     }
 }

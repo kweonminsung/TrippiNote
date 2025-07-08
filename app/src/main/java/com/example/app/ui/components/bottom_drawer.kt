@@ -107,8 +107,6 @@ fun BottomDrawer(
                             .align(Alignment.CenterHorizontally)
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
                     content()
                 }
             }

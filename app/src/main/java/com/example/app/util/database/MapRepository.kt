@@ -521,6 +521,46 @@ object MapRepository {
         return images
     }
 
+    fun getRandomTripImage(context: Context, tripId: Int): ImageResult? {
+        val dbHelper = SQLiteHelper(context)
+
+        dbHelper.readableDatabase.use { db ->
+            val cursor = db.rawQuery("""
+                SELECT 
+                    trip.id AS trip_id,
+                    region.id AS region_id,
+                    trip.title,
+                    (
+                        SELECT schedule_image.file_id
+                        FROM schedule
+                        LEFT JOIN schedule_image ON schedule.id = schedule_image.schedule_id
+                        WHERE schedule.region_id = region.id
+                        ORDER BY RANDOM()
+                        LIMIT 1
+                    ) AS file_id
+                FROM trip
+                LEFT JOIN region ON region.trip_id = trip.id
+                WHERE trip.id = ?
+            """.trimIndent(), arrayOf(tripId.toString()))
+
+            if (cursor.moveToFirst()) {
+                val tripIdIdx = cursor.getColumnIndex("trip_id")
+                val regionIdIdx = cursor.getColumnIndex("region_id")
+                val fileIdIdx = cursor.getColumnIndex("file_id")
+                val titleIdx = cursor.getColumnIndex("title")
+
+                return ImageResult(
+                    trip_id = cursor.getInt(tripIdIdx),
+                    region_id = cursor.getInt(regionIdIdx),
+                    file_id = cursor.getString(fileIdIdx),
+                    title = cursor.getString(titleIdx)
+                )
+            }
+            cursor.close()
+        }
+        return null
+    }
+
     fun getRandomTripImages(context: Context): List<ImageResult> {
         val dbHelper = SQLiteHelper(context)
 

@@ -1,9 +1,14 @@
 package com.example.app.ui.components.profile
 
+import android.net.Uri
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +19,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
@@ -34,11 +41,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import coil.compose.AsyncImage
 import com.example.app.LocalSession
 import com.example.app.R
+import com.example.app.R.drawable.sample_profile_image
+import com.example.app.ui.pages.album.drawableResToByteArray
 import com.example.app.ui.theme.CustomColors
 import com.example.app.util.KeyValueStore
+import com.example.app.util.ObjectStorage
+import com.example.app.util.ObjectStorage.save
+import java.io.File
+import java.io.FileOutputStream
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ProfileSpecific(onDismiss: () -> Unit = {}) {
     val context = LocalContext.current
@@ -55,6 +70,27 @@ fun ProfileSpecific(onDismiss: () -> Unit = {}) {
     val (passportNumber, setPassportNumber) = remember { mutableStateOf(sessionData.user.passport_number) }
     val (passportExpiry, setPassportExpiry) = remember { mutableStateOf(sessionData.user.passport_expiry) }
 
+    val (imageId, setImageId) = remember { mutableStateOf(sessionData.user.image_id) }
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            val inputStream = context.contentResolver.openInputStream(it)
+            val tempFile = File(context.cacheDir, "selected_image.jpg")
+            inputStream?.use { input ->
+                FileOutputStream(tempFile).use { output ->
+                    input.copyTo(output)
+                }
+            }
+            val file_id = save(context, tempFile.readBytes()).toString()
+            setImageId(file_id)
+
+            // 프로필 저장 로직
+            sessionData.user.image_id = file_id
+            KeyValueStore.saveBulk(context, sessionData)
+        }
+    }
+
     BackHandler(onBack = onDismiss) // 뒤로가기 버튼 핸들러
     Dialog(
         onDismissRequest = onDismiss,
@@ -69,9 +105,10 @@ fun ProfileSpecific(onDismiss: () -> Unit = {}) {
         ) {
             Column(
                 modifier = Modifier
+                    .verticalScroll(rememberScrollState())
                     .padding(
                         horizontal = 20.dp,
-                        vertical = 8.dp
+                        vertical = 12.dp
                     ),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -102,19 +139,47 @@ fun ProfileSpecific(onDismiss: () -> Unit = {}) {
 
                 }
 
-                Image(
-                    painter = painterResource(id = R.drawable.sample_trip),
-                    contentDescription = "",
+                Box(
                     modifier = Modifier
-                        .width(120.dp)
-                        .height(120.dp)
-                        .shadow(
-                            elevation = 1.dp,
-                            shape = RoundedCornerShape(60.dp),
+                        .combinedClickable(
+                            onClick = {},
+                            onLongClick = {
+                                launcher.launch("image/*")
+                            }
                         )
-                        .background(CustomColors.White),
-                    contentScale = ContentScale.Crop
-                )
+                ) {
+                    if (imageId != null) {
+                        AsyncImage(
+                            model = ObjectStorage.read(context, imageId),
+                            contentDescription = "Profile Image",
+                            modifier = Modifier
+                                .width(120.dp)
+                                .height(120.dp)
+                                .shadow(
+                                    elevation = 1.dp,
+                                    shape = RoundedCornerShape(60.dp),
+                                )
+                                .background(CustomColors.White),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        val sampleImageByteArray =
+                            drawableResToByteArray(context, sample_profile_image)
+                        AsyncImage(
+                            model = sampleImageByteArray,
+                            contentDescription = "Sample Profile Image",
+                            modifier = Modifier
+                                .width(120.dp)
+                                .height(120.dp)
+                                .shadow(
+                                    elevation = 1.dp,
+                                    shape = RoundedCornerShape(60.dp),
+                                )
+                                .background(CustomColors.White),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                }
 
                 // 이름 표시
                 Row(
@@ -138,7 +203,6 @@ fun ProfileSpecific(onDismiss: () -> Unit = {}) {
                             },
                     )
                 }
-
 
                 Button(
                     onClick = {
