@@ -413,6 +413,170 @@ object MapRepository {
         return null
     }
 
+    fun getScheduleImages(context: Context, scheduleId: Int): List<ImageResult> {
+        val dbHelper = SQLiteHelper(context)
+
+        val images = mutableListOf<ImageResult>()
+        dbHelper.readableDatabase.use { db ->
+            val cursor = db.rawQuery("""
+                SELECT
+                    schedule_image.schedule_id AS schedule_id,
+                    schedule_image.file_id AS file_id,
+                    schedule.title AS title
+                FROM schedule_image
+                JOIN schedule ON schedule_image.schedule_id = schedule.id
+                WHERE schedule_id = ?
+            """.trimMargin(), arrayOf(scheduleId.toString()))
+            val scheduleIdIdx = cursor.getColumnIndex("schedule_id")
+            val fileIdIdx = cursor.getColumnIndex("file_id")
+            val titleIdx = cursor.getColumnIndex("title")
+            while (cursor.moveToNext()) {
+                images.add(
+                    ImageResult(
+                        schedule_id = cursor.getInt(scheduleIdIdx),
+                        file_id = cursor.getString(fileIdIdx),
+                        title = cursor.getString(titleIdx
+                    )
+                ))
+            }
+            cursor.close()
+        }
+        return images
+    }
+
+    fun getRandomScheduleImages(context: Context, regionId: Int): List<ImageResult> {
+        val dbHelper = SQLiteHelper(context)
+
+        val images = mutableListOf<ImageResult>()
+        dbHelper.readableDatabase.use { db ->
+            val cursor = db.rawQuery("""
+                SELECT *
+                FROM (
+                    SELECT
+                        schedule_image.schedule_id AS schedule_id, 
+                        schedule_image.file_id AS file_id, 
+                        schedule.title AS title,
+                        ROW_NUMBER() OVER (PARTITION BY schedule_image.schedule_id ORDER BY RANDOM()) 
+                           AS rn
+                    FROM schedule_image
+                    JOIN schedule ON schedule_image.schedule_id = schedule.id
+                    WHERE schedule.region_id = ?
+                )
+                WHERE rn = 1
+                """.trimIndent(),
+                arrayOf(regionId.toString())
+            )
+            val scheduleIdIdx = cursor.getColumnIndex("schedule_id")
+            val fileIdIdx = cursor.getColumnIndex("file_id")
+            val titleIdx = cursor.getColumnIndex("title")
+            while (cursor.moveToNext()) {
+                images.add(
+                    ImageResult(
+                        schedule_id = cursor.getInt(scheduleIdIdx),
+                        file_id = cursor.getString(fileIdIdx),
+                        title = cursor.getString(titleIdx
+                    )
+                ))
+            }
+            cursor.close()
+        }
+        return images
+    }
+
+    fun getRandomRegionImages(context: Context, tripId: Int): List<ImageResult> {
+        val dbHelper = SQLiteHelper(context)
+
+        val images = mutableListOf<ImageResult>()
+        dbHelper.readableDatabase.use { db ->
+            val cursor = db.rawQuery("""
+                SELECT *
+                FROM (
+                    SELECT
+                        schedule_image.schedule_id AS schedule_id,
+                        region.id AS region_id,
+                        schedule_image.file_id AS file_id,
+                        region.title AS title,
+                        ROW_NUMBER() OVER (
+                           PARTITION BY region.id
+                           ORDER BY RANDOM()
+                        ) AS rn
+                    FROM region
+                    JOIN schedule ON schedule.region_id = region.id
+                    JOIN schedule_image ON schedule_image.schedule_id = schedule.id
+                    WHERE region.trip_id = ?
+                )
+                WHERE rn = 1
+                """.trimIndent(),
+                arrayOf(tripId.toString())
+            )
+            val scheduleIdIdx = cursor.getColumnIndex("schedule_id")
+            val regionIdIdx = cursor.getColumnIndex("region_id")
+            val fileIdIdx = cursor.getColumnIndex("file_id")
+            val titleIdx = cursor.getColumnIndex("title")
+            while (cursor.moveToNext()) {
+                images.add(
+                    ImageResult(
+                        schedule_id = cursor.getInt(scheduleIdIdx),
+                        region_id = cursor.getInt(regionIdIdx),
+                        file_id = cursor.getString(fileIdIdx),
+                        title = cursor.getString(titleIdx
+                    )
+                ))
+            }
+            cursor.close()
+        }
+        return images
+    }
+
+    fun getRandomTripImages(context: Context): List<ImageResult> {
+        val dbHelper = SQLiteHelper(context)
+
+        val images = mutableListOf<ImageResult>()
+        dbHelper.readableDatabase.use { db ->
+            val cursor = db.rawQuery("""
+                SELECT *
+                FROM (
+                    SELECT
+                        trip.id AS trip_id,
+                        region.id AS region_id,
+                        schedule_image.schedule_id AS schedule_id,
+                        schedule_image.file_id AS file_id,
+                        region.title AS title,
+                        ROW_NUMBER() OVER (
+                           PARTITION BY region.id
+                           ORDER BY RANDOM()
+                        ) AS rn
+                    FROM trip
+                    JOIN region ON region.trip_id = trip.id
+                    JOIN schedule ON schedule.region_id = region.id
+                    JOIN schedule_image ON schedule_image.schedule_id = schedule.id
+                )
+                WHERE rn = 1
+                """.trimIndent(),
+                null
+            )
+            val tripIdIdx = cursor.getColumnIndex("trip_id")
+            val regionIdIdx = cursor.getColumnIndex("region_id")
+            val scheduleIdIdx = cursor.getColumnIndex("schedule_id")
+            val fileIdIdx = cursor.getColumnIndex("file_id")
+            val titleIdx = cursor.getColumnIndex("title")
+
+            while (cursor.moveToNext()) {
+                images.add(
+                    ImageResult(
+                        trip_id = cursor.getInt(tripIdIdx),
+                        region_id = cursor.getInt(regionIdIdx),
+                        schedule_id = cursor.getInt(scheduleIdIdx),
+                        file_id = cursor.getString(fileIdIdx),
+                        title = cursor.getString(titleIdx
+                    )
+                ))
+            }
+            cursor.close()
+        }
+        return images
+    }
+
     fun createTrip(context: Context, trip: model.Trip): Long {
         val dbHelper = SQLiteHelper(context)
         dbHelper.writableDatabase.use { db ->
@@ -624,4 +788,36 @@ fun deleteSchedule(context: Context, scheduleId: Int) {
             return results
         }
     }
+
+    fun countTrips(context: Context): Int {
+        val dbHelper = SQLiteHelper(context)
+        dbHelper.readableDatabase.use { db ->
+            val cursor = db.rawQuery("SELECT COUNT(*) FROM trip", null)
+            if (cursor.moveToFirst()) {
+                return cursor.getInt(0)
+            }
+            cursor.close()
+        }
+        return 0
+    }
+
+    fun countRegions(context: Context): Int {
+        val dbHelper = SQLiteHelper(context)
+        dbHelper.readableDatabase.use { db ->
+            val cursor = db.rawQuery("SELECT COUNT(*) FROM region", null)
+            if (cursor.moveToFirst()) {
+                return cursor.getInt(0)
+            }
+            cursor.close()
+        }
+        return 0
+    }
 }
+
+data class ImageResult(
+    val trip_id: Int? = null,
+    val region_id: Int? = null,
+    val schedule_id: Int? = null,
+    val title: String,
+    val file_id: String,
+)

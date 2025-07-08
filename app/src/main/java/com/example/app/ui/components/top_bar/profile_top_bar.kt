@@ -38,7 +38,7 @@ fun ProfileTopBar() {
 
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = CustomColors.White,
+            containerColor = CustomColors.LighterGray,
             titleContentColor = CustomColors.Black,
             actionIconContentColor = CustomColors.Black
         ),
