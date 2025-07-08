@@ -671,7 +671,7 @@ object MapRepository {
         }
     }
 
-fun updateSchedule(context: Context, schedule: model.Schedule) {
+    fun updateSchedule(context: Context, schedule: model.Schedule) {
         val dbHelper = SQLiteHelper(context)
         dbHelper.writableDatabase.use { db ->
             val values = android.content.ContentValues().apply {
@@ -689,7 +689,7 @@ fun updateSchedule(context: Context, schedule: model.Schedule) {
         }
     }
 
-fun deleteSchedule(context: Context, scheduleId: Int) {
+    fun deleteSchedule(context: Context, scheduleId: Int) {
         val dbHelper = SQLiteHelper(context)
         dbHelper.writableDatabase.use { db ->
             db.delete("schedule", "id = ?", arrayOf(scheduleId.toString()))
@@ -811,6 +811,18 @@ fun deleteSchedule(context: Context, scheduleId: Int) {
             cursor.close()
         }
         return 0
+    }
+
+    fun createScheduleImage(context: Context, scheduleId: Int, fileId: String): Long {
+        val dbHelper = SQLiteHelper(context)
+        dbHelper.writableDatabase.use { db ->
+            val values = android.content.ContentValues().apply {
+                put("schedule_id", scheduleId)
+                put("file_id", fileId)
+                put("created_at", System.currentTimeMillis().toString())
+            }
+            return db.insert("schedule_image", null, values)
+        }
     }
 }
 
