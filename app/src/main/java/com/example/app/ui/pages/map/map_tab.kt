@@ -729,7 +729,7 @@ fun MapTab(
                             onClick = onClick,
                             modifier = Modifier
                                 .width(200.dp)
-                                .padding(top = 12.dp)
+                                .padding(top = 12.dp, bottom = 8.dp)
                         )
                     },
                     saveFn = { type, title, memo, start_datetime, c, locValue ->
