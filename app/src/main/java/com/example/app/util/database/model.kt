@@ -1,5 +1,9 @@
 package com.example.app.util.database
 
+import androidx.compose.ui.graphics.Color
+import com.example.app.ui.theme.CustomColors
+import com.example.app.R
+
 class model {
     data class Wishlist(
         val id: Int,
@@ -81,13 +85,64 @@ class model {
         TRAIN,
         SUBWAY,
         AIRPLANE;
+
+        fun toColor(): Color {
+            return when (this) {
+                WALKING -> CustomColors.Blue
+                BICYCLE -> CustomColors.Green
+                CAR -> CustomColors.Red
+                BUS -> CustomColors.Yellow
+                TRAIN -> CustomColors.Orange
+                SUBWAY -> CustomColors.LightGray
+                AIRPLANE -> CustomColors.Gray
+            }
+        }
+
+        fun toStringKor(): String {
+            return when (this) {
+                WALKING -> "도보"
+                BICYCLE -> "자전거"
+                CAR -> "자동차"
+                BUS -> "버스"
+                TRAIN -> "기차"
+                SUBWAY -> "지하철"
+                AIRPLANE -> "비행기"
+            }
+        }
     }
 
     enum class ScheduleType {
         SIGHTS,
         HOTEL,
         RESTAURANT,
-        ETC,
+        ETC;
+
+        fun toColor(): Color {
+            return when (this) {
+                SIGHTS -> CustomColors.Blue
+                HOTEL -> CustomColors.DarkGray
+                RESTAURANT -> CustomColors.Orange
+                ETC -> CustomColors.Red
+            }
+        }
+
+        fun toStringKor(): String {
+            return when (this) {
+                SIGHTS -> "관광"
+                HOTEL -> "숙소"
+                RESTAURANT -> "음식점"
+                ETC -> "기타"
+            }
+        }
+
+        fun toIcon(): Int {
+            return when (this) {
+                SIGHTS -> R.drawable.map_sights
+                HOTEL -> R.drawable.map_hotel
+                RESTAURANT -> R.drawable.map_restaurant
+                ETC -> R.drawable.map_etc
+            }
+        }
     }
 
 }

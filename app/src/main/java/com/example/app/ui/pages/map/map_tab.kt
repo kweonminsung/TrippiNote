@@ -294,15 +294,7 @@ fun MapTab(
                     Polyline(
                         points = listOf(transportPin.from, transportPin.to),
                         zIndex = 2f,
-                        color = when (transportPin.transportType) {
-                            TransportType.WALKING -> CustomColors.Blue
-                            TransportType.BICYCLE -> CustomColors.Green
-                            TransportType.CAR -> CustomColors.Red
-                            TransportType.BUS -> CustomColors.Yellow
-                            TransportType.TRAIN -> CustomColors.Orange
-                            TransportType.SUBWAY -> CustomColors.LightGray
-                            TransportType.AIRPLANE -> CustomColors.Gray
-                        },
+                        color = transportPin.transportType.toColor(),
                         width = 30f,
                         jointType = JointType.ROUND,
                         pattern = if (transportPin.transportType == model.TransportType.WALKING) {
@@ -351,24 +343,8 @@ fun MapTab(
                         }
                     ) {
                         CustomTransportPin(
-                            text = "${when (transportPin.transportType) {
-                                TransportType.WALKING -> "도보"
-                                TransportType.BICYCLE -> "자전거"
-                                TransportType.CAR -> "자동차"
-                                TransportType.BUS -> "버스"
-                                TransportType.TRAIN -> "기차"
-                                TransportType.SUBWAY -> "지하철"
-                                TransportType.AIRPLANE -> "비행기"
-                            }}로 이동",
-                            borderColor = when (transportPin.transportType) {
-                                TransportType.WALKING -> CustomColors.Blue
-                                TransportType.BICYCLE -> CustomColors.Green
-                                TransportType.CAR -> CustomColors.Red
-                                TransportType.BUS -> CustomColors.Yellow
-                                TransportType.TRAIN -> CustomColors.Orange
-                                TransportType.SUBWAY -> CustomColors.LightGray
-                                TransportType.AIRPLANE -> CustomColors.Gray
-                            },
+                            text = "${transportPin.transportType.toStringKor()}로 이동",
+                            borderColor = transportPin.transportType.toColor(),
                         )
                     }
                 }

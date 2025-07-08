@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -56,12 +55,7 @@ fun ScheduleInfoButton(
         ) {
             Row() {
                 Image(
-                    painter = painterResource(id = when (type) {
-                        model.ScheduleType.SIGHTS -> R.drawable.map_sights
-                        model.ScheduleType.HOTEL -> R.drawable.map_hotel
-                        model.ScheduleType.RESTAURANT -> R.drawable.map_restaurant
-                        model.ScheduleType.ETC -> R.drawable.map_etc
-                    }),
+                    painter = painterResource(id = type.toIcon()),
                     contentDescription = null,
                     modifier = Modifier.size(40.dp)
                 )
@@ -69,12 +63,7 @@ fun ScheduleInfoButton(
                     verticalArrangement = Arrangement.Center,
                 ) {
                     Text(
-                        text = when (type) {
-                            model.ScheduleType.SIGHTS -> "관광"
-                            model.ScheduleType.HOTEL -> "숙소"
-                            model.ScheduleType.RESTAURANT -> "음식점"
-                            model.ScheduleType.ETC -> "기타"
-                        },
+                        text = type.toStringKor(),
                         color = CustomColors.Gray,
                         fontSize = 10.sp,
                         modifier = Modifier.padding(bottom = 4.dp)
