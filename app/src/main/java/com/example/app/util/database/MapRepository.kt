@@ -453,16 +453,18 @@ object MapRepository {
                 SELECT *
                 FROM (
                     SELECT
-                        schedule_image.schedule_id AS schedule_id, 
-                        schedule_image.file_id AS file_id, 
+                        schedule.id AS schedule_id,
+                        schedule_image.file_id AS file_id,
                         schedule.title AS title,
-                        ROW_NUMBER() OVER (PARTITION BY schedule_image.schedule_id ORDER BY RANDOM()) 
-                           AS rn
-                    FROM schedule_image
-                    JOIN schedule ON schedule_image.schedule_id = schedule.id
+                        ROW_NUMBER() OVER (
+                            PARTITION BY schedule.id
+                            ORDER BY RANDOM()
+                        ) AS rn
+                    FROM schedule
+                    LEFT JOIN schedule_image ON schedule_image.schedule_id = schedule.id
                     WHERE schedule.region_id = ?
-                )
-                WHERE rn = 1
+                ) AS sub
+                WHERE rn = 1 OR rn IS NULL
                 """.trimIndent(),
                 arrayOf(regionId.toString())
             )
@@ -497,15 +499,15 @@ object MapRepository {
                         schedule_image.file_id AS file_id,
                         region.title AS title,
                         ROW_NUMBER() OVER (
-                           PARTITION BY region.id
-                           ORDER BY RANDOM()
+                            PARTITION BY region.id
+                            ORDER BY RANDOM()
                         ) AS rn
                     FROM region
-                    JOIN schedule ON schedule.region_id = region.id
-                    JOIN schedule_image ON schedule_image.schedule_id = schedule.id
+                    LEFT JOIN schedule ON schedule.region_id = region.id
+                    LEFT JOIN schedule_image ON schedule_image.schedule_id = schedule.id
                     WHERE region.trip_id = ?
-                )
-                WHERE rn = 1
+                ) AS sub
+                WHERE rn = 1 OR rn IS NULL
                 """.trimIndent(),
                 arrayOf(tripId.toString())
             )
@@ -547,11 +549,11 @@ object MapRepository {
                            ORDER BY RANDOM()
                         ) AS rn
                     FROM trip
-                    JOIN region ON region.trip_id = trip.id
-                    JOIN schedule ON schedule.region_id = region.id
-                    JOIN schedule_image ON schedule_image.schedule_id = schedule.id
-                )
-                WHERE rn = 1
+                    LEFT JOIN region ON region.trip_id = trip.id
+                    LEFT JOIN schedule ON schedule.region_id = region.id
+                    LEFT JOIN schedule_image ON schedule_image.schedule_id = schedule.id
+                ) AS sub
+                WHERE rn = 1 OR rn IS NULL
                 """.trimIndent(),
                 null
             )
@@ -832,5 +834,5 @@ data class ImageResult(
     val region_id: Int? = null,
     val schedule_id: Int? = null,
     val title: String,
-    val file_id: String,
+    val file_id: String? = null,
 )
