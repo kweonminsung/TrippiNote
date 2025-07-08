@@ -60,6 +60,7 @@ import com.example.app.R
 import com.example.app.ui.components.buttons.BottomButton
 import com.example.app.ui.components.popup.AddRegionForm
 import com.example.app.ui.components.popup.AddScheduleForm
+import com.example.app.ui.components.popup.TransportAddForm
 
 val INITIAL_LAT_LNG = LatLng(48.866096757760225, 2.348085902631283) // 지도의 초기 위치(파리)
 val INITIAL_ZOOM_LEVEL = ZOOM_LEVEL.CONTINENT // 초기 줌 레벨
@@ -129,6 +130,8 @@ fun MapTab(
         selectedRegionId != null && preselectedPin?.type == MapPinType.REGION
             || (preselectedPin?.type == MapPinType.SCHEDULE && (MapRepository.getScheduleById(context, preselectedPin.id as Int) as model.Schedule).region_id == selectedRegionId)
     ) } // 지역 정보 Bottom Drawer 상태
+
+    val (isTransportSetting, setIsTransportSetting) = remember { mutableStateOf(false) } // 교통수단 설정 중 여부
 
     // 카메라 이동은 여기서
     LaunchedEffect(cameraTarget) {
@@ -689,12 +692,18 @@ fun MapTab(
                         } else {
                             TransportInfoButton(
                                 type = null,
+                                onClick = {
+                                    focusManager.clearFocus() // 키보드 내리기
+                                    setIsTransportSetting(true)
+
+
+                                }
                             )
                         }
                     }
                 }
 
-//                // 스케줄 추가 버튼
+                // 스케줄 추가 버튼
                 AddScheduleForm(
                     button = { onClick ->
                         BottomButton(
@@ -726,6 +735,17 @@ fun MapTab(
                     title = "새 일정 추가",
                 )
             }
+        }
+
+        if(isTransportSetting) {
+            TransportAddForm(
+                onDismiss = { setIsTransportSetting(false) },
+                type = null,
+                saveFn = { type, from_schedule_id, to_schedule_id ->
+
+
+                }
+            )
         }
     }
 
