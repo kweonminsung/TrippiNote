@@ -50,7 +50,6 @@ import com.example.app.util.ObjectStorage.save
 import com.example.app.util.ObjectStorage.read
 import com.example.app.util.database.ImageResult
 import com.example.app.util.database.MapRepository.createScheduleImage
-import com.example.app.ui.pages.getAllTrips
 import com.example.app.util.database.MapRepository.getRegions
 import com.example.app.util.database.MapRepository.getSchedules
 import com.example.app.util.database.MapRepository.getScheduleImages

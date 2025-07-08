@@ -1,12 +1,15 @@
 package com.example.app.ui.pages
 
-import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,6 +26,7 @@ import com.example.app.R
 import com.example.app.TabType
 import com.example.app.ui.components.home.HomeTripButton
 import com.example.app.ui.components.map.MapPinType
+import com.example.app.ui.components.popup.AddTripForm
 import com.example.app.ui.theme.CustomColors
 import com.example.app.util.DatetimeUtil
 import com.example.app.util.database.MapRepository
@@ -36,14 +40,8 @@ fun HomeTab(
 ) {
     val context = LocalContext.current
 
-    val plannedTrip = MapRepository.getPlannedTrip(LocalContext.current)
-    val allTrips = MapRepository.getTrips(LocalContext.current)
-//    var plannedTrip by remember {
-//        mutableStateOf<model.Trip?>(MapRepository.getPlannedTrip(context))
-//    }
-//    var allTrips by remember {
-//        mutableStateOf<List<model.Trip>>(MapRepository.getTrips(context))
-//    }
+    val plannedTrip = MapRepository.getPlannedTrip(context)
+    val allTrips = MapRepository.getTrips(context)
 
     Box(
         modifier = Modifier
@@ -136,14 +134,42 @@ fun HomeTab(
 
             Spacer(modifier = Modifier.height(36.dp))
 
-            Text(
-                text = "나의 여행",
-                fontSize = 20.sp,
-                color = CustomColors.Black,
+            Row(
                 modifier = Modifier
                     .padding(bottom = 8.dp)
-                    .align(Alignment.Start)
-            )
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "나의 여행",
+                    fontSize = 20.sp,
+                    color = CustomColors.Black,
+                )
+                AddTripForm(
+                    button = { onClick ->
+                        IconButton(onClick = onClick) {
+                            Icon(Icons.Default.Add,
+                                contentDescription = "추가",
+                                tint = CustomColors.Black,
+                            )
+                        }
+                    },
+                    saveFn = { title, start_date, end_date, locValue ->
+                        MapRepository.createTrip(context, model.Trip(
+                            id = -1,
+                            title = title,
+                            start_date = start_date,
+                            end_date = end_date,
+                            lat = locValue.position.latitude,
+                            lng = locValue.position.longitude,
+                            created_at = DatetimeUtil.getCurrentDatetime(),
+                        ))
+                    },
+                    title = "새 여행 추가",
+                )
+            }
+
             Column(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
@@ -189,12 +215,4 @@ fun HomeTab(
             }
         }
     }
-}
-
-fun getPlannedTrip(context: Context): model.Trip? {
-    return MapRepository.getPlannedTrip(context)
-}
-
-fun getAllTrips(context: Context): List<model.Trip> {
-    return MapRepository.getTrips(context)
 }
