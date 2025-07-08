@@ -12,11 +12,13 @@ object CustomColors {
     val DarkGray = Color(0xFF666666)
 
     val Blue = Color(0xFF4696FF)
+    val Purple = Color(0xFF9C27B0)
     val Transparent = Color(0x00000000)
     val Green = Color(0xFF4CAF50)
     val Red = Color(0xFFF44336)
     val Yellow = Color(0xFFF9E000)
     val Orange = Color(0xFFFF9800)
+    val Brown = Color(0xFF795548)
 }
 
 val Purple80 = Color(0xFFD0BCFF)

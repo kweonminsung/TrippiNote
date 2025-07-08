@@ -130,6 +130,12 @@ object DatetimeUtil {
         }
     }
 
+    fun hourMinuteToTime(hour: String, minute: String): String {
+        val hourInt = hour.toIntOrNull() ?: 0
+        val minuteInt = minute.toIntOrNull() ?: 0
+        return String.format("%02d:%02d:00", hourInt, minuteInt)
+    }
+
     fun daysBetween(startDate: String, endDate: String): Int {
         if (startDate.isBlank() || endDate.isBlank()) return 0
         val startParts = startDate.split("-")
