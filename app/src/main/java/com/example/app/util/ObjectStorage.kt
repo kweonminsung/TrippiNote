@@ -2,17 +2,19 @@ package com.example.app.util
 
 import android.content.Context
 import java.io.IOException
+import java.util.UUID
 
 object ObjectStorage {
-    fun save(context: Context, uuid: String, bytes: ByteArray): Boolean {
+    fun save(context: Context, bytes: ByteArray): String? {
+        val uuid = UUID.randomUUID().toString()
         return try {
             context.openFileOutput(uuid, Context.MODE_PRIVATE).use {
                 it.write(bytes)
             }
-            true
+            uuid
         } catch (e: IOException) {
             e.printStackTrace()
-            false
+            null
         }
     }
 
@@ -32,4 +34,3 @@ object ObjectStorage {
         return context.getFileStreamPath(uuid).exists()
     }
 }
-

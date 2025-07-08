@@ -32,14 +32,19 @@ fun ProfileCard(
             painter = painterResource(id = R.drawable.sample_trip),
             contentDescription = "",
             modifier = Modifier
+                .width(100.dp)
+                .height(100.dp)
                 .shadow(
-                    elevation = 4.dp,
-                    shape = RoundedCornerShape(8.dp),
+                    elevation = 1.dp,
+                    shape = RoundedCornerShape(50.dp),
                 )
                 .background(CustomColors.White),
             contentScale = ContentScale.Crop
         )
-        Column() {
+        Column(
+
+            verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+        ) {
             Text(
                 text = name,
                 modifier = Modifier.padding(start = 8.dp),

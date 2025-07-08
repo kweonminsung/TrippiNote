@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.app.LocalSession
 import com.example.app.ui.components.profile.ProfileCard
 import com.example.app.ui.components.profile.ProfileCountBox
@@ -54,6 +55,12 @@ fun ProfileTab() {
 
             Text(
                 text = "여행 상태",
+                color = CustomColors.Black,
+                fontSize = 20.sp,
+                modifier = Modifier.padding(
+                    top = 32.dp,
+                    bottom = 16.dp
+                )
             )
 
             Row(
