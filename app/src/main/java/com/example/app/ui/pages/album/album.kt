@@ -105,54 +105,23 @@ fun FolderItem( // 앨범 폴더 썸네일 + 이름 + 클릭 이벤트
     }
 }
 
-@Composable
-fun ImageItem(
-    image: ByteArray?,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .aspectRatio(1f) // 정사각형
-            .clip(RoundedCornerShape(6.dp))
-            .background(CustomColors.LightGray)
-            .clickable(onClick = onClick)
-    ) {
-        if (image != null) {
-            AsyncImage(
-                model = image,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-        } else {
-            Icon(
-                imageVector = Icons.Default.AccountBox,
-                contentDescription = "Placeholder",
-                modifier = Modifier.align(Alignment.Center)
-            )
-        }
-    }
-}
-
-
 
 @Composable
 fun TripFolderGridColumn(
     context: Context,
-    onTripFolderClick: (model.Trip) -> Unit
+    onTripFolderClick: (ImageResult) -> Unit
 ) {
     val sampleImage = File(context.filesDir, "sample_image.jpeg")
+
+    var images: List<ImageResult> = getRandomTripImages(context)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
     ) {
-        var trips = getAllTrips(context)
-        var images: List<ImageResult> = emptyList()
 
-        if (trips.isEmpty()) {
+        if (images.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -162,35 +131,39 @@ fun TripFolderGridColumn(
                     color = CustomColors.DarkGray,
                     fontSize = 18.sp
                 )
-        }
-        return@Column
+            }
         } else {
             // 폴더 아이템들 정렬
             var thumbnail: ByteArray?
 
-            trips.chunked(2).zip(images.chunked(2)).forEach { (tripChunk, imageChunk) ->
+            images.chunked(2).forEach { imageChuck ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        .padding(2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
-                    tripChunk.zip(imageChunk).forEach { (trip, image) ->
+                    imageChuck.forEach { image ->
                         if(image.file_id == null) {
                             thumbnail = sampleImage.readBytes() // 기본 이미지
                         } else {
-                            thumbnail = read(context, image.file_id)
+                            thumbnail = try {
+                                if (image.file_id != null) read(context, image.file_id) else sampleImage.readBytes()
+                            } catch (e: Exception) {
+                                Log.e("ThumbnailRead", "Error reading image: ${e.message}")
+                                sampleImage.readBytes()
+                            }
                         }
                         FolderItem(
-                            name = trip.title,
+                            name = image.title,
                             thumbnail = thumbnail,
-                            onClick = { onTripFolderClick(trip) },
+                            onClick = { onTripFolderClick(image) },
                             modifier = Modifier.weight(1f)
                         )
                     }
 
                     // 마지막 줄에 짝이 하나면 Spacer로 채우기
-                    if (tripChunk.size < 2) {
+                    if (imageChuck.size < 2) {
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
@@ -206,57 +179,61 @@ fun TripFolderGridColumn(
 fun RegionFolderGridColumn(
     context: Context,
     trip: model.Trip,
-    onRegionFolderClick: (model.Region) -> Unit
+    onRegionFolderClick: (ImageResult) -> Unit
 ) {
     val sampleImage = File(context.filesDir, "sample_image.jpeg")
+
+    var images: List<ImageResult> = getRandomRegionImages(context, trip.id)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
     ) {
-        var regions = getRegions(context, trip.id)
-        var images: List<ImageResult> = emptyList()
 
-        if (regions.isEmpty()) {
+        if (images.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "지역 기록이 없습니다",
+                    text = "여행 기록이 없습니다",
                     color = CustomColors.DarkGray,
                     fontSize = 18.sp
                 )
             }
-            return@Column
         } else {
             // 폴더 아이템들 정렬
             var thumbnail: ByteArray?
 
-            regions.chunked(2).zip(images.chunked(2)).forEach { (regionChunk, imageChunk) ->
+            images.chunked(2).forEach { imageChuck ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        .padding(2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
-                    regionChunk.zip(imageChunk).forEach { (region, image) ->
+                    imageChuck.forEach { image ->
                         if(image.file_id == null) {
                             thumbnail = sampleImage.readBytes() // 기본 이미지
                         } else {
-                            thumbnail = read(context, image.file_id)
+                            thumbnail = try {
+                                if (image.file_id != null) read(context, image.file_id) else sampleImage.readBytes()
+                            } catch (e: Exception) {
+                                Log.e("ThumbnailRead", "Error reading image: ${e.message}")
+                                sampleImage.readBytes()
+                            }
                         }
                         FolderItem(
-                            name = region.title,
+                            name = image.title,
                             thumbnail = thumbnail,
-                            onClick = { onRegionFolderClick(region) },
+                            onClick = { onRegionFolderClick(image) },
                             modifier = Modifier.weight(1f)
                         )
                     }
 
                     // 마지막 줄에 짝이 하나면 Spacer로 채우기
-                    if (regionChunk.size < 2) {
+                    if (imageChuck.size < 2) {
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
@@ -272,57 +249,61 @@ fun RegionFolderGridColumn(
 fun ScheduleFolderGridColumn(
     context: Context,
     region: model.Region,
-    onScheduleFolderClick: (model.Schedule) -> Unit
+    onScheduleFolderClick: (ImageResult) -> Unit
 ) {
     val sampleImage = File(context.filesDir, "sample_image.jpeg")
+
+    var images: List<ImageResult> = getRandomScheduleImages(context, region.id)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
     ) {
-        var schedules = getSchedules(context, region.id)
-        var images: List<ImageResult> = emptyList()
 
-        if (schedules.isEmpty()) {
+        if (images.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "일정 기록이 없습니다",
+                    text = "여행 기록이 없습니다",
                     color = CustomColors.DarkGray,
                     fontSize = 18.sp
                 )
             }
-            return@Column
         } else {
             // 폴더 아이템들 정렬
             var thumbnail: ByteArray?
 
-            schedules.chunked(2).zip(images.chunked(2)).forEach { (scheduleChunk, imageChunk) ->
+            images.chunked(2).forEach { imageChuck ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        .padding(2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
-                    scheduleChunk.zip(imageChunk).forEach { (schedule, image) ->
+                    imageChuck.forEach { image ->
                         if(image.file_id == null) {
                             thumbnail = sampleImage.readBytes() // 기본 이미지
                         } else {
-                            thumbnail = read(context, image.file_id)
+                            thumbnail = try {
+                                if (image.file_id != null) read(context, image.file_id) else sampleImage.readBytes()
+                            } catch (e: Exception) {
+                                Log.e("ThumbnailRead", "Error reading image: ${e.message}")
+                                sampleImage.readBytes()
+                            }
                         }
                         FolderItem(
-                            name = schedule.title,
+                            name = image.title,
                             thumbnail = thumbnail,
-                            onClick = { onScheduleFolderClick(schedule) },
+                            onClick = { onScheduleFolderClick(image) },
                             modifier = Modifier.weight(1f)
                         )
                     }
 
                     // 마지막 줄에 짝이 하나면 Spacer로 채우기
-                    if (scheduleChunk.size < 2) {
+                    if (imageChuck.size < 2) {
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
@@ -342,6 +323,7 @@ fun ScheduleImageGrid(
     onBack: (ImageResult) -> Unit
 ) {
     val sampleImage = File(context.filesDir, "sample_image.jpeg")
+
     val schedule_images = getScheduleImages(context, schedule.id)
 
     if(schedule_images.isEmpty()){
@@ -371,7 +353,7 @@ fun ScheduleImageGrid(
                             .aspectRatio(1f), // 정사각형 박스
                         contentAlignment = Alignment.Center
                     ) {
-                        if( image.file_id == null) {
+                        if( image.file_id == null ) {
                             AsyncImage(
                                 model = sampleImage.readBytes(),
                                 contentDescription = null,
@@ -380,7 +362,12 @@ fun ScheduleImageGrid(
                             )
                         } else {
                             AsyncImage(
-                                model = read(context, image.file_id),
+                                model = try {
+                                    if (image.file_id != null) read(context, image.file_id) else sampleImage.readBytes()
+                                } catch (e: Exception) {
+                                    Log.e("ThumbnailRead", "Error reading image: ${e.message}")
+                                    sampleImage.readBytes()
+                                },
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier.fillMaxSize()

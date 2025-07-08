@@ -553,7 +553,6 @@ object MapRepository {
                     LEFT JOIN schedule ON schedule.region_id = region.id
                     LEFT JOIN schedule_image ON schedule_image.schedule_id = schedule.id
                 ) AS sub
-                WHERE rn = 1 OR rn IS NULL
                 """.trimIndent(),
                 null
             )
