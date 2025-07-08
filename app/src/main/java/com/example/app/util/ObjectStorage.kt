@@ -33,4 +33,6 @@ object ObjectStorage {
     fun exists(context: Context, uuid: String): Boolean {
         return context.getFileStreamPath(uuid).exists()
     }
+
+
 }

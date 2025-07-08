@@ -588,6 +588,7 @@ object MapRepository {
                 put("end_date", trip.end_date)
                 put("created_at", trip.created_at)
             }
+
             return db.insert("trip", null, values)
         }
     }

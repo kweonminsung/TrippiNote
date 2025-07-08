@@ -56,6 +56,7 @@ dependencies {
     implementation("androidx.sqlite:sqlite:2.3.1")
     implementation("androidx.sqlite:sqlite-framework:2.3.1")
     implementation("io.coil-kt:coil-compose:2.2.2")
+    implementation("androidx.appcompat:appcompat:1.4.2")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -1,9 +1,11 @@
 package com.example.app.ui.pages.album
 
+import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,6 +19,45 @@ import com.example.app.ui.components.search_bar.SearchBar
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import com.example.app.util.database.model
+
+@Composable
+fun FolderNavigatorScreen(context: Context) {
+    var selectedTrip by remember { mutableStateOf<model.Trip?>(null) }
+    var selectedRegion by remember { mutableStateOf<model.Region?>(null) }
+    var selectedSchedule by remember { mutableStateOf<model.Schedule?>(null) }
+
+    when {
+        selectedTrip == null -> {
+            TripFolderGridColumn(
+                context = context,
+                onTripFolderClick = { trip -> selectedTrip = trip }
+            )
+        }
+        selectedRegion == null -> {
+            RegionFolderGridColumn(
+                context = context,
+                trip = selectedTrip!!,
+                onRegionFolderClick = { region -> selectedRegion = region }
+            )
+        }
+        selectedSchedule == null -> {
+            ScheduleFolderGridColumn(
+                context = context,
+                region = selectedRegion!!,
+                onScheduleFolderClick = { schedule -> selectedSchedule = schedule }
+            )
+        }
+        else -> {
+            ScheduleImageGrid(
+                context = context,
+                schedule = selectedSchedule!!,
+                onBack = { selectedSchedule = null }
+            )
+        }
+    }
+}
 
 @Composable
 fun AlbumTab() {
@@ -34,20 +75,10 @@ fun AlbumTab() {
             }
             .padding(16.dp)
     ) {
-            SearchBar(
-                placeholder = "나의 여행 검색...",
-                query = query,
-                onQueryChange = { query = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .clickable(
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() }
-                    ) {
-                        // SearchBar 클릭 시 외부 클릭 이벤트 막기
-                    }
-            )
+
+        FolderNavigatorScreen(
+            context = LocalContext.current
+        )
 
     }
 }
