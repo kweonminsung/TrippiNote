@@ -30,6 +30,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import com.example.app.ui.components.PopupWindow
 import com.example.app.ui.components.pop_up_contents.AddSampleForm
+import com.example.app.util.database.MapRepository
+import com.example.app.util.database.model
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,7 +51,6 @@ fun HomeTopBar(
         actions = {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(end = 8.dp)
             ) {
                 AddSampleForm(
                     button = { onClick ->
@@ -58,8 +59,6 @@ fun HomeTopBar(
                         }
                     },
                     title = "새 여행 추가",
-                    onSubmit = { /* TODO: Handle submit action */ },
-                    onCancel = {}
                 )
             }
 

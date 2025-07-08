@@ -63,7 +63,6 @@ class MainActivity : ComponentActivity() {
             KeyValueStore.saveBulk(context, EXAMPLE_SESSION_DATA)
 
 
-
             // KeyValueStore에서 가져온 데이터를 LocalSession에 저장
             val initialSessionData = KeyValueStore.loadBulk(context) as SessionData
             val session = remember { mutableStateOf(initialSessionData) }
@@ -92,7 +91,7 @@ data class PreselectedPin(
 
 @Composable
 fun MainScreen() {
-    val (tabType, setTabType) = remember { mutableStateOf(TabType.HOME) }
+    val (tabType, setTabType) = remember { mutableStateOf(TabType.PROFILE) }
 
     val (preselectedPin, setPreselectedPin) = remember { mutableStateOf<PreselectedPin?>(null) }
 

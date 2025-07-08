@@ -52,7 +52,8 @@ fun HomeTab(
         Column(
             modifier = Modifier
                 .padding(
-                    top = 16.dp,
+                    horizontal = 30.dp,
+                    vertical = 16.dp
                 ),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {

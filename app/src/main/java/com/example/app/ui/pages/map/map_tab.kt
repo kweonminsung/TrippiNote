@@ -9,8 +9,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -83,7 +81,6 @@ fun MapTab(
     setPreselectedPin: (PreselectedPin?) -> Unit
 ) {
     val context = LocalContext.current
-
     val focusManager = LocalFocusManager.current
 
     var mapQuery by remember { mutableStateOf("") }
@@ -103,14 +100,13 @@ fun MapTab(
             }
         )
     }
-
     var cameraTarget by remember { mutableStateOf<LatLng?>(null) } // 카메라 이동용 상태
 
     var zoomLevel by remember { mutableStateOf(INITIAL_ZOOM_LEVEL) } // 줌 레벨 상태
 
     var sessionMapPins by remember { mutableStateOf<List<MapPin>>(emptyList()) } // 세션에 저장된 핀 목록
-    var sessionTransportPin by remember { mutableStateOf<List<TransportPin>>(emptyList()) } // 세션에 저장된 교통수단 핀 목록
-    var userSelectedMapPins by remember { mutableStateOf<List<MapPin>>(emptyList()) } // 유저가 선택한 핀 목록
+    var sessionTransportPins by remember { mutableStateOf<List<TransportPin>>(emptyList()) } // 세션에 저장된 교통수단 핀 목록
+    var userSelectedMapPin by remember { mutableStateOf<MapPin?>(null) } // 유저가 선택한 핀
 
     var selectedTripId by remember { mutableStateOf<Int?>(
             if (preselectedPin?.type == MapPinType.TRIP) preselectedPin.id else null
@@ -156,7 +152,7 @@ fun MapTab(
         sessionMapPins = MapTabData.getSessionPinsByZoomRate(context, zoomLevel)
 
         // 교통수단 핀 목록도 업데이트
-        sessionTransportPin = when (zoomLevel) {
+        sessionTransportPins = when (zoomLevel) {
             ZOOM_LEVEL.CITY -> MapTabData.getSessionTransportPinsByZoomRate(context, zoomLevel)
         else -> emptyList()
         }
@@ -188,31 +184,31 @@ fun MapTab(
                 compassEnabled = false,  // 나침반 비활성화
                 myLocationButtonEnabled = false, // 내 위치 버튼 비활성화
                 mapToolbarEnabled = false, // 지도 툴바 비활성화
-
             ),
             onMapClick = { latLng ->
                 focusManager.clearFocus() // 키보드 내리기
 
-                // 핀이 있으면 삭제, 없으면 새로 추가
-                if (userSelectedMapPins.isNotEmpty()) {
-                    userSelectedMapPins = emptyList()
-                } else {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val locationInfo = PlaceUtil.getLocationInfo(context, latLng)
-                        Log.d(
-                            "MapTab",
-                            "Clicked location: $latLng, Title: ${locationInfo.title}, Snippet: ${locationInfo.snippet}"
-                        )
-                        val pinInfo = MapPin(
-                            id = null,
-                            type = MapPinType.USER_SELECTED,
-                            position = latLng,
-                            title = locationInfo.title,
-                            subtitle = locationInfo.snippet
-                        )
-                        userSelectedMapPins = listOf(pinInfo)
-                    }
+                // 핀이 있으면 삭제
+                if (userSelectedMapPin != null) {
+                    userSelectedMapPin = null
                 }
+                // 없으면 새로 추가
+//                else {
+//                    CoroutineScope(Dispatchers.IO).launch {
+//                        val locationInfo = PlaceUtil.getLocationInfo(context, latLng)
+//                        Log.d(
+//                            "MapTab",
+//                            "Clicked location: $latLng, Title: ${locationInfo.title}, Snippet: ${locationInfo.snippet}"
+//                        )
+//                        userSelectedMapPin = MapPin(
+//                            id = null,
+//                            type = MapPinType.USER_SELECTED,
+//                            position = latLng,
+//                            title = locationInfo.title,
+//                            subtitle = locationInfo.snippet
+//                        )
+//                    }
+//                }
             }
         ) {
             // 세션에 저장된 핀 목록
@@ -291,7 +287,7 @@ fun MapTab(
 
             // 세션에 저장된 교통수단 핀 목록 (CITY 레벨에서만 표시)
             if (zoomLevel == ZOOM_LEVEL.CITY) {
-                sessionTransportPin.forEach { transportPin ->
+                sessionTransportPins.forEach { transportPin ->
                     Polyline(
                         points = listOf(transportPin.from, transportPin.to),
                         zIndex = 2f,
@@ -375,9 +371,9 @@ fun MapTab(
                 }
             }
 
-            // 유저가 선택한 핀 목록
-            userSelectedMapPins.forEach { pin ->
-                key("${pin.position.latitude},${pin.position.longitude},${pin.title},user") {
+            // 유저가 선택한 핀
+            userSelectedMapPin?.let { pin ->
+                key("${pin.position.latitude},${pin.position.longitude},${pin.title}") {
                     MarkerComposable(
                         state = MarkerState(position = pin.position),
                         zIndex = 3f,
@@ -387,7 +383,7 @@ fun MapTab(
                             CoroutineScope(Dispatchers.Main).launch {
                                 cameraPositionState.animate(
                                     CameraUpdateFactory.newLatLngZoom(
-                                        pin.position,
+                                        it.position,
                                         cameraPositionState.position.zoom
                                     )
                                 )
@@ -503,7 +499,7 @@ fun MapTab(
                         if (latLng != null) {
                             val newLatLng = LatLng(latLng.latitude, latLng.longitude)
 
-                            userSelectedMapPins = listOf(MapPin(
+                            userSelectedMapPin = MapPin(
                                 id = null,
                                 type = MapPinType.SEARCH_RESULT,
                                 position = newLatLng,
@@ -511,7 +507,7 @@ fun MapTab(
                                     ?: searchResult.title,
                                 subtitle = response.place.address
                                     ?: searchResult.subtitle
-                            ))
+                            )
                             cameraTarget = newLatLng
                         } else {
                             Log.e("MapTab", "LatLng is null for place: ${searchResult.title}")

@@ -39,7 +39,7 @@ object PlaceUtil {
     }
 
     data class LocationInfo(
-        val latLng: LatLng,
+        val position: LatLng,
         val title: String,
         val snippet: String,
     )

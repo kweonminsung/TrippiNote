@@ -128,19 +128,27 @@ object DatabaseUtil {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 schedule_id INTEGER NOT NULL,
                 file_id TEXT NOT NULL,
-                created_at TEXT NOT NULL,
-                FOREIGN KEY(schedule_id) REFERENCES schedule(id)
-            );
-        """)
-        db.execSQL("""
-            CREATE TABLE IF NOT EXISTS file (
-                id TEXT PRIMARY KEY,
-                name TEXT NOT NULL,
-                size INTEGER NOT NULL,
-                mime_type TEXT NOT NULL,
                 created_at TEXT NOT NULL
             );
         """)
+//        db.execSQL("""
+//            CREATE TABLE IF NOT EXISTS schedule_image (
+//                id INTEGER PRIMARY KEY AUTOINCREMENT,
+//                schedule_id INTEGER NOT NULL,
+//                file_id TEXT NOT NULL,
+//                created_at TEXT NOT NULL,
+//                FOREIGN KEY(schedule_id) REFERENCES schedule(id)
+//            );
+//        """)
+//        db.execSQL("""
+//            CREATE TABLE IF NOT EXISTS file (
+//                id TEXT PRIMARY KEY,
+//                name TEXT NOT NULL,
+//                size INTEGER NOT NULL,
+//                mime_type TEXT NOT NULL,
+//                created_at TEXT NOT NULL
+//            );
+//        """)
         db.execSQL("""
             CREATE TABLE IF NOT EXISTS wishlist (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,

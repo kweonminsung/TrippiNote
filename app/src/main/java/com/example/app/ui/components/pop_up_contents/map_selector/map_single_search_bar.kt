@@ -1,14 +1,13 @@
-package com.example.app.ui.components.map
+package com.example.app.ui.components.pop_up_contents.map_selector
 
-import android.util.Log
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.example.app.ui.components.map.MapPinType
 import com.example.app.ui.components.search_bar.SearchBar
 import com.example.app.ui.pages.map.MapSearchResult
-import com.example.app.util.database.MapRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -16,10 +15,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun MapSearchBar(
+fun MapSingleSearchBar(
     query: String,
     onQueryChange: (String, Job?) -> Unit,
-    onSearchResults: (Pair<List<MapSearchResult>, List<MapSearchResult>>) -> Unit,
+    onSearchResults: (List<MapSearchResult>) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -32,15 +31,7 @@ fun MapSearchBar(
                 delay(400)
                 if (newQuery.isNotBlank()) {
                     try {
-                        val dbResults = MapRepository.searchFromAll(context, newQuery).map { result ->
-                            MapSearchResult(
-                                id = result.id,
-                                type = result.type,
-                                title = result.title
-                            )
-                        }
-//                        Log.d("MapSearchBar", "DB Results: $dbResults")
-                        val mapResults = PlaceUtil.searchPlaceByText(context, newQuery).map { prediction ->
+                        val results = PlaceUtil.searchPlaceByText(context, newQuery).map { prediction ->
                             MapSearchResult(
                                 id = null,
                                 type = MapPinType.SEARCH_RESULT,
@@ -49,12 +40,12 @@ fun MapSearchBar(
                                 placeId = prediction.placeId
                             )
                         }
-                        onSearchResults(Pair(dbResults, mapResults))
+                        onSearchResults(results)
                     } catch (e: Exception) {
-                        onSearchResults(Pair(emptyList(), emptyList()))
+                        onSearchResults(emptyList())
                     }
                 } else {
-                    onSearchResults(Pair(emptyList(), emptyList()))
+                    onSearchResults(emptyList())
                 }
             }
             onQueryChange(newQuery, searchJob)
