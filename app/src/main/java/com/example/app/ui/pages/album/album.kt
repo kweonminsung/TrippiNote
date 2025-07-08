@@ -65,7 +65,7 @@ fun drawableResToByteArray(context: Context, resId: Int): ByteArray? {
     return context.resources.openRawResource(resId).use { it.readBytes() }
 }
 
-fun UploadImage(
+fun uploadImage(
     context: Context,
     file: File,
     schdule: model.Schedule

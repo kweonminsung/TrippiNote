@@ -18,21 +18,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.app.R
+import com.example.app.R.drawable.sample_profile_image
+import com.example.app.ui.pages.album.drawableResToByteArray
 import com.example.app.ui.theme.CustomColors
+import com.example.app.util.ObjectStorage
 
 @Composable
 fun ProfileCard(
     name: String,
     email: String,
     onClick: () -> Unit,
-    image_id: String? = null,
+    imageId: String? = null,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -51,19 +58,36 @@ fun ProfileCard(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.sample_trip),
-            contentDescription = "",
-            modifier = Modifier
-                .width(84.dp)
-                .height(84.dp)
-                .shadow(
-                    elevation = 1.dp,
-                    shape = RoundedCornerShape(42.dp),
-                )
-                .background(CustomColors.White),
-            contentScale = ContentScale.Crop
-        )
+        if(imageId != null) {
+            AsyncImage(
+                model = ObjectStorage.read(context, imageId),
+                contentDescription = "Profile Image",
+                modifier = Modifier
+                    .width(84.dp)
+                    .height(84.dp)
+                    .shadow(
+                        elevation = 1.dp,
+                        shape = RoundedCornerShape(42.dp),
+                    )
+                    .background(CustomColors.White),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            val sampleImageByteArray = drawableResToByteArray(context, sample_profile_image)
+            AsyncImage(
+                model = sampleImageByteArray,
+                contentDescription = "Sample Profile Image",
+                modifier = Modifier
+                    .width(84.dp)
+                    .height(84.dp)
+                    .shadow(
+                        elevation = 1.dp,
+                        shape = RoundedCornerShape(42.dp),
+                    )
+                    .background(CustomColors.White),
+                contentScale = ContentScale.Crop
+            )
+        }
         Column(
             modifier = Modifier
                 .padding(start = 8.dp),

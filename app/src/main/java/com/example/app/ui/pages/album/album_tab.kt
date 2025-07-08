@@ -85,7 +85,7 @@ fun FolderNavigatorScreen(context: Context) {
                     }
                     val schedule = selectedSchedule!!
 
-                    UploadImage(context, tempFile, schedule)
+                    uploadImage(context, tempFile, schedule)
                 }
             }
             Box(
@@ -101,7 +101,6 @@ fun FolderNavigatorScreen(context: Context) {
                         showPopup = true
                     }
                 )
-
 
                 BottomButton(
                     label = "사진 업로드  \uD83D\uDCF8",

@@ -13,7 +13,8 @@ data class User(
     var english_name: String = "",
     var passport_number: String = "",
     var passport_expiry: String = "",
-    var passport_file_id: String = "",
+    var passport_file_id: String? = null,
+    var image_id: String? = null,
 )
 
 val EXAMPLE_SESSION_DATA = SessionData(

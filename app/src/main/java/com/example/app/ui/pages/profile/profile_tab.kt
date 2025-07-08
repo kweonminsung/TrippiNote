@@ -34,6 +34,7 @@ fun ProfileTab() {
     val sessionData = LocalSession.current.value
     val username = sessionData.user.name
     val email = sessionData.user.email
+    val imageId = sessionData.user.image_id
 
     val tripsCount = MapRepository.countTrips(context)
     val regionsCount = MapRepository.countRegions(context)
@@ -67,7 +68,7 @@ fun ProfileTab() {
                 name = username,
                 email = email,
                 onClick = { setSpecificOpen(true) },
-                image_id = null
+                imageId = imageId
             )
 
             Text(
