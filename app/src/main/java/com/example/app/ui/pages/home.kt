@@ -40,8 +40,10 @@ fun HomeTab(
 ) {
     val context = LocalContext.current
 
-    val plannedTrip = MapRepository.getPlannedTrip(context)
-    val allTrips = MapRepository.getTrips(context)
+    val (plannedTrip, setPlannedTrip) = remember {
+        mutableStateOf(MapRepository.getPlannedTrip(context))
+    }
+    val (allTrips, setAllTrips) = remember { mutableStateOf(MapRepository.getTrips(context)) }
 
     Box(
         modifier = Modifier
@@ -165,6 +167,9 @@ fun HomeTab(
                             lng = locValue.position.longitude,
                             created_at = DatetimeUtil.getCurrentDatetime(),
                         ))
+
+                        setAllTrips(MapRepository.getTrips(context))
+                        setPlannedTrip(MapRepository.getPlannedTrip(context))
                     },
                     title = "새 여행 추가",
                 )
