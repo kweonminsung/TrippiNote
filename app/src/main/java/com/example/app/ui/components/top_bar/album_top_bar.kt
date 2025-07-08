@@ -35,14 +35,16 @@ fun AlbumTopBar(
         title = {
             Text(
                 text = "${username}의 앨범",
-                fontSize = 21.sp
+                fontSize = 21.sp,
+                modifier = Modifier
+                    .padding(start = 12.dp)
             )
         },
         actions = {
 
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = CustomColors.White,
+            containerColor = CustomColors.LighterGray,
             titleContentColor = CustomColors.Black,
             actionIconContentColor = CustomColors.Black
         ),

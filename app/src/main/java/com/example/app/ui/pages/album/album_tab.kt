@@ -6,27 +6,23 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
-import com.example.app.ui.components.search_bar.SearchBar
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import com.example.app.ui.components.buttons.BottomButton
-import com.example.app.util.database.ImageResult
 import com.example.app.util.database.model
 import com.example.app.util.database.MapRepository.getTripById
 import com.example.app.util.database.MapRepository.getRegionById
@@ -91,8 +87,7 @@ fun FolderNavigatorScreen(context: Context) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
-            ){
+                ){
                 ScheduleImageGrid(
                     context = context,
                     schedule = selectedSchedule!!,
@@ -110,7 +105,7 @@ fun FolderNavigatorScreen(context: Context) {
                     },
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
+                        .width(200.dp)
                         .padding(top = 16.dp, bottom = 8.dp)
                 )
 
@@ -142,7 +137,6 @@ fun AlbumTab() {
             ) {
                 focusManager.clearFocus()  // 👉 키보드 내리기
             }
-            .padding(16.dp)
     ) {
 
         FolderNavigatorScreen(
