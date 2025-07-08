@@ -216,7 +216,7 @@ fun MapTab(
         ) {
             // 세션에 저장된 핀 목록
             sessionMapPins.forEach { pin ->
-                key("${pin.position.latitude},${pin.position.longitude},${pin.title}") {
+                key("session_${pin.position.latitude}_${pin.position.longitude}_${pin.title}") {
                     MarkerComposable(
                         state = MarkerState(position = pin.position),
                         zIndex = 2f,
@@ -291,68 +291,70 @@ fun MapTab(
             // 세션에 저장된 교통수단 핀 목록 (CITY 레벨에서만 표시)
             if (zoomLevel == ZOOM_LEVEL.CITY) {
                 sessionTransportPins.forEach { transportPin ->
-                    Polyline(
-                        points = listOf(transportPin.from, transportPin.to),
-                        zIndex = 2f,
-                        color = transportPin.transportType.toColor(),
-                        width = 30f,
-                        jointType = JointType.ROUND,
-                        pattern = if (transportPin.transportType == model.TransportType.WALKING) {
-                            listOf(
-                                Dash(20f),
-                                Gap(10f)
-                            ) // 도보는 점선
-                        } else {
-                            null // 다른 교통수단은 실선
-                        }
-                    )
-
-                    val polylineAngle = Math.toDegrees(
-                        kotlin.math.atan2(
-                            transportPin.to.longitude - transportPin.from.longitude,
-                            transportPin.to.latitude - transportPin.from.latitude
-                        )
-                    )
-                    val cameraAngle = cameraPositionState.position.bearing
-                    MarkerComposable(
-                        rotation = (polylineAngle - cameraAngle).toFloat(),
-                        zIndex = 1f,
-                        state = MarkerState(
-                            position = LatLng(
-                                (transportPin.from.latitude + transportPin.to.latitude) / 2,
-                                (transportPin.from.longitude + transportPin.to.longitude) / 2
-                            )
-                        ),
-                        onClick = {
-                            focusManager.clearFocus() // 키보드 내리기
-                            // 핀 클릭 시 카메라 위치 변경
-                            CoroutineScope(Dispatchers.Main).launch {
-                                cameraPositionState.animate(
-                                    CameraUpdateFactory.newLatLngZoom(
-                                        LatLng(
-                                            (transportPin.from.latitude + transportPin.to.latitude) / 2,
-                                            (transportPin.from.longitude + transportPin.to.longitude) / 2
-                                        ),
-                                        cameraPositionState.position.zoom
-                                    )
-                                )
+                    key("transport_${transportPin.from.latitude}_${transportPin.from.longitude}_${transportPin.to.latitude}_${transportPin.to.longitude}_${transportPin.transportType}") {
+                        Polyline(
+                            points = listOf(transportPin.from, transportPin.to),
+                            zIndex = 2f,
+                            color = transportPin.transportType.toColor(),
+                            width = 30f,
+                            jointType = JointType.ROUND,
+                            pattern = if (transportPin.transportType == model.TransportType.WALKING) {
+                                listOf(
+                                    Dash(20f),
+                                    Gap(10f)
+                                ) // 도보는 점선
+                            } else {
+                                null // 다른 교통수단은 실선
                             }
-
-
-                            true // 클릭 이벤트 소비
-                        }
-                    ) {
-                        CustomTransportPin(
-                            text = "${transportPin.transportType.toStringKor()}로 이동",
-                            borderColor = transportPin.transportType.toColor(),
                         )
+
+                        val polylineAngle = Math.toDegrees(
+                            kotlin.math.atan2(
+                                transportPin.to.longitude - transportPin.from.longitude,
+                                transportPin.to.latitude - transportPin.from.latitude
+                            )
+                        )
+                        val cameraAngle = cameraPositionState.position.bearing
+                        MarkerComposable(
+                            rotation = (polylineAngle - cameraAngle).toFloat(),
+                            zIndex = 1f,
+                            state = MarkerState(
+                                position = LatLng(
+                                    (transportPin.from.latitude + transportPin.to.latitude) / 2,
+                                    (transportPin.from.longitude + transportPin.to.longitude) / 2
+                                )
+                            ),
+                            onClick = {
+                                focusManager.clearFocus() // 키보드 내리기
+                                // 핀 클릭 시 카메라 위치 변경
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    cameraPositionState.animate(
+                                        CameraUpdateFactory.newLatLngZoom(
+                                            LatLng(
+                                                (transportPin.from.latitude + transportPin.to.latitude) / 2,
+                                                (transportPin.from.longitude + transportPin.to.longitude) / 2
+                                            ),
+                                            cameraPositionState.position.zoom
+                                        )
+                                    )
+                                }
+
+
+                                true // 클릭 이벤트 소비
+                            }
+                        ) {
+                            CustomTransportPin(
+                                text = "${transportPin.transportType.toStringKor()}로 이동",
+                                borderColor = transportPin.transportType.toColor(),
+                            )
+                        }
                     }
                 }
             }
 
             // 유저가 선택한 핀
             userSelectedMapPin?.let { pin ->
-                key("${pin.position.latitude},${pin.position.longitude},${pin.title}") {
+                key("user_selected_${pin.position.latitude}_${pin.position.longitude}_${pin.title}") {
                     MarkerComposable(
                         state = MarkerState(position = pin.position),
                         zIndex = 3f,
@@ -544,7 +546,7 @@ fun MapTab(
             onDismiss = { tripInfoBottomDrawerState = false }
         ) {
             val tripId = selectedTripId ?: return@BottomDrawer
-            val regions = MapTabData.getSessionRegions(context, tripId)
+            var regions by remember { mutableStateOf<List<model.Region>>(MapTabData.getSessionRegions(context, tripId)) }
 
             Column(
                 modifier = Modifier
@@ -618,6 +620,10 @@ fun MapTab(
                                 created_at = DatetimeUtil.getCurrentDatetime(),
                             )
                         )
+
+                        // 업데이트
+                        sessionMapPins = MapTabData.getSessionPinsByZoomRate(context, zoomLevel) // 세션에 저장된 핀 목록 업데이트
+                        regions = MapTabData.getSessionRegions(context, tripId) // 지역 목록 업데이트
                     },
                     title = "새 지역 추가",
                 )
@@ -630,7 +636,7 @@ fun MapTab(
             onDismiss = { regionInfoBottomDrawerState = false }
         ) {
             val regionId = selectedRegionId ?: return@BottomDrawer
-            val schedules = MapTabData.getSessionSchedules(LocalContext.current, regionId)
+            var schedules by remember { mutableStateOf<List<model.Schedule>>(MapTabData.getSessionSchedules(context, regionId)) }
 
             Column(
                 modifier = Modifier
@@ -674,12 +680,17 @@ fun MapTab(
                     )
                     if (index != schedules.lastIndex) {
                         val nextSchedule = schedules.getOrNull(index + 1) as model.Schedule
-                        val transport = MapTabData.getSessionTransportByFromTo(
-                            LocalContext.current,
-                            regionId,
-                            schedule.id,
-                            nextSchedule.id
-                        )
+                        var transport by remember {
+                            mutableStateOf<model.Transport?>(
+                                MapTabData.getSessionTransportByFromTo(
+                                    context,
+                                    regionId,
+                                    schedule.id,
+                                    nextSchedule.id
+                                )
+                            )
+                        }
+
                         TransportInfoButton(
                             type = transport?.type,
                             duration = transport?.duration,
@@ -696,6 +707,15 @@ fun MapTab(
                                         created_at = DatetimeUtil.getCurrentDatetime(),
                                     )
                                 )
+
+                                // 업데이트
+                                sessionTransportPins = MapTabData.getSessionTransportPinsByZoomRate(context, zoomLevel) // 교통수단 핀 목록 업데이트
+                                transport = MapTabData.getSessionTransportByFromTo(
+                                    context,
+                                    regionId,
+                                    schedule.id,
+                                    nextSchedule.id
+                                ) // 교통수단 정보 업데이트
                             }
                         )
                     }
@@ -729,6 +749,10 @@ fun MapTab(
                                 created_at = DatetimeUtil.getCurrentDatetime(),
                             )
                         )
+
+                        // 업데이트
+                        sessionMapPins = MapTabData.getSessionPinsByZoomRate(context, zoomLevel) // 세션에 저장된 핀 목록 업데이트
+                        schedules = MapTabData.getSessionSchedules(context, regionId) // 스케줄 목록 업데이트
                     },
                     title = "새 일정 추가",
                 )

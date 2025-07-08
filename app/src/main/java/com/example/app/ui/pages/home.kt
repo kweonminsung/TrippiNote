@@ -37,9 +37,13 @@ fun HomeTab(
     val context = LocalContext.current
 
     val plannedTrip = MapRepository.getPlannedTrip(LocalContext.current)
-//    val plannedTrip = null as model.Trip?
     val allTrips = MapRepository.getTrips(LocalContext.current)
-//    val allTrips = emptyList<model.Trip>()
+//    var plannedTrip by remember {
+//        mutableStateOf<model.Trip?>(MapRepository.getPlannedTrip(context))
+//    }
+//    var allTrips by remember {
+//        mutableStateOf<List<model.Trip>>(MapRepository.getTrips(context))
+//    }
 
     Box(
         modifier = Modifier
