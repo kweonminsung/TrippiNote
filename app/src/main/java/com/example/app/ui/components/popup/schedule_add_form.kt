@@ -85,6 +85,15 @@ fun AddScheduleForm(
                     endDatetimeValue,
                     locValue
                 )
+
+                // 입력 초기화
+                setSelectedType(model.ScheduleType.SIGHTS)
+                setNameValue("")
+                setMemoValue("")
+                setStartDatetimeValue("")
+                setEndDatetimeValue("")
+                setLocValue(null)
+
                 setShowDialog(false)
             } else {
                 if(nameValue.isBlank()) {

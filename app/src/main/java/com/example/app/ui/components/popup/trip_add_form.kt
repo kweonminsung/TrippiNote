@@ -70,6 +70,13 @@ fun AddTripForm(
                     endDateValue,
                     locValue
                 )
+
+                // 입력 초기화
+                setNameValue("")
+                setStartDateValue("")
+                setEndDateValue("")
+                setLocValue(null)
+
                 setShowDialog(false)
             } else {
                 if( nameValue.isBlank()) {
