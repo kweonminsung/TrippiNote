@@ -63,6 +63,7 @@ fun FolderNavigatorScreen(context: Context) {
 fun AlbumTab() {
     var query by remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -77,7 +78,7 @@ fun AlbumTab() {
     ) {
 
         FolderNavigatorScreen(
-            context = LocalContext.current
+            context = context
         )
 
     }

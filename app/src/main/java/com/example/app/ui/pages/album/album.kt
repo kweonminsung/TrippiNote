@@ -2,7 +2,9 @@ package com.example.app.ui.pages.album
 
 
 import android.content.Context
+import android.graphics.drawable.Icon
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,7 +41,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import coil.compose.AsyncImage
-import com.example.app.R.drawable.sample_image
 import com.example.app.util.ObjectStorage.save
 import com.example.app.util.ObjectStorage.read
 import com.example.app.util.database.ImageResult
@@ -51,7 +52,9 @@ import com.example.app.util.database.MapRepository.getScheduleImages
 import com.example.app.util.database.MapRepository.getRandomTripImages
 import com.example.app.util.database.MapRepository.getRandomRegionImages
 import com.example.app.util.database.MapRepository.getRandomScheduleImages
-
+import com.example.app.R.drawable.sample_image
+import kotlin.collections.chunked
+import kotlin.collections.forEach
 
 
 fun UploadImage(
@@ -66,7 +69,8 @@ fun UploadImage(
 @Composable
 fun FolderItem( // 앨범 폴더 썸네일 + 이름 + 클릭 이벤트
     name: String,
-    thumbnail: ImageResult?,
+    thumbnail: ByteArray?,
+    context: Context = LocalContext.current,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -85,10 +89,12 @@ fun FolderItem( // 앨범 폴더 썸네일 + 이름 + 클릭 이벤트
                     .clip(RoundedCornerShape(4.dp))
             )
         } else {
-            Box(
+            AsyncImage(
+                model = sample_image, // 기본 이미지
+                contentDescription = null,
                 modifier = Modifier
                     .size(60.dp)
-                    .background(CustomColors.LightGray)
+                    .clip(RoundedCornerShape(4.dp))
             )
 
         }
@@ -136,49 +142,63 @@ fun TripFolderGridColumn(
     context: Context,
     onTripFolderClick: (model.Trip) -> Unit
 ) {
+    val sampleImage = File(context.filesDir, "sample_image.jpeg")
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
     ) {
-        val trip_folders = getAllTrips(context)
-        trip_folders.chunked(2).forEach { rowFolders ->
-            if (trip_folders.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "여행 기록이 없습니다",
-                        color = CustomColors.DarkGray,
-                        fontSize = 18.sp
-                    )
-                }
-                return@Column
-            } else {
+        var trips = getAllTrips(context)
+        var images: List<ImageResult> = emptyList()
+
+        if (trips.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "여행 기록이 없습니다",
+                    color = CustomColors.DarkGray,
+                    fontSize = 18.sp
+                )
+        }
+        return@Column
+        } else {
+            // 폴더 아이템들 정렬
+            var thumbnail: ByteArray?
+
+            trips.chunked(2).zip(images.chunked(2)).forEach { (tripChunk, imageChunk) ->
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    rowFolders.forEach { trip_folders ->
+                    tripChunk.zip(imageChunk).forEach { (trip, image) ->
+                        if(image.file_id == null) {
+                            thumbnail = sampleImage.readBytes() // 기본 이미지
+                        } else {
+                            thumbnail = read(context, image.file_id)
+                        }
                         FolderItem(
-                            name = trip_folders.title,
-                            thumbnail = getRandomTripImages(context).random(),
-                            onClick = { onTripFolderClick(trip_folders) },
-                            modifier = Modifier
-                                .weight(1f)
+                            name = trip.title,
+                            thumbnail = thumbnail,
+                            onClick = { onTripFolderClick(trip) },
+                            modifier = Modifier.weight(1f)
                         )
                     }
 
-                    // 만약 마지막 줄에 폴더가 1개라면 나머지 공간 채우기
-                    if (rowFolders.size < 2) {
+                    // 마지막 줄에 짝이 하나면 Spacer로 채우기
+                    if (tripChunk.size < 2) {
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp)) // Row 간 간격
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
+
     }
 }
 
@@ -188,49 +208,63 @@ fun RegionFolderGridColumn(
     trip: model.Trip,
     onRegionFolderClick: (model.Region) -> Unit
 ) {
+    val sampleImage = File(context.filesDir, "sample_image.jpeg")
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
     ) {
-        val region_folders = getRegions(context, trip.id)
-        region_folders.chunked(2).forEach { rowFolders ->
-            if (region_folders.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "지역 기록이 없습니다",
-                        color = CustomColors.DarkGray,
-                        fontSize = 18.sp
-                    )
-                }
-                return@Column
-            } else {
+        var regions = getRegions(context, trip.id)
+        var images: List<ImageResult> = emptyList()
+
+        if (regions.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "지역 기록이 없습니다",
+                    color = CustomColors.DarkGray,
+                    fontSize = 18.sp
+                )
+            }
+            return@Column
+        } else {
+            // 폴더 아이템들 정렬
+            var thumbnail: ByteArray?
+
+            regions.chunked(2).zip(images.chunked(2)).forEach { (regionChunk, imageChunk) ->
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    rowFolders.forEach { region_folders ->
+                    regionChunk.zip(imageChunk).forEach { (region, image) ->
+                        if(image.file_id == null) {
+                            thumbnail = sampleImage.readBytes() // 기본 이미지
+                        } else {
+                            thumbnail = read(context, image.file_id)
+                        }
                         FolderItem(
-                            name = region_folders.title,
-                            thumbnail = getRandomTripImages(context).random(),
-                            onClick = { onRegionFolderClick(region_folders) },
-                            modifier = Modifier
-                                .weight(1f)
+                            name = region.title,
+                            thumbnail = thumbnail,
+                            onClick = { onRegionFolderClick(region) },
+                            modifier = Modifier.weight(1f)
                         )
                     }
 
-                    // 만약 마지막 줄에 폴더가 1개라면 나머지 공간 채우기
-                    if (rowFolders.size < 2) {
+                    // 마지막 줄에 짝이 하나면 Spacer로 채우기
+                    if (regionChunk.size < 2) {
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp)) // Row 간 간격
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
+
     }
 }
 
@@ -240,51 +274,66 @@ fun ScheduleFolderGridColumn(
     region: model.Region,
     onScheduleFolderClick: (model.Schedule) -> Unit
 ) {
-    Column (
+    val sampleImage = File(context.filesDir, "sample_image.jpeg")
+
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
     ) {
-        val schedule_folders = getSchedules(context, region.id)
-        schedule_folders.chunked(2).forEach { rowFolders ->
-            if( schedule_folders.isEmpty() ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "일정 기록이 없습니다",
-                        color = CustomColors.DarkGray,
-                        fontSize = 18.sp
-                    )
-                }
-                return@Column
-            } else {
+        var schedules = getSchedules(context, region.id)
+        var images: List<ImageResult> = emptyList()
+
+        if (schedules.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "일정 기록이 없습니다",
+                    color = CustomColors.DarkGray,
+                    fontSize = 18.sp
+                )
+            }
+            return@Column
+        } else {
+            // 폴더 아이템들 정렬
+            var thumbnail: ByteArray?
+
+            schedules.chunked(2).zip(images.chunked(2)).forEach { (scheduleChunk, imageChunk) ->
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    rowFolders.forEach { schedule_folders ->
+                    scheduleChunk.zip(imageChunk).forEach { (schedule, image) ->
+                        if(image.file_id == null) {
+                            thumbnail = sampleImage.readBytes() // 기본 이미지
+                        } else {
+                            thumbnail = read(context, image.file_id)
+                        }
                         FolderItem(
-                            name = schedule_folders.title,
-                            thumbnail = getRandomTripImages(context).random(),
-                            onClick = { onScheduleFolderClick(schedule_folders) },
-                            modifier = Modifier
-                                .weight(1f)
+                            name = schedule.title,
+                            thumbnail = thumbnail,
+                            onClick = { onScheduleFolderClick(schedule) },
+                            modifier = Modifier.weight(1f)
                         )
                     }
 
-                    // 만약 마지막 줄에 폴더가 1개라면 나머지 공간 채우기
-                    if (rowFolders.size < 2) {
+                    // 마지막 줄에 짝이 하나면 Spacer로 채우기
+                    if (scheduleChunk.size < 2) {
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp)) // Row 간 간격
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
+
     }
 }
+
 
 @Composable
 fun ScheduleImageGrid(
@@ -292,6 +341,7 @@ fun ScheduleImageGrid(
     schedule: model.Schedule,
     onBack: (ImageResult) -> Unit
 ) {
+    val sampleImage = File(context.filesDir, "sample_image.jpeg")
     val schedule_images = getScheduleImages(context, schedule.id)
 
     if(schedule_images.isEmpty()){
@@ -307,33 +357,47 @@ fun ScheduleImageGrid(
         }
         return
     } else {
-
-        schedule_images.chunked(3).forEach { rowFolders ->
+        schedule_images.chunked(3).forEach { scheduleChuck ->
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(2.dp),
+                horizontalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                rowFolders.forEach { schedule_images ->
-                    ImageItem(
-                        image = read(context, schedule_images.file_id),
-                        onClick = { onBack(schedule_images) },
+                scheduleChuck.forEach { image ->
+                    Box(
                         modifier = Modifier
                             .weight(1f)
-                            .aspectRatio(1f) // 정사각형
-                    )
+                            .aspectRatio(1f), // 정사각형 박스
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if( image.file_id == null) {
+                            AsyncImage(
+                                model = sampleImage.readBytes(),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            AsyncImage(
+                                model = read(context, image.file_id),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
                 }
 
-                // 만약 마지막 줄에 사진이 1, 2개라면 나머지 공간 채우기
-                if (rowFolders.size < 2) {
-                    Spacer(modifier = Modifier.weight(1f))
-                    Spacer(modifier = Modifier.weight(1f))
-                } else if (rowFolders.size < 3) {
+                // 요소가 1개나 2개만 있는 마지막 줄 처리
+                repeat(3 - scheduleChuck.size) {
                     Spacer(modifier = Modifier.weight(1f))
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp)) // Row 간 간격
+            Spacer(modifier = Modifier.height(8.dp))
         }
+
     }
 }
 
