@@ -44,7 +44,7 @@ fun ProfileTab() {
             modifier = Modifier
                 .padding(
                     horizontal = 30.dp,
-                    vertical = 16.dp
+                    vertical = 8.dp
                 )
         ) {
             ProfileCard(
