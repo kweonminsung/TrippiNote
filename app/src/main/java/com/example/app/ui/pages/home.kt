@@ -25,15 +25,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
+import coil.compose.AsyncImage
 import com.example.app.PreselectedPin
 import com.example.app.R
+import com.example.app.R.drawable.sample_image
 import com.example.app.TabType
 import com.example.app.ui.components.home.HomeTripButton
 import com.example.app.ui.components.map.MapPinType
 import com.example.app.ui.components.popup.AddTripForm
+import com.example.app.ui.pages.album.drawableResToByteArray
 import com.example.app.ui.theme.CustomColors
 import com.example.app.util.DatetimeUtil
+import com.example.app.util.ObjectStorage
+import com.example.app.util.database.ImageResult
 import com.example.app.util.database.MapRepository
+import com.example.app.util.database.MapRepository.getRandomTripImages
 import com.example.app.util.database.model
 import com.google.android.gms.maps.model.LatLng
 
@@ -67,6 +73,8 @@ fun HomeTab(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             if (plannedTrip != null) {
+                val plannedTripImage = MapRepository.getRandomTripImage(context, plannedTrip.id)
+
                 Column(
                     modifier = Modifier
                         .clickable {
@@ -78,19 +86,37 @@ fun HomeTab(
                             ))
                         }
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.sample_trip),
-                        contentDescription = "",
-                        modifier = Modifier
-                            .width(300.dp)
-                            .height(170.dp)
-                            .shadow(
-                                elevation = 4.dp,
-                                shape = RoundedCornerShape(8.dp),
-                            )
-                            .background(CustomColors.White),
-                        contentScale = ContentScale.Crop
-                    )
+                    if (plannedTripImage != null && plannedTripImage.file_id != null) {
+                        AsyncImage(
+                            model = ObjectStorage.read(context, plannedTripImage.file_id),
+                            contentDescription = "Planned Trip Image",
+                            modifier = Modifier
+                                .width(300.dp)
+                                .height(170.dp)
+                                .shadow(
+                                    elevation = 4.dp,
+                                    shape = RoundedCornerShape(8.dp),
+                                )
+                                .background(CustomColors.White),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        val sampleImageByteArray = drawableResToByteArray(context, sample_image)
+                        AsyncImage(
+                            model = sampleImageByteArray,
+                            contentDescription = "Sample Trip Image",
+                            modifier = Modifier
+                                .width(300.dp)
+                                .height(170.dp)
+                                .shadow(
+                                    elevation = 4.dp,
+                                    shape = RoundedCornerShape(8.dp),
+                                )
+                                .background(CustomColors.White),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+
                     Text(
                         text = plannedTrip.title,
                         fontSize = 20.sp,
@@ -201,6 +227,8 @@ fun HomeTab(
                         )
                     }
                 } else {
+                    val images: List<ImageResult> = getRandomTripImages(context)
+
                     allTrips.forEach { trip ->
                         HomeTripButton(
                             title = trip.title,
@@ -209,7 +237,7 @@ fun HomeTab(
                             } else {
                                 "${trip.start_date?.let { DatetimeUtil.dateToDotDate(it) }}${if (trip.end_date != null) " - ${DatetimeUtil.dateToDotDate(trip.end_date)}" else ""}"
                             },
-                            imageId = "",
+                            imageId = images.find { it.trip_id == trip.id }?.file_id,
                             onClick = {
                                 setTabType(TabType.MAP)
                                 val tripInfo = MapRepository.getTripById(context, trip.id)

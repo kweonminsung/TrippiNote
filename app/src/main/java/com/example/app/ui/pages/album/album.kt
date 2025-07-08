@@ -155,8 +155,7 @@ fun TripFolderGridColumn(
     onTripFolderClick: (ImageResult) -> Unit
 ) {
     val sampleImageByteArray = drawableResToByteArray(context, sample_image)
-
-    var images: List<ImageResult> = getRandomTripImages(context)
+    val images: List<ImageResult> = getRandomTripImages(context)
 
     Column(
         modifier = Modifier
