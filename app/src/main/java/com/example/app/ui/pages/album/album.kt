@@ -154,7 +154,8 @@ fun FolderItem( // 앨범 폴더 썸네일 + 이름 + 클릭 이벤트
             name,
             fontSize = 10.sp,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
+            color = CustomColors.Black,
         )
     }
 }
@@ -327,8 +328,8 @@ fun ScheduleFolderGridColumn(
     onScheduleFolderClick: (ImageResult) -> Unit
 ) {
     val sampleImageByteArray = drawableResToByteArray(context, sample_image)
-
     var images: List<ImageResult> = getRandomScheduleImages(context, region.id)
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -366,7 +367,7 @@ fun ScheduleFolderGridColumn(
                     ) {
                         imageChuck.forEach { image ->
                             if (image.file_id == null) {
-                                thumbnail = sampleImageByteArray // 기본 이미지
+                                thumbnail = sampleImageByteArray
                             } else {
                                 thumbnail = try {
                                     if (image.file_id != null) read(
@@ -382,13 +383,13 @@ fun ScheduleFolderGridColumn(
                                 name = image.title,
                                 thumbnail = thumbnail,
                                 onClick = { onScheduleFolderClick(image) },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.width(folderWidth)
                             )
                         }
 
                         // 마지막 줄에 짝이 하나면 Spacer로 채우기
                         if (imageChuck.size < 2) {
-                            Spacer(modifier = Modifier.weight(1f))
+                            Spacer(modifier = Modifier.width(folderWidth))
                         }
                     }
 
