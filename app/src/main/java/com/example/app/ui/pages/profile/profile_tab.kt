@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -19,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import com.example.app.LocalSession
 import com.example.app.ui.components.profile.ProfileCard
 import com.example.app.ui.components.profile.ProfileCountBox
+import com.example.app.ui.components.profile.ProfileSpecific
 import com.example.app.ui.theme.CustomColors
 import com.example.app.util.database.MapRepository
 
@@ -33,23 +36,33 @@ fun ProfileTab() {
     val tripsCount = MapRepository.countTrips(context)
     val regionsCount = MapRepository.countRegions(context)
 
+    val (specificOpen, setSpecificOpen) = remember { mutableStateOf(false) }
+
+    if (specificOpen) {
+        ProfileSpecific(
+            onDismiss = { setSpecificOpen(false) },
+        )
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 color = CustomColors.LighterGray
             ),
-        contentAlignment = Alignment.TopCenter) {
+        contentAlignment = Alignment.TopCenter
+    ) {
         Column(
             modifier = Modifier
                 .padding(
                     horizontal = 30.dp,
-                    vertical = 16.dp
+                    vertical = 8.dp
                 )
         ) {
             ProfileCard(
                 name = username,
                 email = email,
+                onClick = { setSpecificOpen(true) },
                 image_id = null
             )
 

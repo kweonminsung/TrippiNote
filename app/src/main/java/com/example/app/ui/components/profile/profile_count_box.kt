@@ -33,16 +33,13 @@ fun ProfileCountBox(
     ) {
         Column(
             modifier = Modifier
-                .padding(
-                    horizontal = 16.dp,
-                    vertical = 12.dp
-                ),
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
         ) {
             Text(
                 text = count.toString(),
-                fontSize = 48.sp,
+                fontSize = 40.sp,
                 color = CustomColors.Black,
 
             )

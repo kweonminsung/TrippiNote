@@ -267,7 +267,12 @@ fun AddSampleForm(
     )
     if (isLocSelecting) {
         MapSelector(
+            onDismiss = {
+                setLocValue(null)
+                setIsLocSelecting(false) // 위치 선택 취소
+            },
             setIsLocSelecting = setIsLocSelecting,
+            locValue = locValue,
             setLocValue = setLocValue,
         )
     }
