@@ -98,7 +98,7 @@ object DatabaseUtil {
                 region_id INTEGER NOT NULL,
                 from_schedule_id INTEGER NOT NULL,
                 to_schedule_id INTEGER NOT NULL,
-                type TEXT CHECK(type IN ('WALKING', 'BICYCLE', 'CAR', 'BUS', 'TRAIN', 'SUBWAY', 'AIRPLANE')) NOT NULL,
+                type TEXT CHECK(type IN ('WALKING', 'BICYCLE', 'CAR', 'TAXI', 'BUS', 'TRAIN', 'SUBWAY', 'AIRPLANE')) NOT NULL,
                 duration TEXT,
                 created_at TEXT NOT NULL,
                 memo TEXT,

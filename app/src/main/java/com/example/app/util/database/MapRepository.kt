@@ -684,6 +684,27 @@ object MapRepository {
         }
     }
 
+    fun createOrUpdateTransport(
+        context: Context,
+        transport: model.Transport
+    ): Long {
+        val existingTransport = getTransportByFromTo(
+            context,
+            transport.region_id,
+            transport.from_schedule_id,
+            transport.to_schedule_id
+        )
+
+        return if (existingTransport != null) {
+            // Update existing transport
+            updateTransport(context, transport)
+            existingTransport.id.toLong()
+        } else {
+            // Create new transport
+            createTransport(context, transport)
+        }
+    }
+
     fun createTransport(context: Context, transport: model.Transport): Long {
         val dbHelper = SQLiteHelper(context)
         dbHelper.writableDatabase.use { db ->

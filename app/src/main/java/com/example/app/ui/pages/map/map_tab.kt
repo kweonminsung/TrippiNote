@@ -30,7 +30,6 @@ import com.example.app.ui.theme.CustomColors
 import com.example.app.util.DatetimeUtil
 import com.example.app.util.database.MapRepository
 import com.example.app.util.database.model
-import com.example.app.util.database.model.TransportType
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.Dash
@@ -60,7 +59,6 @@ import com.example.app.R
 import com.example.app.ui.components.buttons.BottomButton
 import com.example.app.ui.components.popup.AddRegionForm
 import com.example.app.ui.components.popup.AddScheduleForm
-import com.example.app.ui.components.popup.TransportAddForm
 
 val INITIAL_LAT_LNG = LatLng(48.866096757760225, 2.348085902631283) // 지도의 초기 위치(파리)
 val INITIAL_ZOOM_LEVEL = ZOOM_LEVEL.CONTINENT // 초기 줌 레벨
@@ -131,7 +129,6 @@ fun MapTab(
             || (preselectedPin?.type == MapPinType.SCHEDULE && (MapRepository.getScheduleById(context, preselectedPin.id as Int) as model.Schedule).region_id == selectedRegionId)
     ) } // 지역 정보 Bottom Drawer 상태
 
-    val (isTransportSetting, setIsTransportSetting) = remember { mutableStateOf(false) } // 교통수단 설정 중 여부
 
     // 카메라 이동은 여기서
     LaunchedEffect(cameraTarget) {
@@ -683,23 +680,24 @@ fun MapTab(
                             schedule.id,
                             nextSchedule.id
                         )
-                        if (transport != null) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            TransportInfoButton(
-                                type = transport.type,
-                                subtitle = transport.duration,
-                            )
-                        } else {
-                            TransportInfoButton(
-                                type = null,
-                                onClick = {
-                                    focusManager.clearFocus() // 키보드 내리기
-                                    setIsTransportSetting(true)
-
-
-                                }
-                            )
-                        }
+                        TransportInfoButton(
+                            type = transport?.type,
+                            duration = transport?.duration,
+                            saveFn = { type, duration ->
+                                MapRepository.createOrUpdateTransport(
+                                    context,
+                                    model.Transport(
+                                        id = transport?.id ?: -1,
+                                        region_id = regionId,
+                                        from_schedule_id = schedule.id,
+                                        to_schedule_id = nextSchedule.id,
+                                        type = type,
+                                        duration = duration,
+                                        created_at = DatetimeUtil.getCurrentDatetime(),
+                                    )
+                                )
+                            }
+                        )
                     }
                 }
 
@@ -735,17 +733,6 @@ fun MapTab(
                     title = "새 일정 추가",
                 )
             }
-        }
-
-        if(isTransportSetting) {
-            TransportAddForm(
-                onDismiss = { setIsTransportSetting(false) },
-                type = null,
-                saveFn = { type, from_schedule_id, to_schedule_id ->
-
-
-                }
-            )
         }
     }
 
