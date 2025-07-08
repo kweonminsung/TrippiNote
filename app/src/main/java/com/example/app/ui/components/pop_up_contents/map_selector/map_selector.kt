@@ -2,6 +2,7 @@ package com.example.app.ui.components.pop_up_contents.map_selector
 
 import PlaceUtil
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -57,7 +58,9 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MapSelector(
+    onDismiss: () -> Unit = {},
     setIsLocSelecting: (Boolean) -> Unit,
+    locValue: PlaceUtil.LocationInfo? = null,
     setLocValue: (PlaceUtil.LocationInfo?) -> Unit,
 ) {
     val context = LocalContext.current
@@ -69,11 +72,23 @@ fun MapSelector(
 
     // 카메라 위치 상태
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(INITIAL_LAT_LNG, INITIAL_ZOOM_LEVEL)
+        position = CameraPosition.fromLatLngZoom(
+            locValue?.position ?: INITIAL_LAT_LNG
+            , INITIAL_ZOOM_LEVEL)
     }
     var cameraTarget by remember { mutableStateOf<LatLng?>(null) } // 카메라 이동용 상태
 
-    var userSelectedMapPin by remember { mutableStateOf<MapPin?>(null) } // 유저가 선택한 핀
+    var userSelectedMapPin by remember { mutableStateOf<MapPin?>(
+        locValue?.let {
+            MapPin(
+                id = null,
+                type = MapPinType.USER_SELECTED,
+                position = it.position,
+                title = it.title,
+                subtitle = it.snippet
+            )
+        }
+    ) } // 유저가 선택한 핀
 
     // 카메라 이동은 여기서
     LaunchedEffect(cameraTarget) {
@@ -83,8 +98,9 @@ fun MapSelector(
         }
     }
 
+    BackHandler(onBack = onDismiss) // 뒤로가기 버튼 핸들러
     Dialog(
-        onDismissRequest = { /* Handle dismiss */ },
+        onDismissRequest = onDismiss,
         properties = DialogProperties(
             usePlatformDefaultWidth = false
         )
@@ -176,6 +192,7 @@ fun MapSelector(
                             .padding(16.dp)
                             .clickable {
                                 focusManager.clearFocus() // 키보드 내리기
+                                setLocValue(null)
                                 setIsLocSelecting(false) // 위치 선택 취소
                             },
                         contentAlignment = Alignment.Center,

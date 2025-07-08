@@ -2,6 +2,7 @@ package com.example.app.ui.components.profile
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,12 +29,16 @@ import com.example.app.ui.theme.CustomColors
 fun ProfileCard(
     name: String,
     email: String,
+    onClick: () -> Unit,
     image_id: String? = null,
     modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .clickable {
+                onClick()
+            }
             .shadow(
                 elevation = 1.dp,
                 shape = RoundedCornerShape(8.dp),
@@ -50,11 +55,11 @@ fun ProfileCard(
             painter = painterResource(id = R.drawable.sample_trip),
             contentDescription = "",
             modifier = Modifier
-                .width(90.dp)
-                .height(90.dp)
+                .width(84.dp)
+                .height(84.dp)
                 .shadow(
                     elevation = 1.dp,
-                    shape = RoundedCornerShape(45.dp),
+                    shape = RoundedCornerShape(42.dp),
                 )
                 .background(CustomColors.White),
             contentScale = ContentScale.Crop

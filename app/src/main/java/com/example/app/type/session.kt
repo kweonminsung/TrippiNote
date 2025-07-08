@@ -6,12 +6,14 @@ data class SessionData(
 )
 
 data class User(
-    val name: String,
-    val email: String,
-    val phone: String,
-    val passport_number: String,
-    val passport_expiry: String,
-    val passport_object_id: String,
+    var name: String,
+    var email: String = "",
+    var phone: String = "",
+    var birthdate: String = "",
+    var english_name: String = "",
+    var passport_number: String = "",
+    var passport_expiry: String = "",
+    var passport_file_id: String = "",
 )
 
 val EXAMPLE_SESSION_DATA = SessionData(
@@ -19,8 +21,10 @@ val EXAMPLE_SESSION_DATA = SessionData(
         name = "John Doe",
         email = "example@test.com",
         phone = "123-456-7890",
+        birthdate = "1990-01-01",
+        english_name = "John Doe",
         passport_number = "X123456789",
         passport_expiry = "2025-12-31",
-        passport_object_id = "passport_12345",
+        passport_file_id = "passport_12345",
     )
 )

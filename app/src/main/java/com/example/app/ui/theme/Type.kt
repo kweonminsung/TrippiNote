@@ -9,52 +9,58 @@ import com.example.app.R
 val MoneygraphyFontFamily = FontFamily(
     Font(R.font.moneygraphy_rounded)
 )
+val NoonnubasicgothicRegular = FontFamily(
+    Font(R.font.noonnubasicgothic_regular)
+)
+
+val FONT_FAMILY = NoonnubasicgothicRegular
+
 
 // Set of Material typography styles to start with
 val Typography = Typography(
     displayLarge = TextStyle(
-        fontFamily = MoneygraphyFontFamily
+        fontFamily = FONT_FAMILY
     ),
     displayMedium = TextStyle(
-        fontFamily = MoneygraphyFontFamily
+        fontFamily = FONT_FAMILY
     ),
     displaySmall = TextStyle(
-        fontFamily = MoneygraphyFontFamily
+        fontFamily = FONT_FAMILY
     ),
     headlineLarge = TextStyle(
-        fontFamily = MoneygraphyFontFamily
+        fontFamily = FONT_FAMILY
     ),
     headlineMedium = TextStyle(
-        fontFamily = MoneygraphyFontFamily
+        fontFamily = FONT_FAMILY
     ),
     headlineSmall = TextStyle(
-        fontFamily = MoneygraphyFontFamily
+        fontFamily = FONT_FAMILY
     ),
     titleLarge = TextStyle(
-        fontFamily = MoneygraphyFontFamily
+        fontFamily = FONT_FAMILY
     ),
     titleMedium = TextStyle(
-        fontFamily = MoneygraphyFontFamily
+        fontFamily = FONT_FAMILY
     ),
     titleSmall = TextStyle(
-        fontFamily = MoneygraphyFontFamily
+        fontFamily = FONT_FAMILY
     ),
     bodyLarge = TextStyle(
-        fontFamily = MoneygraphyFontFamily
+        fontFamily = FONT_FAMILY
     ),
     bodyMedium = TextStyle(
-        fontFamily = MoneygraphyFontFamily
+        fontFamily = FONT_FAMILY
     ),
     bodySmall = TextStyle(
-        fontFamily = MoneygraphyFontFamily
+        fontFamily = FONT_FAMILY
     ),
     labelLarge = TextStyle(
-        fontFamily = MoneygraphyFontFamily
+        fontFamily = FONT_FAMILY
     ),
     labelMedium = TextStyle(
-        fontFamily = MoneygraphyFontFamily
+        fontFamily = FONT_FAMILY
     ),
     labelSmall = TextStyle(
-        fontFamily = MoneygraphyFontFamily
+        fontFamily = FONT_FAMILY
     )
 )
