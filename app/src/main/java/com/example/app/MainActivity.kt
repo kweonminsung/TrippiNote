@@ -91,7 +91,7 @@ data class PreselectedPin(
 
 @Composable
 fun MainScreen() {
-    val (tabType, setTabType) = remember { mutableStateOf(TabType.PROFILE) }
+    val (tabType, setTabType) = remember { mutableStateOf(TabType.MAP) }
 
     val (preselectedPin, setPreselectedPin) = remember { mutableStateOf<PreselectedPin?>(null) }
 

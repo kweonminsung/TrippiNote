@@ -1,7 +1,8 @@
-package com.example.app.ui.components.pop_up_contents
+package com.example.app.ui.components.popup
 
 import PlaceUtil
 import android.app.DatePickerDialog
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,16 +26,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.app.ui.components.PopupWindow
-import com.example.app.ui.components.pop_up_contents.map_selector.MapSelector
+import com.example.app.ui.components.popup.map_selector.MapSelector
 import com.example.app.ui.theme.CustomColors
-import com.example.app.util.database.MapRepository
-import com.example.app.util.database.model
-import java.time.Instant
 import java.util.Calendar
 
 @Composable
-fun AddSampleForm(
+fun AddRegionForm(
     button: @Composable (onClick: () -> Unit) -> Unit = {},
+    saveFn: (title: String, start_date: String, end_date: String, locValue: PlaceUtil.LocationInfo) -> Unit,
+    title: String,
+) = AddTripForm(
+    button = button,
+    saveFn = saveFn,
+    title = title
+)
+
+@Composable
+fun AddTripForm(
+    button: @Composable (onClick: () -> Unit) -> Unit = {},
+    saveFn: (title: String, start_date: String, end_date: String, locValue: PlaceUtil.LocationInfo) -> Unit,
     title: String,
 ) {
     val context = LocalContext.current
@@ -48,31 +58,30 @@ fun AddSampleForm(
     val (isLocSelecting, setIsLocSelecting) = remember { mutableStateOf(false) }
 
     PopupWindow(
-        button,
-        title,
-        "완료", // 편집 or 완료
-        "닫기", // 닫기 or 삭제
-        CustomColors.Blue,
-        onSubmit = { setShowDialog ->
+        button = button,
+        title = title,
+        leftBtnLabel ="완료",
+        rightBtnLabel = "닫기",
+        leftBtnOnClick = { setShowDialog ->
             if (nameValue.isNotBlank() && locValue != null) {
-                MapRepository.createTrip(
-                    context,
-                    model.Trip(
-                        id = -1,
-                        title = nameValue,
-                        start_date = startDateValue,
-                        end_date = endDateValue,
-                        lat = locValue.position.latitude,
-                        lng = locValue.position.longitude,
-                        created_at = Instant.now().toString(),
-                    )
+                saveFn(
+                    nameValue,
+                    startDateValue,
+                    endDateValue,
+                    locValue
                 )
                 setShowDialog(false)
             } else {
-                android.widget.Toast.makeText(context, "모든 값을 입력해 주세요", android.widget.Toast.LENGTH_SHORT).show()
+                if( nameValue.isBlank()) {
+                    Toast.makeText(context, "이름을 입력해 주세요", android.widget.Toast.LENGTH_SHORT).show()
+                } else if (locValue == null) {
+                    Toast.makeText(context, "위치를 선택해 주세요", android.widget.Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "이름과 위치를 입력해 주세요", android.widget.Toast.LENGTH_SHORT).show()
+                }
             }
         },
-        onCancel = {},
+        rightBtnOnClick = {},
         content = {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -82,11 +91,11 @@ fun AddSampleForm(
             ) {
                 Spacer(modifier = Modifier.height(8.dp)) // 여백
 
-                //여행 이름
+                // 여행 이름
                 TextField(
                     value = nameValue,
                     onValueChange = { setNameValue(it) },
-                    placeholder = { Text("이름을 입력하세요...", color = CustomColors.Gray) },
+                    placeholder = { Text("이름을 입력하세요", color = CustomColors.Gray) },
                     leadingIcon = {
                         Text(
                             text = "이름",
@@ -99,7 +108,7 @@ fun AddSampleForm(
                         unfocusedContainerColor = CustomColors.LighterGray,
                         focusedIndicatorColor =  CustomColors.White,
                         unfocusedIndicatorColor = CustomColors.White,
-                        focusedTextColor = CustomColors.DarkGray,      // 입력값 색상 (포커스 O)
+                        focusedTextColor = CustomColors.DarkGray,
                         unfocusedTextColor = CustomColors.DarkGray
                     ),
                     modifier = Modifier.fillMaxWidth()
@@ -117,7 +126,7 @@ fun AddSampleForm(
                         value = locValue?.title ?: "",
                         onValueChange = {},
                         modifier = Modifier.weight(1f), // TextField가 남는 공간 채움
-                        placeholder = { Text("위치를 선택하세요...", color = CustomColors.Gray) },
+                        placeholder = { Text("위치를 선택하세요", color = CustomColors.Gray) },
                         leadingIcon = {
                             Text(
                                 text = "위치",
@@ -132,6 +141,7 @@ fun AddSampleForm(
                         enabled = false,
                     )
                     Spacer(modifier = Modifier.width(8.dp)) // 여백
+
                     // 지도에서 위치 선택 버튼
                     IconButton(
                         onClick = {
@@ -143,7 +153,8 @@ fun AddSampleForm(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Place,
-                            contentDescription = "위치 선택"
+                            contentDescription = "위치 선택",
+                            tint = CustomColors.Black
                         )
                     }
                 }
@@ -160,7 +171,7 @@ fun AddSampleForm(
                         value = startDateValue,
                         onValueChange = {},
                         modifier = Modifier.weight(1f), // TextField가 남는 공간 채움
-                        placeholder = { Text("날짜를 선택하세요...", color = CustomColors.Gray) },
+                        placeholder = { Text("날짜를 선택하세요", color = CustomColors.Gray) },
                         leadingIcon = {
                             Text(
                                 text = "시작",
@@ -177,21 +188,21 @@ fun AddSampleForm(
 
                     Spacer(modifier = Modifier.width(8.dp)) // 여백
 
-                    // 캘린더에서 날짜 선택 버튼
+                    // 날짜 선택 버튼
                     IconButton(
                         onClick = {
                             val datePicker = DatePickerDialog(
                                 context,
                                 { _, year, month, dayOfMonth ->
-                                    val pickedCal = java.util.Calendar.getInstance().apply {
+                                    val pickedCal = Calendar.getInstance().apply {
                                         set(year, month, dayOfMonth)
                                     }
                                     val format = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
                                     setStartDateValue(format.format(pickedCal.time))
                                 },
-                                calendar.get(java.util.Calendar.YEAR),
-                                calendar.get(java.util.Calendar.MONTH),
-                                calendar.get(java.util.Calendar.DAY_OF_MONTH)
+                                calendar.get(Calendar.YEAR),
+                                calendar.get(Calendar.MONTH),
+                                calendar.get(Calendar.DAY_OF_MONTH)
                             )
                             datePicker.show()
                         },
@@ -201,7 +212,8 @@ fun AddSampleForm(
                     ) {
                         Icon(
                             imageVector = Icons.Default.DateRange,
-                            contentDescription = "추가"
+                            contentDescription = "추가",
+                            tint = CustomColors.Black
                         )
                     }
                 }
@@ -217,7 +229,7 @@ fun AddSampleForm(
                         value = endDateValue,
                         onValueChange = {},
                         modifier = Modifier.weight(1f), // TextField가 남는 공간 채움
-                        placeholder = { Text("날짜를 선택하세요...", color = CustomColors.Gray) },
+                        placeholder = { Text("날짜를 선택하세요", color = CustomColors.Gray) },
                         leadingIcon = {
                             Text(
                                 text = "종료",
@@ -234,21 +246,21 @@ fun AddSampleForm(
 
                     Spacer(modifier = Modifier.width(8.dp)) // 여백
 
-                    // 캘린더에서 날짜 선택 버튼
+                    // 날짜 선택 버튼
                     IconButton(
                         onClick = {
                             val datePicker = DatePickerDialog(
                                 context,
                                 { _, year, month, dayOfMonth ->
-                                    val pickedCal = java.util.Calendar.getInstance().apply {
+                                    val pickedCal = Calendar.getInstance().apply {
                                         set(year, month, dayOfMonth)
                                     }
                                     val format = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
                                     setEndDateValue(format.format(pickedCal.time))
                                 },
-                                calendar.get(java.util.Calendar.YEAR),
-                                calendar.get(java.util.Calendar.MONTH),
-                                calendar.get(java.util.Calendar.DAY_OF_MONTH)
+                                calendar.get(Calendar.YEAR),
+                                calendar.get(Calendar.MONTH),
+                                calendar.get(Calendar.DAY_OF_MONTH)
                             )
                             datePicker.show()
                         },
@@ -258,7 +270,8 @@ fun AddSampleForm(
                     ) {
                         Icon(
                             imageVector = Icons.Default.DateRange,
-                            contentDescription = "추가"
+                            contentDescription = "추가",
+                            tint = CustomColors.Black
                         )
                     }
                 }

@@ -25,13 +25,15 @@ fun ProfileTopBar() {
             ){
                 Text(
                     text = "프로필",
-                    fontSize = 21.sp
+                    fontSize = 20.sp,
+                    modifier = Modifier
+                        .padding(start = 12.dp),
                 )
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = 8.dp)
-                )
+//                Icon(
+//                    imageVector = Icons.Default.Settings,
+//                    contentDescription = null,
+//                    modifier = Modifier.padding(end = 8.dp)
+//                )
             }
         },
         actions = {

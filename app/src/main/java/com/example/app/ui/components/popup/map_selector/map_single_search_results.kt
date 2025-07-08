@@ -1,4 +1,4 @@
-package com.example.app.ui.components.pop_up_contents.map_selector
+package com.example.app.ui.components.popup.map_selector
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

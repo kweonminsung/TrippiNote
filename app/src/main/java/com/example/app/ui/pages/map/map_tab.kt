@@ -57,6 +57,9 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import com.example.app.R
+import com.example.app.ui.components.buttons.BottomButton
+import com.example.app.ui.components.popup.AddRegionForm
+import com.example.app.ui.components.popup.AddScheduleForm
 
 val INITIAL_LAT_LNG = LatLng(48.866096757760225, 2.348085902631283) // 지도의 초기 위치(파리)
 val INITIAL_ZOOM_LEVEL = ZOOM_LEVEL.CONTINENT // 초기 줌 레벨
@@ -570,7 +573,8 @@ fun MapTab(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp)
+                    .padding(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 for (region in regions) {
                     val subtitle = if (region.start_date != null && region.end_date != null) {
@@ -612,6 +616,35 @@ fun MapTab(
                         }
                     )
                 }
+
+                // 지역 추가 버튼
+                AddRegionForm(
+                    button = { onClick ->
+                        BottomButton(
+                            label = "지역 추가하기 ✈️",
+                            onClick = onClick,
+                            modifier = Modifier
+                                .width(200.dp)
+                                .padding(top = 12.dp)
+                        )
+                    },
+                    saveFn = { title, start_date, end_date, locValue ->
+                        MapRepository.createRegion(
+                            context,
+                            model.Region(
+                                id = -1,
+                                trip_id = tripId,
+                                title = title,
+                                start_date = start_date,
+                                end_date = end_date,
+                                lat = locValue.position.latitude,
+                                lng = locValue.position.longitude,
+                                created_at = DatetimeUtil.getCurrentDatetime(),
+                            )
+                        )
+                    },
+                    title = "새 지역 추가",
+                )
             }
         }
 
@@ -626,7 +659,8 @@ fun MapTab(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp)
+                    .padding(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 for((index, schedule) in schedules.withIndex()) {
                     val subtitle = if (schedule.start_datetime != null && schedule.end_datetime != null) {
@@ -683,6 +717,38 @@ fun MapTab(
                         }
                     }
                 }
+
+//                // 스케줄 추가 버튼
+                AddScheduleForm(
+                    button = { onClick ->
+                        BottomButton(
+                            label = "일정 추가하기 ✏\uFE0F",
+                            onClick = onClick,
+                            modifier = Modifier
+                                .width(200.dp)
+                                .padding(top = 12.dp)
+                        )
+                    },
+                    saveFn = { type, title, memo, start_datetime, c, locValue ->
+                        MapRepository.createSchedule(
+                            context,
+                            model.Schedule(
+                                id = -1,
+                                type = type,
+                                region_id = regionId,
+                                place_id = null,
+                                title = title,
+                                memo = memo,
+                                lat = locValue.position.latitude,
+                                lng = locValue.position.longitude,
+                                start_datetime = start_datetime,
+                                end_datetime = start_datetime,
+                                created_at = DatetimeUtil.getCurrentDatetime(),
+                            )
+                        )
+                    },
+                    title = "새 일정 추가",
+                )
             }
         }
     }

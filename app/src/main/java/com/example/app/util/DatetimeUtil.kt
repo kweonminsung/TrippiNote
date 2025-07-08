@@ -1,6 +1,35 @@
 package com.example.app.util
 
+import java.time.Instant
+
 object DatetimeUtil {
+    fun getCurrentDatetime(): String {
+        return Instant.now().toString()
+    }
+
+    fun datetimeToString(datetime: String): String {
+        return if (datetime.isBlank()) {
+            ""
+        } else {
+            val parts = datetime.split("T")
+            if (parts.size < 2) return ""
+            val datePart = parts[0]
+            val timePart = parts[1].split(":")
+            if (timePart.size < 2) return ""
+
+            val dateParts = datePart.split("-")
+            if (dateParts.size < 3) return ""
+
+            val year = dateParts[0]
+            val month = dateParts[1].toIntOrNull()?.toString() ?: dateParts[1]
+            val day = dateParts[2].toIntOrNull()?.toString() ?: dateParts[2]
+            val hour = timePart[0].toIntOrNull()?.toString() ?: timePart[0]
+            val minute = timePart[1].padStart(2, '0')
+
+            "${year}년 ${month}월 ${day}일 $hour:$minute"
+        }
+    }
+
     fun datetimeToMonthDay(datetime: String): String {
         return if (datetime.isBlank()) {
             ""
@@ -119,5 +148,24 @@ object DatetimeUtil {
         val endDateObj = java.time.LocalDate.of(endYear, endMonth, endDay)
 
         return java.time.temporal.ChronoUnit.DAYS.between(startDateObj, endDateObj).toInt()
+    }
+
+    fun createDatetimeWithDateAndTime(date: String, time: String): String {
+        try {
+            if (date.isBlank() || time.isBlank()) return ""
+            val dateParts = date.split("-")
+            val timeParts = time.split(":")
+            if (dateParts.size < 3 || timeParts.size < 2) return ""
+
+            val year = dateParts[0]
+            val month = dateParts[1].padStart(2, '0')
+            val day = dateParts[2].padStart(2, '0')
+            val hour = timeParts[0].padStart(2, '0')
+            val minute = timeParts[1].padStart(2, '0')
+
+            return "${year}-${month}-${day}T${hour}:${minute}:00Z"
+        } catch (e: Exception) {
+            return ""
+        }
     }
 }

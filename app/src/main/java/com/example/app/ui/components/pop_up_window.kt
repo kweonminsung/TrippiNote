@@ -25,18 +25,16 @@ import com.example.app.ui.theme.CustomColors
 fun PopupWindow(
     button: @Composable (onClick: () -> Unit) -> Unit = {},
     title: String,
-    label1: String, // 편집 or 완료
-    label2: String, // 닫기 or 삭제
-    tint: Color = CustomColors.Black,
-    onSubmit: ((Boolean) -> Unit) -> Unit = {},
-    onCancel: () -> Unit = {},
+    leftBtnLabel: String, // 편집 or 완료
+    leftBtnOnClick: ((Boolean) -> Unit) -> Unit = {},
+    rightBtnLabel: String, // 닫기 or 삭제
+    rightBtnOnClick: () -> Unit = {},
     content: @Composable () -> Unit = {} // 팝업창 내부에 추가할 내용
 )
 {
     val (showDialog, setShowDialog) = remember { mutableStateOf(false) }
 
-    // 팝업창을 띄우는 버튼
-    button{ setShowDialog(true) }
+    button{ setShowDialog(true) } // 팝업창 띄우는 버튼
 
     if (showDialog) {
         Dialog (onDismissRequest = { setShowDialog(false) }) {
@@ -50,30 +48,31 @@ fun PopupWindow(
                     modifier = Modifier
                         .padding(8.dp)
                 ) {
-                    // 타이틀 + 버튼 행
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         TextButton (onClick = {
-                            onSubmit(setShowDialog)
+                            leftBtnOnClick(setShowDialog)
                         }) {
-                            Text(label1, color = CustomColors.Blue, fontSize = 14.sp)
+                            Text(leftBtnLabel, color = CustomColors.Blue, fontSize = 14.sp)
                         }
                         Spacer(modifier = Modifier.weight(1f))  // 가운데 정렬 효과
                         Text(
                             text = title,
                             fontSize = 18.sp,
-                            modifier = Modifier.align(Alignment.CenterVertically)
+                            modifier = Modifier.align(Alignment.CenterVertically),
+                            color = CustomColors.Black
                         )
                         Spacer(modifier = Modifier.weight(1f))  // 가운데 정렬 효과
                         TextButton(onClick = {
                             setShowDialog(false)
-                            onCancel()
+                            rightBtnOnClick()
                         }) {
-                            Text(label2, color = CustomColors.Blue, fontSize = 14.sp)
+                            Text(rightBtnLabel, color = CustomColors.Blue, fontSize = 14.sp)
                         }
                     }
+
                     content()
                 }
             }
