@@ -554,7 +554,6 @@ object MapRepository {
                     ImageResult(
                         trip_id = cursor.getInt(tripIdIdx),
                         region_id = cursor.getInt(regionIdIdx),
-                        schedule_id = cursor.getInt(scheduleIdIdx),
                         file_id = cursor.getString(fileIdIdx),
                         title = cursor.getString(titleIdx
                     )
