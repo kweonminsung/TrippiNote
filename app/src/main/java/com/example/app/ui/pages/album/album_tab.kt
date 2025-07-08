@@ -1,7 +1,10 @@
 package com.example.app.ui.pages.album
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -19,18 +22,25 @@ import androidx.compose.ui.unit.dp
 import com.example.app.ui.components.search_bar.SearchBar
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import com.example.app.ui.components.buttons.BottomButton
+import com.example.app.util.database.ImageResult
 import com.example.app.util.database.model
 import com.example.app.util.database.MapRepository.getTripById
 import com.example.app.util.database.MapRepository.getRegionById
 import com.example.app.util.database.MapRepository.getScheduleById
+import java.io.File
+import java.io.FileOutputStream
 
 @Composable
 fun FolderNavigatorScreen(context: Context) {
     var selectedTrip by remember { mutableStateOf<model.Trip?>(null) }
     var selectedRegion by remember { mutableStateOf<model.Region?>(null) }
     var selectedSchedule by remember { mutableStateOf<model.Schedule?>(null) }
+    var selectedImageFileId by remember { mutableStateOf<String?>(null) }
+    var showPopup by remember { mutableStateOf(false) }
 
     when {
         selectedTrip == null -> {
@@ -62,11 +72,57 @@ fun FolderNavigatorScreen(context: Context) {
             )
         }
         else -> {
-            ScheduleImageGrid(
-                context = context,
-                schedule = selectedSchedule!!,
-                onBack = { selectedSchedule = null }
-            )
+            val launcher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.GetContent()
+            ) { uri: Uri? ->
+                uri?.let {
+                    val inputStream = context.contentResolver.openInputStream(it)
+                    val tempFile = File(context.cacheDir, "selected_image.jpg")
+                    inputStream?.use { input ->
+                        FileOutputStream(tempFile).use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+                    val schedule = selectedSchedule!!
+
+                    UploadImage(context, tempFile, schedule)
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ){
+                ScheduleImageGrid(
+                    context = context,
+                    schedule = selectedSchedule!!,
+                    onImageClick = {   image ->
+                        selectedImageFileId = image.file_id
+                        showPopup = true
+                    }
+                )
+
+
+                BottomButton(
+                    label = "사진 업로드  \uD83D\uDCF8",
+                    onClick = {
+                        launcher.launch("image/*")
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .padding(top = 16.dp, bottom = 8.dp)
+                )
+
+                if (showPopup && selectedImageFileId != null) {
+                    ImagePopup(
+                        context = context,
+                        fileId = selectedImageFileId!!,
+                        onDismiss = { showPopup = false }
+                    )
+                }
+            }
+
         }
     }
 }

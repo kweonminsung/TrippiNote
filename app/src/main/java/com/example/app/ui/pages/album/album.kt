@@ -27,6 +27,10 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +39,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.example.app.ui.theme.CustomColors
 import com.example.app.util.database.model
 import java.io.File
@@ -57,6 +62,10 @@ import kotlin.collections.chunked
 import kotlin.collections.forEach
 
 
+fun drawableResToByteArray(context: Context, resId: Int): ByteArray? {
+    return context.resources.openRawResource(resId).use { it.readBytes() }
+}
+
 fun UploadImage(
     context: Context,
     file: File,
@@ -67,6 +76,42 @@ fun UploadImage(
 }
 
 @Composable
+fun ImagePopup(
+    context: Context,
+    fileId: String,
+    onDismiss: () -> Unit
+) {
+    val imageBytes = try {
+        read(context, fileId)
+    } catch (e: Exception) {
+        Log.e("ImagePopup", "Failed to read image: ${e.message}")
+        null
+    }
+
+    if (imageBytes != null) {
+        Dialog(onDismissRequest = { onDismiss() }) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .aspectRatio(1f)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(CustomColors.LightGray)
+                    .clickable { onDismiss() },
+                contentAlignment = Alignment.Center
+            ) {
+                AsyncImage(
+                    model = imageBytes,
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
 fun FolderItem( // 앨범 폴더 썸네일 + 이름 + 클릭 이벤트
     name: String,
     thumbnail: ByteArray?,
@@ -74,9 +119,8 @@ fun FolderItem( // 앨범 폴더 썸네일 + 이름 + 클릭 이벤트
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
+    Column (
         modifier = Modifier
-            .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(8.dp)
     ) {
@@ -93,15 +137,15 @@ fun FolderItem( // 앨범 폴더 썸네일 + 이름 + 클릭 이벤트
                 model = sample_image, // 기본 이미지
                 contentDescription = null,
                 modifier = Modifier
-                    .size(60.dp)
+                    .size(170.dp)
                     .clip(RoundedCornerShape(4.dp))
             )
 
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        Text(name, fontSize = 18.sp, modifier = Modifier.align(Alignment.CenterVertically))
+        Text(name, fontSize = 18.sp)
     }
 }
 
@@ -111,7 +155,7 @@ fun TripFolderGridColumn(
     context: Context,
     onTripFolderClick: (ImageResult) -> Unit
 ) {
-    val sampleImage = File(context.filesDir, "sample_image.jpeg")
+    val sampleImageByteArray = drawableResToByteArray(context, sample_image)
 
     var images: List<ImageResult> = getRandomTripImages(context)
 
@@ -123,7 +167,9 @@ fun TripFolderGridColumn(
 
         if (images.isEmpty()) {
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(10.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -141,17 +187,17 @@ fun TripFolderGridColumn(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(2.dp),
-                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     imageChuck.forEach { image ->
                         if(image.file_id == null) {
-                            thumbnail = sampleImage.readBytes() // 기본 이미지
+                            thumbnail = sampleImageByteArray // 기본 이미지
                         } else {
                             thumbnail = try {
-                                if (image.file_id != null) read(context, image.file_id) else sampleImage.readBytes()
+                                if (image.file_id != null) read(context, image.file_id) else sampleImageByteArray
                             } catch (e: Exception) {
                                 Log.e("ThumbnailRead", "Error reading image: ${e.message}")
-                                sampleImage.readBytes()
+                                sampleImageByteArray
                             }
                         }
                         FolderItem(
@@ -181,7 +227,7 @@ fun RegionFolderGridColumn(
     trip: model.Trip,
     onRegionFolderClick: (ImageResult) -> Unit
 ) {
-    val sampleImage = File(context.filesDir, "sample_image.jpeg")
+    val sampleImageByteArray = drawableResToByteArray(context, sample_image)
 
     var images: List<ImageResult> = getRandomRegionImages(context, trip.id)
 
@@ -211,17 +257,17 @@ fun RegionFolderGridColumn(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(2.dp),
-                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     imageChuck.forEach { image ->
                         if(image.file_id == null) {
-                            thumbnail = sampleImage.readBytes() // 기본 이미지
+                            thumbnail = sampleImageByteArray
                         } else {
                             thumbnail = try {
-                                if (image.file_id != null) read(context, image.file_id) else sampleImage.readBytes()
+                                if (image.file_id != null) read(context, image.file_id) else sampleImageByteArray
                             } catch (e: Exception) {
                                 Log.e("ThumbnailRead", "Error reading image: ${e.message}")
-                                sampleImage.readBytes()
+                                sampleImageByteArray
                             }
                         }
                         FolderItem(
@@ -251,7 +297,7 @@ fun ScheduleFolderGridColumn(
     region: model.Region,
     onScheduleFolderClick: (ImageResult) -> Unit
 ) {
-    val sampleImage = File(context.filesDir, "sample_image.jpeg")
+    val sampleImageByteArray = drawableResToByteArray(context, sample_image)
 
     var images: List<ImageResult> = getRandomScheduleImages(context, region.id)
 
@@ -281,17 +327,17 @@ fun ScheduleFolderGridColumn(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(2.dp),
-                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     imageChuck.forEach { image ->
                         if(image.file_id == null) {
-                            thumbnail = sampleImage.readBytes() // 기본 이미지
+                            thumbnail = sampleImageByteArray // 기본 이미지
                         } else {
                             thumbnail = try {
-                                if (image.file_id != null) read(context, image.file_id) else sampleImage.readBytes()
+                                if (image.file_id != null) read(context, image.file_id) else sampleImageByteArray
                             } catch (e: Exception) {
                                 Log.e("ThumbnailRead", "Error reading image: ${e.message}")
-                                sampleImage.readBytes()
+                                sampleImageByteArray
                             }
                         }
                         FolderItem(
@@ -320,9 +366,9 @@ fun ScheduleFolderGridColumn(
 fun ScheduleImageGrid(
     context: Context,
     schedule: model.Schedule,
-    onBack: (ImageResult) -> Unit
+    onImageClick: (ImageResult) -> Unit = {}
 ) {
-    val sampleImage = File(context.filesDir, "sample_image.jpeg")
+    val sampleImageByteArray = drawableResToByteArray(context, sample_image)
 
     val schedule_images = getScheduleImages(context, schedule.id)
 
@@ -344,7 +390,7 @@ fun ScheduleImageGrid(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(2.dp),
-                horizontalArrangement = Arrangement.spacedBy(2.dp)
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 scheduleChuck.forEach { image ->
                     Box(
@@ -355,7 +401,7 @@ fun ScheduleImageGrid(
                     ) {
                         if( image.file_id == null ) {
                             AsyncImage(
-                                model = sampleImage.readBytes(),
+                                model = sampleImageByteArray,
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier.fillMaxSize()
@@ -363,15 +409,20 @@ fun ScheduleImageGrid(
                         } else {
                             AsyncImage(
                                 model = try {
-                                    if (image.file_id != null) read(context, image.file_id) else sampleImage.readBytes()
+                                    if (image.file_id != null) read(context, image.file_id) else sampleImageByteArray
                                 } catch (e: Exception) {
                                     Log.e("ThumbnailRead", "Error reading image: ${e.message}")
-                                    sampleImage.readBytes()
+                                    sampleImageByteArray
                                 },
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clickable {
+                                        onImageClick(image)
+                                    }
                             )
+
                         }
                     }
                 }
