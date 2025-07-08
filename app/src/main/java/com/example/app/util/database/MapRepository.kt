@@ -450,21 +450,18 @@ object MapRepository {
         val images = mutableListOf<ImageResult>()
         dbHelper.readableDatabase.use { db ->
             val cursor = db.rawQuery("""
-                SELECT *
-                FROM (
-                    SELECT
-                        schedule.id AS schedule_id,
-                        schedule_image.file_id AS file_id,
-                        schedule.title AS title,
-                        ROW_NUMBER() OVER (
-                            PARTITION BY schedule.id
-                            ORDER BY RANDOM()
-                        ) AS rn
-                    FROM schedule
-                    LEFT JOIN schedule_image ON schedule_image.schedule_id = schedule.id
-                    WHERE schedule.region_id = ?
-                ) AS sub
-                WHERE rn = 1 OR rn IS NULL
+                SELECT
+                    schedule.id AS schedule_id,
+                       (
+                           SELECT schedule_image.file_id
+                           FROM schedule_image
+                           WHERE schedule_image.schedule_id = schedule.id
+                           ORDER BY RANDOM()
+                           LIMIT 1
+                       ) AS file_id,
+                       schedule.title AS title
+                FROM schedule
+                WHERE schedule.region_id = ?
                 """.trimIndent(),
                 arrayOf(regionId.toString())
             )
@@ -491,34 +488,28 @@ object MapRepository {
         val images = mutableListOf<ImageResult>()
         dbHelper.readableDatabase.use { db ->
             val cursor = db.rawQuery("""
-                SELECT *
-                FROM (
-                    SELECT
-                        schedule_image.schedule_id AS schedule_id,
-                        region.id AS region_id,
-                        schedule_image.file_id AS file_id,
-                        region.title AS title,
-                        ROW_NUMBER() OVER (
-                            PARTITION BY region.id
-                            ORDER BY RANDOM()
-                        ) AS rn
-                    FROM region
-                    LEFT JOIN schedule ON schedule.region_id = region.id
-                    LEFT JOIN schedule_image ON schedule_image.schedule_id = schedule.id
-                    WHERE region.trip_id = ?
-                ) AS sub
-                WHERE rn = 1 OR rn IS NULL
+                SELECT 
+                    region.id AS region_id,
+                    region.title AS title,
+                    (
+                        SELECT schedule_image.file_id
+                        FROM schedule
+                        LEFT JOIN schedule_image ON schedule.id = schedule_image.schedule_id
+                        WHERE schedule.region_id = region.id
+                        ORDER BY RANDOM()
+                        LIMIT 1
+                    ) AS file_id
+                FROM region
+                WHERE region.trip_id = ?
                 """.trimIndent(),
                 arrayOf(tripId.toString())
             )
-            val scheduleIdIdx = cursor.getColumnIndex("schedule_id")
             val regionIdIdx = cursor.getColumnIndex("region_id")
             val fileIdIdx = cursor.getColumnIndex("file_id")
             val titleIdx = cursor.getColumnIndex("title")
             while (cursor.moveToNext()) {
                 images.add(
                     ImageResult(
-                        schedule_id = cursor.getInt(scheduleIdIdx),
                         region_id = cursor.getInt(regionIdIdx),
                         file_id = cursor.getString(fileIdIdx),
                         title = cursor.getString(titleIdx
@@ -536,29 +527,25 @@ object MapRepository {
         val images = mutableListOf<ImageResult>()
         dbHelper.readableDatabase.use { db ->
             val cursor = db.rawQuery("""
-                SELECT *
-                FROM (
-                    SELECT
-                        trip.id AS trip_id,
-                        region.id AS region_id,
-                        schedule_image.schedule_id AS schedule_id,
-                        schedule_image.file_id AS file_id,
-                        region.title AS title,
-                        ROW_NUMBER() OVER (
-                           PARTITION BY region.id
-                           ORDER BY RANDOM()
-                        ) AS rn
-                    FROM trip
-                    LEFT JOIN region ON region.trip_id = trip.id
-                    LEFT JOIN schedule ON schedule.region_id = region.id
-                    LEFT JOIN schedule_image ON schedule_image.schedule_id = schedule.id
-                ) AS sub
+                SELECT 
+                    trip.id AS trip_id,
+                    region.id AS region_id,
+                    trip.title,
+                    (
+                        SELECT schedule_image.file_id
+                        FROM schedule
+                        LEFT JOIN schedule_image ON schedule.id = schedule_image.schedule_id
+                        WHERE schedule.region_id = region.id
+                        ORDER BY RANDOM()
+                        LIMIT 1
+                    ) AS file_id
+                FROM trip
+                LEFT JOIN region ON region.trip_id = trip.id
                 """.trimIndent(),
                 null
             )
             val tripIdIdx = cursor.getColumnIndex("trip_id")
             val regionIdIdx = cursor.getColumnIndex("region_id")
-            val scheduleIdIdx = cursor.getColumnIndex("schedule_id")
             val fileIdIdx = cursor.getColumnIndex("file_id")
             val titleIdx = cursor.getColumnIndex("title")
 
@@ -567,7 +554,6 @@ object MapRepository {
                     ImageResult(
                         trip_id = cursor.getInt(tripIdIdx),
                         region_id = cursor.getInt(regionIdIdx),
-                        schedule_id = cursor.getInt(scheduleIdIdx),
                         file_id = cursor.getString(fileIdIdx),
                         title = cursor.getString(titleIdx
                     )

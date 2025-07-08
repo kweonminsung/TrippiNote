@@ -109,6 +109,30 @@ class model {
                 AIRPLANE -> "비행기"
             }
         }
+
+        fun toIcon(): Int {
+            return when (this) {
+                WALKING -> R.drawable.transport_walk_fill
+                BICYCLE -> R.drawable.transport_bicycle_fill
+                CAR -> R.drawable.transport_car_fill
+                BUS -> R.drawable.transport_bus_fill
+                TRAIN -> R.drawable.transport_train_fill
+                SUBWAY -> R.drawable.transport_subway_fill
+                AIRPLANE -> R.drawable.transport_airplane_fill
+            }
+        }
+
+        fun toEmptyIcon(): Int {
+            return when (this) {
+                WALKING -> R.drawable.transport_walk_empty
+                BICYCLE -> R.drawable.transport_bicycle_empty
+                CAR -> R.drawable.transport_car_empty
+                BUS -> R.drawable.transport_bus_empty
+                TRAIN -> R.drawable.transport_train_empty
+                SUBWAY -> R.drawable.transport_subway_empty
+                AIRPLANE -> R.drawable.transport_airplane_empty
+            }
+        }
     }
 
     enum class ScheduleType {
