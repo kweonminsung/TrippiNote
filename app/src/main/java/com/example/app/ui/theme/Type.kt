@@ -62,5 +62,5 @@ val Typography = Typography(
     ),
     labelSmall = TextStyle(
         fontFamily = FONT_FAMILY
-    )
+    ),
 )

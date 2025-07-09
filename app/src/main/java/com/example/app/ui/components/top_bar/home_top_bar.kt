@@ -25,7 +25,7 @@ fun HomeTopBar(
     TopAppBar(
         title = {
             Text(
-                text = "${username}의 여행 다이어리 \uD83D\uDCDA",
+                text = "${username}의 여행 다이어리  \uD83D\uDCDA",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 12.dp),

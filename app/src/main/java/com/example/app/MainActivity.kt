@@ -6,6 +6,16 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.with
 import androidx.compose.material3.Scaffold
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
@@ -89,36 +99,52 @@ data class PreselectedPin(
     val position: LatLng? = null,
 )
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun MainScreen() {
     val (tabType, setTabType) = remember { mutableStateOf(TabType.HOME) }
 
     val (preselectedPin, setPreselectedPin) = remember { mutableStateOf<PreselectedPin?>(null) }
 
-    Scaffold(
-        topBar = {
-            TopBar(tabType)
-        },
-        bottomBar = {
-            BottomBar(tabType, setTabType)
+    AnimatedContent (
+        targetState = tabType,
+        transitionSpec = {
+            slideInHorizontally(
+                animationSpec = tween(durationMillis = 300),
+                initialOffsetX = { - it / 4 },
+            ) with slideOutHorizontally(
+                animationSpec = tween(durationMillis = 300),
+                targetOffsetX = { - it / 4 },
+            )
         }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(it)
+        Scaffold(
+            topBar = {
+                TopBar(tabType)
+            },
+            bottomBar = {
+                BottomBar(tabType, setTabType)
+            }
         ) {
-            when (tabType) {
-                TabType.HOME -> HomeTab(
-                    setTabType = setTabType,
-                    setPreselectedPin = setPreselectedPin
-                )
-                TabType.ALBUM -> AlbumTab()
-                TabType.MAP -> MapTab(
-                    preselectedPin = preselectedPin,
-                    setPreselectedPin = setPreselectedPin
-                )
-                TabType.PROFILE -> ProfileTab()
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(it)
+            ) {
+                when (tabType) {
+                    TabType.HOME -> HomeTab(
+                        setTabType = setTabType,
+                        setPreselectedPin = setPreselectedPin
+                    )
+
+                    TabType.ALBUM -> AlbumTab()
+                    TabType.MAP -> MapTab(
+                        preselectedPin = preselectedPin,
+                        setPreselectedPin = setPreselectedPin
+                    )
+
+                    TabType.PROFILE -> ProfileTab()
+                }
             }
         }
     }

@@ -70,7 +70,7 @@ fun RawTransportButton(
 fun TransportInfoButton(
     type: model.TransportType? = null,
     duration: String? = null,
-    saveFn: (type: model.TransportType, duration: String?) -> Unit,
+    saveFn: (type: model.TransportType?, duration: String?) -> Unit,
 ) {
     val (isTransportSetting, setIsTransportSetting) = remember { mutableStateOf(false) } // 교통수단 설정 중 여부
     val (isTransportDurationSetting, setIsTransportDurationSetting) = remember { mutableStateOf(false) } // 교통수단 소요시간 설정 중 여부
@@ -104,6 +104,13 @@ fun TransportInfoButton(
                         .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
+                    RawTransportButton(
+                        type = null,
+                        onClick = {
+                            setIsTransportSetting(false)
+                            saveFn(null, duration)
+                        }
+                    )
                     RawTransportButton(
                         type = model.TransportType.WALKING,
                         onClick = {
@@ -169,7 +176,9 @@ fun TransportInfoButton(
                         setIsTransportSetting(true) // 교통 수단 설정 시작
                     },
                     onLongClick = {
-                        setIsTransportDurationSetting(true) // 교통 수단 소요시 간 설정 시작
+                        if (type != null) {
+                            setIsTransportDurationSetting(true) // 교통 수단 소요시 간 설정 시작}
+                        }
                     }
                 )
                 if(type != null && isTransportDurationSetting) {

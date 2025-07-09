@@ -1,5 +1,6 @@
 package com.example.app.ui.components.profile
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,9 @@ import androidx.compose.ui.window.DialogProperties
 import com.example.app.LocalSession
 import com.example.app.ui.theme.CustomColors
 import com.example.app.util.KeyValueStore
+import kotlin.compareTo
+
+val USERNAME_MAX_LENGTH = 10
 
 @Composable
 fun ProfileUsernameDialog(
@@ -67,7 +71,12 @@ fun ProfileUsernameDialog(
                 TextField(
                     value = newName,
                     onValueChange = { input ->
-                        setNewName(input)
+                        if (input.length <= USERNAME_MAX_LENGTH) {
+                            setNewName(input)
+                        } else {
+                            Toast.makeText(context, "최대 ${USERNAME_MAX_LENGTH}자까지 입력할 수 있습니다.",
+                                Toast.LENGTH_SHORT).show()
+                        }
                     },
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = CustomColors.White,
