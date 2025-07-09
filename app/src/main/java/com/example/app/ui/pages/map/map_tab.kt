@@ -634,7 +634,7 @@ fun MapTab(
                 AddRegionForm(
                     button = { onClick ->
                         BottomButton(
-                            label = "지역 추가하기 ✈️",
+                            label = "지역 추가하기 \uD83D\uDCCD",
                             onClick = onClick,
                             modifier = Modifier
                                 .width(200.dp)
