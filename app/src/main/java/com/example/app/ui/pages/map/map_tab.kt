@@ -111,12 +111,28 @@ fun MapTab(
     var userSelectedMapPin by remember { mutableStateOf<MapPin?>(null) } // 유저가 선택한 핀
 
     var selectedTripId by remember { mutableStateOf<Int?>(
-            if (preselectedPin?.type == MapPinType.TRIP) preselectedPin.id else null
+    if (preselectedPin?.type == MapPinType.TRIP) {
+                if (preselectedPin.id != null && MapRepository.checkTripExists(context, preselectedPin.id)) {
+                    preselectedPin.id
+                } else null
+            } else null
         ) } // 선택된 여행 ID
     var selectedRegionId by remember { mutableStateOf<Int?>(
         when (preselectedPin?.type) {
-            MapPinType.REGION -> preselectedPin.id
-            MapPinType.SCHEDULE -> (MapRepository.getScheduleById(context, preselectedPin.id as Int) as model.Schedule).region_id
+            MapPinType.REGION -> {
+                if(preselectedPin.id != null && MapRepository.checkRegionExists(context, preselectedPin.id)) {
+                    preselectedPin.id
+                } else null
+            }
+            MapPinType.SCHEDULE -> {
+                if (preselectedPin.id != null && MapRepository.checkScheduleExists(context, preselectedPin.id)) {
+                    val schedule = MapRepository.getScheduleById(context, preselectedPin.id)
+                    if (schedule != null && MapRepository.checkRegionExists(context, schedule.region_id)) {
+                        schedule.region_id
+                    } else null
+                } else null
+
+            }
             else -> null
         }
     ) } // 선택된 지역 ID
@@ -591,7 +607,21 @@ fun MapTab(
                                     )
                                 )
                             }
-                        }
+                        },
+                        deleteFn = {
+                            MapRepository.deleteRegion(context, region.id)
+
+                            // 업데이트
+                            if(selectedRegionId == region.id) {
+                                selectedRegionId = null
+                                regionInfoBottomDrawerState = false
+                            }
+                            if(preselectedPin?.type == MapPinType.REGION && preselectedPin.id == region.id) {
+                                setPreselectedPin(null)
+                            }
+                            regions = MapTabData.getSessionRegions(context, tripId) // 지역 목록 업데이트
+                            sessionMapPins = MapTabData.getSessionPinsByZoomRate(context, zoomLevel) // 세션에 저장된 핀 목록 업데이트
+                        },
                     )
                 }
 
@@ -676,7 +706,18 @@ fun MapTab(
                                     )
                                 )
                             }
-                        }
+                        },
+                        deleteFn = {
+                            MapRepository.deleteSchedule(context, schedule.id)
+
+                            // 업데이트
+                            if(preselectedPin?.type == MapPinType.SCHEDULE && preselectedPin.id == schedule.id) {
+                                setPreselectedPin(null)
+                            }
+                            schedules = MapTabData.getSessionSchedules(context, regionId) // 스케줄 목록 업데이트
+                            sessionMapPins = MapTabData.getSessionPinsByZoomRate(context, zoomLevel) // 세션에 저장된 핀 목록 업데이트
+                            sessionTransportPins = MapTabData.getSessionTransportPinsByZoomRate(context, zoomLevel) // 교통수단 핀 목록 업데이트
+                        },
                     )
                     if (index != schedules.lastIndex) {
                         val nextSchedule = schedules.getOrNull(index + 1) as model.Schedule
@@ -758,6 +799,7 @@ fun MapTab(
                 )
             }
         }
+
     }
 
 }

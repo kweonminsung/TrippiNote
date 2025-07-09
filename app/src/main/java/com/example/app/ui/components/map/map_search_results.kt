@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -82,7 +82,7 @@ fun MapSearchResults(
 
                     }
                     if (index != searchResults.second.lastIndex) {
-                        Divider(
+                        HorizontalDivider(
                             color = CustomColors.LightGray,
                             thickness = 1.dp
                         )
@@ -90,7 +90,7 @@ fun MapSearchResults(
                 }
             }
 
-            Divider(
+            HorizontalDivider(
                 color = CustomColors.LightGray,
                 thickness = 2.dp
             )
@@ -119,7 +119,7 @@ fun MapSearchResults(
                         )
                     }
                     if (index != searchResults.second.lastIndex) {
-                        Divider(
+                        HorizontalDivider(
                             color = CustomColors.LightGray,
                             thickness = 1.dp
                         )

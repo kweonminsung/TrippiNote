@@ -4,10 +4,10 @@ import android.content.Context
 
 object WishlistRepository {
     fun getAllWishlists(context: Context): List<model.Wishlist> {
-        val dbHelper = SQLiteHelper(context)
+        val db = DatabaseUtil.getReadableDb(context)
 
         val wishlists = mutableListOf<model.Wishlist>()
-        dbHelper.readableDatabase.use { db ->
+        db.use { db ->
             val cursor = db.rawQuery("SELECT * FROM wishlist", null)
             val idIdx = cursor.getColumnIndex("id")
             val doneIdx = cursor.getColumnIndex("done")
@@ -37,8 +37,8 @@ object WishlistRepository {
     }
 
     fun updateWishlist(context: Context, wishlist: model.Wishlist) {
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.writableDatabase.use { db ->
+        val db = DatabaseUtil.getWritableDb(context)
+        db.use { db ->
             db.execSQL(
                 "UPDATE wishlist SET done = ?, content = ? WHERE id = ?",
                 arrayOf(if (wishlist.done) 1 else 0, wishlist.content, wishlist.id)
@@ -47,8 +47,8 @@ object WishlistRepository {
     }
 
     fun deleteWishlist(context: Context, wishlistId: Int) {
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.writableDatabase.use { db ->
+        val db = DatabaseUtil.getWritableDb(context)
+        db.use { db ->
             db.execSQL("DELETE FROM wishlist WHERE id = ?", arrayOf(wishlistId))
         }
     }
