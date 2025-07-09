@@ -2,8 +2,13 @@ package com.example.app.ui.pages.album
 
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -22,6 +27,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,6 +43,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import com.example.app.ui.theme.CustomColors
 import com.example.app.util.database.model
 import java.io.File
@@ -52,6 +60,10 @@ import com.example.app.util.database.MapRepository.getRandomScheduleImages
 import com.example.app.R.drawable.sample_image
 import kotlin.collections.chunked
 import kotlin.collections.forEach
+import android.Manifest
+import android.widget.Toast
+import androidx.compose.runtime.LaunchedEffect
+import androidx.core.app.ActivityCompat
 
 
 
@@ -71,7 +83,7 @@ fun uploadImage(
     context: Context,
     file: File,
     schdule: model.Schedule
-){
+) {
     val file_id = save(context, file.readBytes()).toString()
     createScheduleImage(context, schdule.id,file_id)
 }
@@ -166,7 +178,7 @@ fun FolderItem( // 앨범 폴더 썸네일 + 이름 + 클릭 이벤트
         Text(
             name,
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .padding(horizontal = 4.dp),
             fontSize = fontSize,
             maxLines = 1,
@@ -195,8 +207,8 @@ fun TripFolderGridColumn(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
+        )
+        {
 
             if (images.isEmpty()) {
                 Box(
@@ -432,24 +444,15 @@ fun ScheduleFolderGridColumn(
     }
 }
 
-fun refreshImages(context: Context, schedule: model.Schedule): List<ImageResult> {
-    val scheduleImages = getScheduleImages(context, schedule.id)
-    return scheduleImages
-}
 
 
 @Composable
 fun ScheduleImageGrid(
     context: Context,
-    schedule: model.Schedule,
+    schedule_images: List<ImageResult>,
     onImageClick: (ImageResult) -> Unit = {}
 ) {
     val sampleImageByteArray = drawableResToByteArray(context, sample_image)
-
-    val schedule_images = getScheduleImages(context, schedule.id)
-    // 이미지 목록을 상태로 관리
-    var scheduleImages by remember { mutableStateOf(getScheduleImages(context, schedule.id)) }
-    // 업로드 후 이 함수를 호출해서 목록 갱신
 
     Box(
         modifier = Modifier
@@ -530,3 +533,37 @@ fun ScheduleImageGrid(
     }
 }
 
+fun createImageUri(context: Context): Uri {
+    val imageFile = File(context.externalCacheDir, "captured_image.jpg")
+    return FileProvider.getUriForFile(
+        context,
+        "${context.packageName}.fileprovider",
+        imageFile
+    )
+}
+
+@Composable
+fun RequestCameraPermission(onGranted: () -> Unit) {
+    val context = LocalContext.current
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            onGranted()
+        } else {
+            Toast.makeText(context, "카메라 권한이 필요합니다", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect (Unit) {
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            permissionLauncher.launch(Manifest.permission.CAMERA)
+        } else {
+            onGranted()
+        }
+    }
+}

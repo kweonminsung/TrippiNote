@@ -2,8 +2,7 @@ package com.example.app.ui.pages.album
 
 import android.content.Context
 import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -11,15 +10,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -37,12 +36,22 @@ import androidx.compose.ui.unit.sp
 import com.example.app.LocalSession
 import com.example.app.ui.components.buttons.BottomButton
 import com.example.app.ui.theme.CustomColors
+import com.example.app.util.database.ImageResult
 import com.example.app.util.database.model
 import com.example.app.util.database.MapRepository.getTripById
 import com.example.app.util.database.MapRepository.getRegionById
 import com.example.app.util.database.MapRepository.getScheduleById
 import java.io.File
 import java.io.FileOutputStream
+import com.example.app.util.database.MapRepository.getScheduleImages
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.*
+import androidx.compose.material3.*
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 
 
 
@@ -52,7 +61,10 @@ fun FolderNavigatorScreen(context: Context, username: String = "사용자") {
     var selectedRegion by remember { mutableStateOf<model.Region?>(null) }
     var selectedSchedule by remember { mutableStateOf<model.Schedule?>(null) }
     var selectedImageFileId by remember { mutableStateOf<String?>(null) }
+    var imageList by remember { mutableStateOf<List<ImageResult>>(emptyList()) }
+
     var showPopup by remember { mutableStateOf(false) }
+
 
 
     when {
@@ -65,11 +77,11 @@ fun FolderNavigatorScreen(context: Context, username: String = "사용자") {
             ){
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxSize()
                         .height(64.dp),
                     contentAlignment = Alignment.Center
                 ){
-                    spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Text(
                         text = "${username}의 여행 사진 \uD83C\uDF04",
                         color = CustomColors.Black,
@@ -88,7 +100,12 @@ fun FolderNavigatorScreen(context: Context, username: String = "사용자") {
         }
         selectedRegion == null -> {
             val trip = selectedTrip!!
-            Box {
+            BackHandler( onBack = { selectedTrip = null } )
+            Box (
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = CustomColors.LighterGray)
+            ){
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -97,7 +114,7 @@ fun FolderNavigatorScreen(context: Context, username: String = "사용자") {
                 ) {
                     Column(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxSize()
                             .padding(top = 10.dp)
                             .height(64.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -151,7 +168,12 @@ fun FolderNavigatorScreen(context: Context, username: String = "사용자") {
         selectedSchedule == null -> {
             val trip = selectedTrip!!
             val region = selectedRegion!!
-            Box {
+            BackHandler( onBack = { selectedRegion = null } )
+            Box (
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = CustomColors.LighterGray)
+            ){
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -160,7 +182,7 @@ fun FolderNavigatorScreen(context: Context, username: String = "사용자") {
                 ) {
                     Column(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxSize()
                             .height(64.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
@@ -227,12 +249,24 @@ fun FolderNavigatorScreen(context: Context, username: String = "사용자") {
                     val schedule = selectedSchedule!!
 
                     uploadImage(context, tempFile, schedule)
+                    val updatedSchedule = getScheduleById(context, schedule.id)
+                    selectedSchedule = updatedSchedule
+                    imageList = getScheduleImages(context,updatedSchedule!!.id)
                 }
             }
 
+
+
+
             val region = selectedRegion!!
             val schedule = selectedSchedule!!
-            Box {
+
+            BackHandler( onBack = { selectedSchedule = null } )
+            Box (
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = CustomColors.LighterGray)
+            ){
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -242,7 +276,7 @@ fun FolderNavigatorScreen(context: Context, username: String = "사용자") {
                 {
                     Column(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxSize()
                             .height(64.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
@@ -270,25 +304,14 @@ fun FolderNavigatorScreen(context: Context, username: String = "사용자") {
 
                         ScheduleImageGrid(
                             context = context,
-                            schedule = selectedSchedule!!,
+                            schedule_images = imageList,
                             onImageClick = { image ->
                                 selectedImageFileId = image.file_id
                                 showPopup = true
                             }
                         )
 
-                        BottomButton(
-                            label = "사진 업로드  \uD83D\uDCF8",
-                            onClick = {
-                                launcher.launch("image/*")
-                                selectedSchedule = null
-                                selectedSchedule = schedule
-                            },
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .width(200.dp)
-                                .padding(top = 16.dp, bottom = 16.dp)
-                        )
+
 
 
                         if (showPopup && selectedImageFileId != null) {
@@ -321,9 +344,19 @@ fun FolderNavigatorScreen(context: Context, username: String = "사용자") {
                         tint = CustomColors.Black
                     )
                 }
+                BottomButton(
+                    label = "사진 업로드 \uD83C\uDFDE\uFE0F",
+                    onClick = {
+                        launcher.launch("image/*")
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .width(200.dp)
+                        .padding(top = 16.dp, bottom = 16.dp)
+                )
+
+
             }
-
-
         }
     }
 }
@@ -338,6 +371,8 @@ fun AlbumTab() {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .background(color = CustomColors.LighterGray)
     ) {
         FolderNavigatorScreen(
             context = context,
