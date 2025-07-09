@@ -14,11 +14,9 @@ object MapTabData {
         context: android.content.Context,
         zoomLevel: Float
     ): List<TransportPin> {
-        for ( i in MapRepository.getAllTransports(context)) {
-            Log.d("MapTabData", "Transport: ${i.from_schedule_id} -> ${i.to_schedule_id}, type: ${i.type}")
-        }
-
-
+//        for ( i in MapRepository.getAllTransports(context)) {
+//            Log.d("MapTabData", "Transport: ${i.from_schedule_id} -> ${i.to_schedule_id}, type: ${i.type}")
+//        }
         return when (zoomLevel) {
             ZOOM_LEVEL.CITY -> {
                 MapRepository.getAllTransports(context).map { transport ->

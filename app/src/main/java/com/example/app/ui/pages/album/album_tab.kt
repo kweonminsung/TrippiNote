@@ -69,7 +69,7 @@ fun FolderNavigatorScreen(context: Context, username: String = "사용자") {
                 ){
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = "${username}의 여행 사진 \uD83C\uDF04",
+                        text = "${username}의 여행 사진  \uD83C\uDF04",
                         color = CustomColors.Black,
                         modifier = Modifier,
                         fontSize = 20.sp

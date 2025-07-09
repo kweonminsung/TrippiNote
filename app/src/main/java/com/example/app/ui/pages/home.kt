@@ -175,7 +175,7 @@ fun HomeTab(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "나의 여행 ✈\uFE0F",
+                    text = "나의 여행  ✈\uFE0F",
                     fontSize = 20.sp,
                     color = CustomColors.Black,
                 )

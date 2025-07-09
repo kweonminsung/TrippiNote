@@ -735,7 +735,7 @@ fun MapTab(
                     )
                     if (index != schedules.lastIndex) {
                         val nextSchedule = schedules.getOrNull(index + 1) as model.Schedule
-                        var transport by remember {
+                        var transport by remember(schedule.id, nextSchedule.id) {
                             mutableStateOf<model.Transport?>(
                                 MapTabData.getSessionTransportByFromTo(
                                     context,
@@ -780,7 +780,7 @@ fun MapTab(
                 AddScheduleForm(
                     button = { onClick ->
                         BottomButton(
-                            label = "일정 추가하기 ✏\uFE0F",
+                            label = "일정 추가하기  ✏\uFE0F",
                             onClick = onClick,
                             modifier = Modifier
                                 .width(200.dp)
