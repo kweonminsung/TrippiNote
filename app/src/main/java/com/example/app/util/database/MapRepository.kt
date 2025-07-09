@@ -1,6 +1,7 @@
 package com.example.app.util.database
 
 import android.content.Context
+import android.util.Log
 import com.example.app.ui.components.map.MapPinType
 import com.example.app.ui.pages.map.MapSearchResult
 import java.time.LocalDate
@@ -566,25 +567,30 @@ object MapRepository {
         val images = mutableListOf<ImageResult>()
         db.use {
             val cursor = db.rawQuery("""
-                SELECT 
+                SELECT
                     trip.id AS trip_id,
-                    region.id AS region_id,
-                    trip.title,
+                    trip.title AS title,
                     (
-                        SELECT schedule_image.file_id
-                        FROM schedule
-                        LEFT JOIN schedule_image ON schedule.id = schedule_image.schedule_id
-                        WHERE schedule.region_id = region.id
-                        ORDER BY RANDOM()
+                        SELECT
+                            schedule_image.file_id
+                        FROM
+                            schedule
+                        LEFT JOIN
+                            schedule_image ON schedule.id = schedule_image.schedule_id
+                        JOIN
+                            region ON schedule.region_id = region.id
+                        WHERE
+                            region.trip_id = trip.id
+                        ORDER BY
+                            RANDOM()
                         LIMIT 1
                     ) AS file_id
-                FROM trip
-                LEFT JOIN region ON region.trip_id = trip.id
+                FROM
+                    trip;
                 """.trimIndent(),
                 null
             )
             val tripIdIdx = cursor.getColumnIndex("trip_id")
-            val regionIdIdx = cursor.getColumnIndex("region_id")
             val fileIdIdx = cursor.getColumnIndex("file_id")
             val titleIdx = cursor.getColumnIndex("title")
 
@@ -592,7 +598,6 @@ object MapRepository {
                 images.add(
                     ImageResult(
                         trip_id = cursor.getInt(tripIdIdx),
-                        region_id = cursor.getInt(regionIdIdx),
                         file_id = cursor.getString(fileIdIdx),
                         title = cursor.getString(titleIdx
                     )
