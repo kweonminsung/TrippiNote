@@ -58,6 +58,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.2.2")
     implementation("androidx.appcompat:appcompat:1.4.2")
     implementation("com.airbnb.android:lottie-compose:6.0.0")
+    implementation("androidx.core:core-splashscreen:1.0.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
