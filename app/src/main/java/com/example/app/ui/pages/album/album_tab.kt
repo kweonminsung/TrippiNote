@@ -44,8 +44,6 @@ import com.example.app.util.database.MapRepository.getScheduleById
 import java.io.File
 import java.io.FileOutputStream
 
-
-
 @Composable
 fun FolderNavigatorScreen(context: Context, username: String = "사용자") {
     var selectedTrip by remember { mutableStateOf<model.Trip?>(null) }
@@ -69,7 +67,7 @@ fun FolderNavigatorScreen(context: Context, username: String = "사용자") {
                         .height(64.dp),
                     contentAlignment = Alignment.Center
                 ){
-                    spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Text(
                         text = "${username}의 여행 사진 \uD83C\uDF04",
                         color = CustomColors.Black,

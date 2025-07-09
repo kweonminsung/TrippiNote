@@ -44,6 +44,7 @@ import com.example.app.ui.components.profile.ProfileCard
 import com.example.app.ui.components.profile.ProfileCountBox
 import com.example.app.ui.components.profile.ProfileSpecific
 import com.example.app.ui.theme.CustomColors
+import com.example.app.ui.theme.FONT_FAMILY
 import com.example.app.util.database.ChecklistRepository
 import com.example.app.util.database.MapRepository
 import com.example.app.util.database.model
@@ -220,6 +221,7 @@ fun ProfileTab() {
                                     textStyle = TextStyle(
                                         color = CustomColors.Black,
                                         fontSize = 16.sp,
+                                        fontFamily = FONT_FAMILY,
                                         textDecoration = if (checklist.done) TextDecoration.LineThrough else TextDecoration.None
                                     ),
                                     decorationBox = { innerTextField ->
