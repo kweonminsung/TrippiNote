@@ -19,15 +19,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,9 +55,12 @@ import kotlin.collections.forEach
 
 
 
+
 val imageSize = 150.dp
-val folderWidth = 230.dp
-val totalRowWidth = folderWidth * 2 + 8.dp
+val folderWidth = 150.dp
+val imageWidth = 150.dp
+val totalRowWidth = folderWidth * 2 + 16.dp
+val totalImagesWidth = imageWidth * 3 + 12.dp
 val fontSize = 15.sp
 val popUpSize = 250
 fun drawableResToByteArray(context: Context, resId: Int): ByteArray? {
@@ -133,7 +136,9 @@ fun FolderItem( // 앨범 폴더 썸네일 + 이름 + 클릭 이벤트
     Column(
         modifier = Modifier
             .clickable(onClick = onClick)
-            .padding(2.dp)
+            .width(folderWidth)
+            .padding(2.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (thumbnail != null) {
             AsyncImage(
@@ -156,11 +161,14 @@ fun FolderItem( // 앨범 폴더 썸네일 + 이름 + 클릭 이벤트
 
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         Text(
             name,
-            fontSize = 17.sp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp),
+            fontSize = fontSize,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             color = CustomColors.Black,
@@ -181,12 +189,13 @@ fun TripFolderGridColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(CustomColors.LighterGray)
-            .padding(20.dp),
+            .padding(vertical = 10.dp, horizontal = 20.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
         ) {
 
             if (images.isEmpty()) {
@@ -266,22 +275,23 @@ fun RegionFolderGridColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(CustomColors.LighterGray)
-            .padding(2.dp),
+            .padding(vertical = 10.dp, horizontal = 20.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp)
         ) {
 
             if (images.isEmpty()) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(10.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "여행 기록이 없습니다",
+                        text = "지역 기록이 없습니다",
                         color = CustomColors.DarkGray,
                         fontSize = 18.sp
                     )
@@ -293,13 +303,13 @@ fun RegionFolderGridColumn(
                 images.chunked(2).forEach { imageChuck ->
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(2.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                            .width(totalRowWidth)
+                            .padding(vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         imageChuck.forEach { image ->
                             if (image.file_id == null) {
-                                thumbnail = sampleImageByteArray
+                                thumbnail = sampleImageByteArray // 기본 이미지
                             } else {
                                 thumbnail = try {
                                     if (image.file_id != null) read(
@@ -325,12 +335,11 @@ fun RegionFolderGridColumn(
                         if (imageChuck.size < 2) {
                             Spacer(modifier = Modifier
                                 .weight(1f)
-                                .padding(horizontal = 4.dp)
-                            )
+                                .padding(horizontal = 4.dp))
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(5.dp))
                 }
             }
 
@@ -351,18 +360,19 @@ fun ScheduleFolderGridColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(CustomColors.LighterGray)
-            .padding(2.dp),
+            .padding(vertical = 10.dp, horizontal = 20.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp)
         ) {
 
             if (images.isEmpty()) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(10.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -378,13 +388,13 @@ fun ScheduleFolderGridColumn(
                 images.chunked(2).forEach { imageChuck ->
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(2.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                            .width(totalRowWidth)
+                            .padding(vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         imageChuck.forEach { image ->
                             if (image.file_id == null) {
-                                thumbnail = sampleImageByteArray
+                                thumbnail = sampleImageByteArray // 기본 이미지
                             } else {
                                 thumbnail = try {
                                     if (image.file_id != null) read(
@@ -410,17 +420,21 @@ fun ScheduleFolderGridColumn(
                         if (imageChuck.size < 2) {
                             Spacer(modifier = Modifier
                                 .weight(1f)
-                                .padding(horizontal = 4.dp)
-                            )
+                                .padding(horizontal = 4.dp))
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(5.dp))
                 }
             }
 
         }
     }
+}
+
+fun refreshImages(context: Context, schedule: model.Schedule): List<ImageResult> {
+    val scheduleImages = getScheduleImages(context, schedule.id)
+    return scheduleImages
 }
 
 
@@ -433,11 +447,15 @@ fun ScheduleImageGrid(
     val sampleImageByteArray = drawableResToByteArray(context, sample_image)
 
     val schedule_images = getScheduleImages(context, schedule.id)
+    // 이미지 목록을 상태로 관리
+    var scheduleImages by remember { mutableStateOf(getScheduleImages(context, schedule.id)) }
+    // 업로드 후 이 함수를 호출해서 목록 갱신
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(CustomColors.LighterGray)
-            .padding(2.dp),
+            .padding(vertical = 10.dp, horizontal = 20.dp),
     ) {
         if (schedule_images.isEmpty()) {
             Box(
@@ -456,9 +474,9 @@ fun ScheduleImageGrid(
                 schedule_images.chunked(3).forEach { scheduleChuck ->
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(2.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                            .width(totalImagesWidth)
+                            .padding(vertical = 1.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         scheduleChuck.forEach { image ->
                             Box(
@@ -473,7 +491,7 @@ fun ScheduleImageGrid(
                                         contentDescription = null,
                                         contentScale = ContentScale.Crop,
                                         modifier = Modifier
-                                            .fillMaxSize()
+                                            .size(imageWidth)
                                             .padding(1.dp)
                                     )
                                 } else {
@@ -490,7 +508,7 @@ fun ScheduleImageGrid(
                                         contentDescription = null,
                                         contentScale = ContentScale.Crop,
                                         modifier = Modifier
-                                            .fillMaxSize()
+                                            .size(imageWidth)
                                             .clickable {
                                                 onImageClick(image)
                                             }
