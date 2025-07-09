@@ -125,13 +125,18 @@ fun HomeTab(
                             .padding(top = 12.dp)
                     )
                     Text(
-                        text = "${DatetimeUtil.dateToDotDate(plannedTrip.start_date as String)}${if (plannedTrip.end_date != null) " - ${DatetimeUtil.dateToDotDate(plannedTrip.end_date)}" else ""}",
+                        text = when {
+                            plannedTrip.start_date != null && plannedTrip.end_date != null -> "${DatetimeUtil.dateToDotDate(plannedTrip.start_date)} - ${DatetimeUtil.dateToDotDate(plannedTrip.end_date)}"
+                            plannedTrip.start_date == null && plannedTrip.end_date != null -> "- ${DatetimeUtil.dateToDotDate(plannedTrip.end_date)}"
+                            plannedTrip.start_date != null && plannedTrip.end_date == null -> "${DatetimeUtil.dateToDotDate(plannedTrip.start_date)} -"
+                            else -> "-"
+                        },
                         color = CustomColors.Gray,
                         modifier = Modifier
                             .padding(top = 8.dp)
                     )
 
-                    if (plannedTrip.end_date != null) {
+                    if (plannedTrip.start_date != null && plannedTrip.end_date != null) {
                         Text(
                             text = "${DatetimeUtil.daysBetween(plannedTrip.start_date, plannedTrip.end_date)} days",
                             color = CustomColors.Gray,

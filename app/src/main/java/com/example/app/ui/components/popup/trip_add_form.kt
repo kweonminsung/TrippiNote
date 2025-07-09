@@ -33,7 +33,7 @@ import java.util.Calendar
 @Composable
 fun AddRegionForm(
     button: @Composable (onClick: () -> Unit) -> Unit = {},
-    saveFn: (title: String, start_date: String, end_date: String, locValue: PlaceUtil.LocationInfo) -> Unit,
+    saveFn: (title: String, start_date: String?, end_date: String?, locValue: PlaceUtil.LocationInfo) -> Unit,
     title: String,
 ) = AddTripForm(
     button = button,
@@ -44,7 +44,7 @@ fun AddRegionForm(
 @Composable
 fun AddTripForm(
     button: @Composable (onClick: () -> Unit) -> Unit = {},
-    saveFn: (title: String, start_date: String, end_date: String, locValue: PlaceUtil.LocationInfo) -> Unit,
+    saveFn: (title: String, start_date: String?, end_date: String?, locValue: PlaceUtil.LocationInfo) -> Unit,
     title: String,
 ) {
     val context = LocalContext.current
@@ -66,8 +66,8 @@ fun AddTripForm(
             if (nameValue.isNotBlank() && locValue != null) {
                 saveFn(
                     nameValue,
-                    startDateValue,
-                    endDateValue,
+                    startDateValue.ifBlank { null },
+                    endDateValue.ifBlank { null },
                     locValue
                 )
 
@@ -189,6 +189,8 @@ fun AddTripForm(
                         colors = TextFieldDefaults.colors(
                             disabledContainerColor = CustomColors.LighterGray,
                             disabledTextColor = CustomColors.DarkGray,
+                            focusedTextColor = CustomColors.DarkGray,
+                            unfocusedTextColor = CustomColors.DarkGray
                         ),
                         enabled = false,
                     )
@@ -247,6 +249,8 @@ fun AddTripForm(
                         colors = TextFieldDefaults.colors(
                             disabledContainerColor = CustomColors.LighterGray,
                             disabledTextColor = CustomColors.DarkGray,
+                            focusedTextColor = CustomColors.DarkGray,
+                            unfocusedTextColor = CustomColors.DarkGray
                         ),
                         enabled = false,
                     )

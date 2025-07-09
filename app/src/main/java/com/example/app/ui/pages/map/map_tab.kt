@@ -591,6 +591,10 @@ fun MapTab(
                                 region.end_date
                             )
                         }"
+                    } else if (region.start_date != null) {
+                        "${DatetimeUtil.dateToDotDate(region.start_date)} ~"
+                    } else if (region.end_date != null) {
+                        "~ ${DatetimeUtil.dateToDotDate(region.end_date)}"
                     } else {
                         null
                     }
@@ -689,14 +693,22 @@ fun MapTab(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 for((index, schedule) in schedules.withIndex()) {
-                    val subtitle = if (schedule.start_datetime != null && schedule.end_datetime != null) {
-                        "${DatetimeUtil.datetimeToTime(schedule.start_datetime)} ~ ${
-                            DatetimeUtil.datetimeToTime(schedule.end_datetime)
-                        }"
-                    } else {
-                        null
+                    val subtitle = when {
+                        schedule.start_datetime != null && schedule.end_datetime != null -> {
+                            "${DatetimeUtil.datetimeToTime(schedule.start_datetime)} ~ ${
+                                DatetimeUtil.datetimeToTime(schedule.end_datetime)
+                            }"
+                        }
+                        schedule.start_datetime != null -> {
+                            "${DatetimeUtil.datetimeToTime(schedule.start_datetime)} ~"
+                        }
+                        schedule.end_datetime != null -> {
+                            "~ ${DatetimeUtil.datetimeToTime(schedule.end_datetime)}"
+                        }
+                        else -> {
+                            null
+                        }
                     }
-
                     ScheduleInfoButton(
                         type = schedule.type,
                         title = schedule.title,
@@ -793,7 +805,7 @@ fun MapTab(
                                 .padding(top = 12.dp, bottom = 8.dp)
                         )
                     },
-                    saveFn = { type, title, memo, start_datetime, c, locValue ->
+                    saveFn = { type, title, memo, start_datetime, end_datetime, locValue ->
                         MapRepository.createSchedule(
                             context,
                             model.Schedule(
@@ -806,7 +818,7 @@ fun MapTab(
                                 lat = locValue.position.latitude,
                                 lng = locValue.position.longitude,
                                 start_datetime = start_datetime,
-                                end_datetime = start_datetime,
+                                end_datetime = end_datetime,
                                 created_at = DatetimeUtil.getCurrentDatetime(),
                             )
                         )

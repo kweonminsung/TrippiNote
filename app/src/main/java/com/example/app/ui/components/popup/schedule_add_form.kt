@@ -31,7 +31,7 @@ import java.util.Calendar
 @Composable
 fun AddScheduleForm(
     button: @Composable (onClick: () -> Unit) -> Unit = {},
-    saveFn: (type: model.ScheduleType, title: String, memo: String, start_datetime: String, end_datetime: String, locValue: PlaceUtil.LocationInfo) -> Unit,
+    saveFn: (type: model.ScheduleType, title: String, memo: String, start_datetime: String?, end_datetime: String?, locValue: PlaceUtil.LocationInfo) -> Unit,
     title: String,
 ) {
     val context = LocalContext.current
@@ -42,10 +42,10 @@ fun AddScheduleForm(
     val (nameValue, setNameValue) = remember { mutableStateOf("") }
     val (memoValue, setMemoValue) = remember { mutableStateOf("") }
 
-    val (startDatetimeValue, setStartDatetimeValue) = remember { mutableStateOf("") }
+    val (startDatetimeValue, setStartDatetimeValue) = remember { mutableStateOf<String?>(null) }
     val (startDateValue, setStartDateValue) = remember { mutableStateOf("") }
     val (startTimeValue, setStartTimeValue) = remember { mutableStateOf("") }
-    val (endDatetimeValue, setEndDatetimeValue) = remember { mutableStateOf("") }
+    val (endDatetimeValue, setEndDatetimeValue) = remember { mutableStateOf<String?>(null) }
     val (endDateValue, setEndDateValue) = remember { mutableStateOf("") }
     val (endTimeValue, setEndTimeValue) = remember { mutableStateOf("") }
 
@@ -57,7 +57,7 @@ fun AddScheduleForm(
         if (startDateValue.isNotBlank() && startTimeValue.isNotBlank()) {
             setStartDatetimeValue(DatetimeUtil.createDatetimeWithDateAndTime(startDateValue, startTimeValue))
         } else {
-            setStartDatetimeValue("")
+            setStartDatetimeValue(null)
         }
     }
 
@@ -66,7 +66,7 @@ fun AddScheduleForm(
         if (endDateValue.isNotBlank() && endTimeValue.isNotBlank()) {
             setEndDatetimeValue(DatetimeUtil.createDatetimeWithDateAndTime(endDateValue, endTimeValue))
         } else {
-            setEndDatetimeValue("")
+            setEndDatetimeValue(null)
         }
     }
 
@@ -246,7 +246,7 @@ fun AddScheduleForm(
                 ) {
                     // 날짜 보이는 필드
                     TextField(
-                        value = DatetimeUtil.datetimeToString(startDatetimeValue),
+                        value = if (startDatetimeValue.isNullOrBlank()) "" else DatetimeUtil.datetimeToString(startDatetimeValue),
                         onValueChange = {},
                         modifier = Modifier.weight(1f), // TextField가 남는 공간 채움
                         placeholder = {
@@ -269,6 +269,8 @@ fun AddScheduleForm(
                         colors = TextFieldDefaults.colors(
                             disabledContainerColor = CustomColors.LighterGray,
                             disabledTextColor = CustomColors.DarkGray,
+                            focusedTextColor = CustomColors.DarkGray,
+                            unfocusedTextColor = CustomColors.DarkGray
                         ),
                         enabled = false,
                     )
@@ -314,7 +316,7 @@ fun AddScheduleForm(
                                         set(Calendar.HOUR_OF_DAY, hourOfDay)
                                         set(Calendar.MINUTE, minute)
                                     }
-                                    val format = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
+                                    val format = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
                                     setStartTimeValue(format.format(pickedCal.time))
                                 },
                                 calendar.get(Calendar.HOUR_OF_DAY),
@@ -344,7 +346,7 @@ fun AddScheduleForm(
                 ) {
                     // 날짜 보이는 필드
                     TextField(
-                        value = DatetimeUtil.datetimeToString(endDatetimeValue),
+                        value = if (endDatetimeValue.isNullOrBlank()) "" else DatetimeUtil.datetimeToString(endDatetimeValue),
                         onValueChange = {},
                         modifier = Modifier.weight(1f), // TextField가 남는 공간 채움
                         placeholder = {
@@ -367,6 +369,8 @@ fun AddScheduleForm(
                         colors = TextFieldDefaults.colors(
                             disabledContainerColor = CustomColors.LighterGray,
                             disabledTextColor = CustomColors.DarkGray,
+                            focusedTextColor = CustomColors.DarkGray,
+                            unfocusedTextColor = CustomColors.DarkGray
                         ),
                         enabled = false,
                     )
@@ -412,7 +416,7 @@ fun AddScheduleForm(
                                         set(Calendar.HOUR_OF_DAY, hourOfDay)
                                         set(Calendar.MINUTE, minute)
                                     }
-                                    val format = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
+                                    val format = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
                                     setEndTimeValue(format.format(pickedCal.time))
                                 },
                                 calendar.get(Calendar.HOUR_OF_DAY),
