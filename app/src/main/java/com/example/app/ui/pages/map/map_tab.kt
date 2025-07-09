@@ -735,7 +735,7 @@ fun MapTab(
                     )
                     if (index != schedules.lastIndex) {
                         val nextSchedule = schedules.getOrNull(index + 1) as model.Schedule
-                        var transport by remember(schedule.id, nextSchedule.id) {
+                        val (transport, setTransport) = remember(schedule.id, nextSchedule.id) {
                             mutableStateOf<model.Transport?>(
                                 MapTabData.getSessionTransportByFromTo(
                                     context,
@@ -750,27 +750,33 @@ fun MapTab(
                             type = transport?.type,
                             duration = transport?.duration,
                             saveFn = { type, duration ->
-                                MapRepository.createOrUpdateTransport(
-                                    context,
-                                    model.Transport(
-                                        id = transport?.id ?: -1,
-                                        region_id = regionId,
-                                        from_schedule_id = schedule.id,
-                                        to_schedule_id = nextSchedule.id,
-                                        type = type,
-                                        duration = duration,
-                                        created_at = DatetimeUtil.getCurrentDatetime(),
+                                if(type != null) {
+                                    MapRepository.createOrUpdateTransport(
+                                        context,
+                                        model.Transport(
+                                            id = transport?.id ?: -1,
+                                            region_id = regionId,
+                                            from_schedule_id = schedule.id,
+                                            to_schedule_id = nextSchedule.id,
+                                            type = type,
+                                            duration = duration,
+                                            created_at = DatetimeUtil.getCurrentDatetime(),
+                                        )
                                     )
-                                )
+                                } else {
+                                    if (transport != null) {
+                                        MapRepository.deleteTransport(context, transport.id)
+                                    }
+                                }
 
                                 // 업데이트
                                 sessionTransportPins = MapTabData.getSessionTransportPinsByZoomRate(context, zoomLevel) // 교통수단 핀 목록 업데이트
-                                transport = MapTabData.getSessionTransportByFromTo(
+                                setTransport(MapTabData.getSessionTransportByFromTo(
                                     context,
                                     regionId,
                                     schedule.id,
                                     nextSchedule.id
-                                ) // 교통수단 정보 업데이트
+                                )) // 교통수단 정보 업데이트
                             }
                         )
                     }
