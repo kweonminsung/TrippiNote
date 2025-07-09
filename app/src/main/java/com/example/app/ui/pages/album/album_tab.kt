@@ -48,6 +48,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.material3.*
 import androidx.core.content.ContextCompat
@@ -342,16 +343,39 @@ fun FolderNavigatorScreen(context: Context, username: String = "사용자") {
                         tint = CustomColors.Black
                     )
                 }
-                BottomButton(
-                    label = "사진 업로드 \uD83C\uDFDE\uFE0F",
+
+                IconButton(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp),
                     onClick = {
                         launcher.launch("image/*")
                     },
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .width(200.dp)
-                        .padding(top = 16.dp, bottom = 16.dp)
-                )
+                    interactionSource = remember { MutableInteractionSource() }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Image",
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(CustomColors.LighterGray)
+                            .padding(4.dp),
+                        tint = CustomColors.Black
+                    )
+                }
+
+
+//                BottomButton(
+//                    label = "사진 업로드 \uD83C\uDFDE\uFE0F",
+//                    onClick = {
+//                        launcher.launch("image/*")
+//                    },
+//                    modifier = Modifier
+//                        .align(Alignment.BottomCenter)
+//                        .width(200.dp)
+//                        .padding(top = 16.dp, bottom = 16.dp)
+//                )
 
 
             }
