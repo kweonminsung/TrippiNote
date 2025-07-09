@@ -57,10 +57,12 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import com.example.app.R
 import com.example.app.ui.components.buttons.BottomButton
+import com.example.app.ui.components.map.MapUtilButtons
 import com.example.app.ui.components.popup.AddRegionForm
 import com.example.app.ui.components.popup.AddScheduleForm
 
-val INITIAL_LAT_LNG = LatLng(48.866096757760225, 2.348085902631283) // 지도의 초기 위치(파리)
+//val INITIAL_LAT_LNG = LatLng(48.866096757760225, 2.348085902631283) // 지도의 초기 위치(파리)
+val INITIAL_LAT_LNG = LatLng(37.5665, 126.978) // 지도의 초기 위치(서울)
 val INITIAL_ZOOM_LEVEL = ZOOM_LEVEL.CONTINENT // 초기 줌 레벨
 
 object ZOOM_LEVEL {
@@ -516,45 +518,48 @@ fun MapTab(
             )
         }
 
-        // 초기화 버튼
-        Box(
-            modifier = Modifier
-                .fillMaxSize(),
-        ) {
-            Box(
-                modifier = Modifier
-                    .padding(start = 16.dp, bottom = 24.dp)
-                    .size(40.dp)
-                    .align(Alignment.BottomStart)
-                    .background(
-                        color = CustomColors.White,
-                        shape = RoundedCornerShape(20.dp)
+        // 왼쪽 하단 유틸 버튼
+        MapUtilButtons(
+            onResetClick = {
+                focusManager.clearFocus() // 키보드 내리기
+                CoroutineScope(Dispatchers.Main).launch {
+                    cameraPositionState.animate(
+                        CameraUpdateFactory.newLatLngZoom(
+                            INITIAL_LAT_LNG,
+                            INITIAL_ZOOM_LEVEL
+                        )
                     )
-                    .clickable {
-                        focusManager.clearFocus() // 키보드 내리기
-                        CoroutineScope(Dispatchers.Main).launch {
-                            cameraPositionState.animate(
-                                CameraUpdateFactory.newLatLngZoom(
-                                    INITIAL_LAT_LNG,
-                                    INITIAL_ZOOM_LEVEL
-                                )
-                            )
-                        }
-                        selectedTripId = null
-                        selectedRegionId = null
-                        tripInfoBottomDrawerState = false
-                        regionInfoBottomDrawerState = false
-                        setPreselectedPin(null) // 선택된 핀 초기화
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.map_globe),
-                    contentDescription = "",
-                    modifier = Modifier.size(20.dp)
-                )
+                }
+                selectedTripId = null
+                selectedRegionId = null
+                tripInfoBottomDrawerState = false
+                regionInfoBottomDrawerState = false
+                setPreselectedPin(null) // 선택된 핀 초기화
+            },
+            onGlobeClick = {
+                focusManager.clearFocus() // 키보드 내리기
+                CoroutineScope(Dispatchers.Main).launch {
+                    cameraPositionState.animate(
+                        CameraUpdateFactory.newLatLngZoom(
+                            cameraPositionState.position.target,
+                            ZOOM_LEVEL.CONTINENT
+                        )
+                    )
+                }
+            },
+            onCityClick = {
+                focusManager.clearFocus() // 키보드 내리기
+                CoroutineScope(Dispatchers.Main).launch {
+                    cameraPositionState.animate(
+                        CameraUpdateFactory.newLatLngZoom(
+                            cameraPositionState.position.target,
+                            ZOOM_LEVEL.CITY
+                        )
+                    )
+                }
             }
-        }
+        )
+
 
         // 여행 정보 Bottom Drawer
         BottomDrawer (
