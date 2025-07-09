@@ -571,18 +571,12 @@ object MapRepository {
                     trip.id AS trip_id,
                     trip.title AS title,
                     (
-                        SELECT
-                            schedule_image.file_id
-                        FROM
-                            schedule
-                        LEFT JOIN
-                            schedule_image ON schedule.id = schedule_image.schedule_id
-                        JOIN
-                            region ON schedule.region_id = region.id
-                        WHERE
-                            region.trip_id = trip.id
-                        ORDER BY
-                            RANDOM()
+                        SELECT schedule_image.file_id
+                        FROM schedule
+                        LEFT JOIN schedule_image ON schedule.id = schedule_image.schedule_id
+                        JOIN region ON schedule.region_id = region.id
+                        WHERE region.trip_id = trip.id
+                        ORDER BY RANDOM()
                         LIMIT 1
                     ) AS file_id
                 FROM
