@@ -139,14 +139,23 @@ fun MapTab(
         }
     ) } // 선택된 지역 ID
 
-    var tripInfoBottomDrawerState by remember { mutableStateOf(
-        selectedTripId != null && preselectedPin?.type == MapPinType.TRIP
-    ) } // 여행 정보 Bottom Drawer 상태
-    var regionInfoBottomDrawerState by remember { mutableStateOf(
-        selectedRegionId != null && preselectedPin?.type == MapPinType.REGION
-            || (preselectedPin?.type == MapPinType.SCHEDULE && (MapRepository.getScheduleById(context, preselectedPin.id as Int) as model.Schedule).region_id == selectedRegionId)
-    ) } // 지역 정보 Bottom Drawer 상태
-
+    var tripInfoBottomDrawerState by remember {
+        mutableStateOf(
+            preselectedPin?.type == MapPinType.TRIP && (
+                    preselectedPin.id != null && MapRepository.checkTripExists(context, preselectedPin.id)
+            )
+        )
+    } // 여행 정보 Bottom Drawer 상태
+    var regionInfoBottomDrawerState by remember {
+        mutableStateOf(
+    preselectedPin?.type == MapPinType.REGION
+            || (
+            preselectedPin?.type == MapPinType.SCHEDULE
+                    && preselectedPin.id != null
+                    && MapRepository.checkScheduleExists(context, preselectedPin.id)
+            )
+        )
+    } // 지역 정보 Bottom Drawer 상태
 
     // 카메라 이동은 여기서
     LaunchedEffect(cameraTarget) {
