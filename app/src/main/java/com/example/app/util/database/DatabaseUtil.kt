@@ -17,17 +17,21 @@ class SQLiteHelper(context: Context) : SQLiteOpenHelper(context, DB_NAME, null, 
 
     companion object {
         private const val DB_NAME = "database.db"
-        private const val DB_VERSION = 3
+        private const val DB_VERSION = 4
     }
 }
 
 object DatabaseUtil {
     fun getReadableDb(context: Context): SQLiteDatabase {
-        return SQLiteHelper(context).readableDatabase
+        val db = SQLiteHelper(context).readableDatabase
+        db.execSQL("PRAGMA foreign_keys = ON;")
+        return db
     }
 
     fun getWritableDb(context: Context): SQLiteDatabase {
-        return SQLiteHelper(context).writableDatabase
+        val db = SQLiteHelper(context).writableDatabase
+        db.execSQL("PRAGMA foreign_keys = ON;")
+        return db
     }
 
     fun execSql(context: Context, sql: String, args: Array<Any?>? = null) {
@@ -89,22 +93,7 @@ object DatabaseUtil {
                 start_date TEXT,
                 end_date TEXT,
                 created_at TEXT NOT NULL,
-                FOREIGN KEY(trip_id) REFERENCES trip(id)
-            );
-        """)
-        db.execSQL("""
-            CREATE TABLE IF NOT EXISTS transport (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                region_id INTEGER NOT NULL,
-                from_schedule_id INTEGER NOT NULL,
-                to_schedule_id INTEGER NOT NULL,
-                type TEXT CHECK(type IN ('WALKING', 'BICYCLE', 'CAR', 'TAXI', 'BUS', 'TRAIN', 'SUBWAY', 'AIRPLANE')) NOT NULL,
-                duration TEXT,
-                created_at TEXT NOT NULL,
-                memo TEXT,
-                FOREIGN KEY(region_id) REFERENCES region(id),
-                FOREIGN KEY(from_schedule_id) REFERENCES schedule(id),
-                FOREIGN KEY(to_schedule_id) REFERENCES schedule(id)
+                FOREIGN KEY(trip_id) REFERENCES trip(id) ON DELETE CASCADE
             );
         """)
         db.execSQL("""
@@ -120,7 +109,22 @@ object DatabaseUtil {
                 start_datetime TEXT,
                 end_datetime TEXT,
                 created_at TEXT NOT NULL,
-                FOREIGN KEY(region_id) REFERENCES region(id)
+                FOREIGN KEY(region_id) REFERENCES region(id) ON DELETE CASCADE
+            );
+        """)
+        db.execSQL("""
+            CREATE TABLE IF NOT EXISTS transport (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                region_id INTEGER NOT NULL,
+                from_schedule_id INTEGER NOT NULL,
+                to_schedule_id INTEGER NOT NULL,
+                type TEXT CHECK(type IN ('WALKING', 'BICYCLE', 'CAR', 'TAXI', 'BUS', 'TRAIN', 'SUBWAY', 'AIRPLANE')) NOT NULL,
+                duration TEXT,
+                created_at TEXT NOT NULL,
+                memo TEXT,
+                FOREIGN KEY(region_id) REFERENCES region(id) ON DELETE CASCADE,
+                FOREIGN KEY(from_schedule_id) REFERENCES schedule(id) ON DELETE CASCADE,
+                FOREIGN KEY(to_schedule_id) REFERENCES schedule(id) ON DELETE CASCADE
             );
         """)
         db.execSQL("""
@@ -128,7 +132,8 @@ object DatabaseUtil {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 schedule_id INTEGER NOT NULL,
                 file_id TEXT NOT NULL,
-                created_at TEXT NOT NULL
+                created_at TEXT NOT NULL,
+                FOREIGN KEY(schedule_id) REFERENCES schedule(id) ON DELETE CASCADE
             );
         """)
 //        db.execSQL("""

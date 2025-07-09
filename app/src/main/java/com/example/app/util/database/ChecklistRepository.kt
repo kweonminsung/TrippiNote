@@ -4,10 +4,10 @@ import android.content.Context
 
 object ChecklistRepository {
     fun getAllChecklists(context: Context): List<model.Checklist> {
-        val dbHelper = SQLiteHelper(context)
+        val db = DatabaseUtil.getReadableDb(context)
 
         val checklists = mutableListOf<model.Checklist>()
-        dbHelper.readableDatabase.use { db ->
+        db.use { db ->
             val cursor = db.rawQuery("SELECT * FROM checklist", null)
             val idIdx = cursor.getColumnIndex("id")
             val doneIdx = cursor.getColumnIndex("done")
@@ -27,8 +27,8 @@ object ChecklistRepository {
     }
 
     fun createChecklist(context: Context, item: model.Checklist) {
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.writableDatabase.use { db ->
+        val db = DatabaseUtil.getWritableDb(context)
+        db.use { db ->
             db.execSQL(
                 "INSERT INTO checklist (done, content) VALUES (?, ?)",
                 arrayOf(if (item.done) 1 else 0, item.content)
@@ -37,8 +37,8 @@ object ChecklistRepository {
     }
 
     fun updateChecklist(context: Context, item: model.Checklist) {
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.writableDatabase.use { db ->
+        val db = DatabaseUtil.getWritableDb(context)
+        db.use { db ->
             db.execSQL(
                 "UPDATE checklist SET done = ?, content = ? WHERE id = ?",
                 arrayOf(if (item.done) 1 else 0, item.content, item.id)
@@ -47,8 +47,8 @@ object ChecklistRepository {
     }
 
     fun deleteChecklist(context: Context, item: model.Checklist) {
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.writableDatabase.use { db ->
+        val db = DatabaseUtil.getWritableDb(context)
+        db.use { db ->
             db.execSQL("DELETE FROM checklist WHERE id = ?", arrayOf(item.id))
         }
     }

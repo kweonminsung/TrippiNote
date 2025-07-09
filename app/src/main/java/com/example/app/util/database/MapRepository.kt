@@ -8,10 +8,10 @@ import java.time.format.DateTimeFormatter
 
 object MapRepository {
     fun getTrips(context: Context): List<model.Trip> {
-        val dbHelper = SQLiteHelper(context)
+        val db = DatabaseUtil.getReadableDb(context)
 
         val trips = mutableListOf<model.Trip>()
-        dbHelper.readableDatabase.use { db ->
+        db.use {
             val cursor = db.rawQuery("SELECT * FROM trip", null)
             val idIdx = cursor.getColumnIndex("id")
             val titleIdx = cursor.getColumnIndex("title")
@@ -39,9 +39,9 @@ object MapRepository {
     }
 
     fun getTripById(context: Context, tripId: Int): model.Trip? {
-        val dbHelper = SQLiteHelper(context)
+        val db = DatabaseUtil.getReadableDb(context)
 
-        dbHelper.readableDatabase.use { db ->
+        db.use {
             val cursor = db.rawQuery("SELECT * FROM trip WHERE id = ?", arrayOf(tripId.toString()))
             if (cursor.moveToFirst()) {
                 val idIdx = cursor.getColumnIndex("id")
@@ -68,13 +68,12 @@ object MapRepository {
     }
 
     fun getPlannedTrip(context: Context): model.Trip? {
-        val dbHelper = SQLiteHelper(context)
-
         val today = LocalDate.now()
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         val todayString = today.format(formatter)
+        val db = DatabaseUtil.getReadableDb(context)
 
-        dbHelper.readableDatabase.use { db ->
+        db.use {
             val cursor = db.rawQuery(
                 """
                 SELECT * FROM trip 
@@ -109,10 +108,10 @@ object MapRepository {
     }
 
     fun getAllRegions(context: Context): List<model.Region> {
-        val dbHelper = SQLiteHelper(context)
+        val db = DatabaseUtil.getReadableDb(context)
 
         val regions = mutableListOf<model.Region>()
-        dbHelper.readableDatabase.use { db ->
+        db.use {
             val cursor = db.rawQuery("SELECT * FROM region", null)
             val idIdx = cursor.getColumnIndex("id")
             val tripIdIdx = cursor.getColumnIndex("trip_id")
@@ -142,10 +141,10 @@ object MapRepository {
     }
 
     fun getRegions(context: Context, tripId: Int): List<model.Region> {
-        val dbHelper = SQLiteHelper(context)
+        val db = DatabaseUtil.getReadableDb(context)
 
         val regions = mutableListOf<model.Region>()
-        dbHelper.readableDatabase.use { db ->
+        db.use {
             val cursor = db.rawQuery("SELECT * FROM region WHERE trip_id = ?", arrayOf(tripId.toString()))
             val idIdx = cursor.getColumnIndex("id")
             val titleIdx = cursor.getColumnIndex("title")
@@ -174,9 +173,9 @@ object MapRepository {
     }
 
     fun getRegionById(context: Context, regionId: Int): model.Region? {
-        val dbHelper = SQLiteHelper(context)
+        val db = DatabaseUtil.getReadableDb(context)
 
-        dbHelper.readableDatabase.use { db ->
+        db.use {
             val cursor = db.rawQuery("SELECT * FROM region WHERE id = ?", arrayOf(regionId.toString()))
             if (cursor.moveToFirst()) {
                 val idIdx = cursor.getColumnIndex("id")
@@ -205,10 +204,10 @@ object MapRepository {
     }
 
     fun getAllSchedules(context: Context): List<model.Schedule> {
-        val dbHelper = SQLiteHelper(context)
+        val db = DatabaseUtil.getReadableDb(context)
 
         val schedules = mutableListOf<model.Schedule>()
-        dbHelper.readableDatabase.use { db ->
+        db.use {
             val cursor = db.rawQuery("SELECT * FROM schedule", null)
             val idIdx = cursor.getColumnIndex("id")
             val typeIdx = cursor.getColumnIndex("type")
@@ -242,10 +241,10 @@ object MapRepository {
     }
 
     fun getSchedules(context: Context, regionId: Int): List<model.Schedule> {
-        val dbHelper = SQLiteHelper(context)
+        val db = DatabaseUtil.getReadableDb(context)
 
         val schedules = mutableListOf<model.Schedule>()
-        dbHelper.readableDatabase.use { db ->
+        db.use {
             val cursor = db.rawQuery("SELECT * FROM schedule WHERE region_id = ?", arrayOf(regionId.toString()))
             val idIdx = cursor.getColumnIndex("id")
             val typeIdx = cursor.getColumnIndex("type")
@@ -278,9 +277,9 @@ object MapRepository {
     }
 
     fun getScheduleById(context: Context, scheduleId: Int): model.Schedule? {
-        val dbHelper = SQLiteHelper(context)
+        val db = DatabaseUtil.getReadableDb(context)
 
-        dbHelper.readableDatabase.use { db ->
+        db.use {
             val cursor = db.rawQuery("SELECT * FROM schedule WHERE id = ?", arrayOf(scheduleId.toString()))
             if (cursor.moveToFirst()) {
                 val idIdx = cursor.getColumnIndex("id")
@@ -313,10 +312,10 @@ object MapRepository {
     }
 
     fun getAllTransports(context: Context): List<model.Transport> {
-        val dbHelper = SQLiteHelper(context)
+        val db = DatabaseUtil.getReadableDb(context)
 
         val transports = mutableListOf<model.Transport>()
-        dbHelper.readableDatabase.use { db ->
+        db.use {
             val cursor = db.rawQuery("SELECT * FROM transport", null)
             val idIdx = cursor.getColumnIndex("id")
             val regionIdIdx = cursor.getColumnIndex("region_id")
@@ -346,10 +345,10 @@ object MapRepository {
     }
 
     fun getTransports(context: Context, regionId: Int): List<model.Transport> {
-        val dbHelper = SQLiteHelper(context)
+        val db = DatabaseUtil.getReadableDb(context)
 
         val transports = mutableListOf<model.Transport>()
-        dbHelper.readableDatabase.use { db ->
+        db.use {
             val cursor = db.rawQuery("SELECT * FROM transport WHERE region_id = ?", arrayOf(regionId.toString()))
             val idIdx = cursor.getColumnIndex("id")
             val fromScheduleIdIdx = cursor.getColumnIndex("from_schedule_id")
@@ -383,9 +382,9 @@ object MapRepository {
         fromScheduleId: Int,
         toScheduleId: Int
     ): model.Transport? {
-        val dbHelper = SQLiteHelper(context)
+        val db = DatabaseUtil.getReadableDb(context)
 
-        dbHelper.readableDatabase.use { db ->
+        db.use {
             val cursor = db.rawQuery(
                 "SELECT * FROM transport WHERE region_id = ? AND from_schedule_id = ? AND to_schedule_id = ?",
                 arrayOf(regionId.toString(), fromScheduleId.toString(), toScheduleId.toString())
@@ -414,10 +413,10 @@ object MapRepository {
     }
 
     fun getScheduleImages(context: Context, scheduleId: Int): List<ImageResult> {
-        val dbHelper = SQLiteHelper(context)
+        val db = DatabaseUtil.getReadableDb(context)
 
         val images = mutableListOf<ImageResult>()
-        dbHelper.readableDatabase.use { db ->
+        db.use {
             val cursor = db.rawQuery("""
                 SELECT
                     schedule_image.schedule_id AS schedule_id,
@@ -445,10 +444,10 @@ object MapRepository {
     }
 
     fun getRandomScheduleImages(context: Context, regionId: Int): List<ImageResult> {
-        val dbHelper = SQLiteHelper(context)
+        val db = DatabaseUtil.getReadableDb(context)
 
         val images = mutableListOf<ImageResult>()
-        dbHelper.readableDatabase.use { db ->
+        db.use {
             val cursor = db.rawQuery("""
                 SELECT
                     schedule.id AS schedule_id,
@@ -483,10 +482,10 @@ object MapRepository {
     }
 
     fun getRandomRegionImages(context: Context, tripId: Int): List<ImageResult> {
-        val dbHelper = SQLiteHelper(context)
+        val db = DatabaseUtil.getReadableDb(context)
 
         val images = mutableListOf<ImageResult>()
-        dbHelper.readableDatabase.use { db ->
+        db.use {
             val cursor = db.rawQuery("""
                 SELECT 
                     region.id AS region_id,
@@ -522,9 +521,9 @@ object MapRepository {
     }
 
     fun getRandomTripImage(context: Context, tripId: Int): ImageResult? {
-        val dbHelper = SQLiteHelper(context)
+        val db = DatabaseUtil.getReadableDb(context)
 
-        dbHelper.readableDatabase.use { db ->
+        db.use {
             val cursor = db.rawQuery("""
                 SELECT 
                     trip.id AS trip_id,
@@ -562,10 +561,10 @@ object MapRepository {
     }
 
     fun getRandomTripImages(context: Context): List<ImageResult> {
-        val dbHelper = SQLiteHelper(context)
+        val db = DatabaseUtil.getReadableDb(context)
 
         val images = mutableListOf<ImageResult>()
-        dbHelper.readableDatabase.use { db ->
+        db.use {
             val cursor = db.rawQuery("""
                 SELECT 
                     trip.id AS trip_id,
@@ -605,8 +604,8 @@ object MapRepository {
     }
 
     fun createTrip(context: Context, trip: model.Trip): Long {
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.writableDatabase.use { db ->
+        val db = DatabaseUtil.getWritableDb(context)
+        db.use {
             val values = android.content.ContentValues().apply {
                 put("title", trip.title)
                 put("lat", trip.lat)
@@ -621,8 +620,8 @@ object MapRepository {
     }
 
     fun updateTrip(context: Context, trip: model.Trip) {
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.writableDatabase.use { db ->
+        val db = DatabaseUtil.getWritableDb(context)
+        db.use {
             val values = android.content.ContentValues().apply {
                 put("title", trip.title)
                 put("lat", trip.lat)
@@ -636,15 +635,16 @@ object MapRepository {
     }
 
     fun deleteTrip(context: Context, tripId: Int) {
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.writableDatabase.use { db ->
+        val db = DatabaseUtil.getWritableDb(context)
+        db.use {
+            db.execSQL("PRAGMA foreign_keys = ON")
             db.delete("trip", "id = ?", arrayOf(tripId.toString()))
         }
     }
 
     fun createRegion(context: Context, region: model.Region): Long {
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.writableDatabase.use { db ->
+        val db = DatabaseUtil.getWritableDb(context)
+        db.use {
             val values = android.content.ContentValues().apply {
                 put("trip_id", region.trip_id)
                 put("title", region.title)
@@ -659,8 +659,8 @@ object MapRepository {
     }
 
     fun updateRegion(context: Context, region: model.Region) {
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.writableDatabase.use { db ->
+        val db = DatabaseUtil.getWritableDb(context)
+        db.use {
             val values = android.content.ContentValues().apply {
                 put("trip_id", region.trip_id)
                 put("title", region.title)
@@ -675,15 +675,15 @@ object MapRepository {
     }
 
     fun deleteRegion(context: Context, regionId: Int) {
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.writableDatabase.use { db ->
+        val db = DatabaseUtil.getWritableDb(context)
+        db.use {
             db.delete("region", "id = ?", arrayOf(regionId.toString()))
         }
     }
 
     fun createSchedule(context: Context, schedule: model.Schedule): Long {
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.writableDatabase.use { db ->
+        val db = DatabaseUtil.getWritableDb(context)
+        db.use {
             val values = android.content.ContentValues().apply {
                 put("type", schedule.type.name)
                 put("region_id", schedule.region_id)
@@ -700,8 +700,8 @@ object MapRepository {
     }
 
     fun updateSchedule(context: Context, schedule: model.Schedule) {
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.writableDatabase.use { db ->
+        val db = DatabaseUtil.getWritableDb(context)
+        db.use {
             val values = android.content.ContentValues().apply {
                 put("type", schedule.type.name)
                 put("region_id", schedule.region_id)
@@ -718,8 +718,9 @@ object MapRepository {
     }
 
     fun deleteSchedule(context: Context, scheduleId: Int) {
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.writableDatabase.use { db ->
+        val db = DatabaseUtil.getWritableDb(context)
+        db.use {
+            db.execSQL("PRAGMA foreign_keys = ON")
             db.delete("schedule", "id = ?", arrayOf(scheduleId.toString()))
         }
     }
@@ -746,8 +747,8 @@ object MapRepository {
     }
 
     fun createTransport(context: Context, transport: model.Transport): Long {
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.writableDatabase.use { db ->
+        val db = DatabaseUtil.getWritableDb(context)
+        db.use {
             val values = android.content.ContentValues().apply {
                 put("region_id", transport.region_id)
                 put("from_schedule_id", transport.from_schedule_id)
@@ -762,8 +763,8 @@ object MapRepository {
     }
 
     fun updateTransport(context: Context, transport: model.Transport) {
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.writableDatabase.use { db ->
+        val db = DatabaseUtil.getWritableDb(context)
+        db.use {
             val values = android.content.ContentValues().apply {
                 put("region_id", transport.region_id)
                 put("from_schedule_id", transport.from_schedule_id)
@@ -778,8 +779,8 @@ object MapRepository {
     }
 
     fun deleteTransport(context: Context, transportId: Int) {
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.writableDatabase.use { db ->
+        val db = DatabaseUtil.getWritableDb(context)
+        db.use {
             db.delete("transport", "id = ?", arrayOf(transportId.toString()))
         }
     }
@@ -791,8 +792,8 @@ object MapRepository {
     {
         if (query.isBlank()) return emptyList()
 
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.readableDatabase.use { db ->
+        val db = DatabaseUtil.getReadableDb(context)
+        db.use {
             val cursor = db.rawQuery("""
                 SELECT id, title, "TRIP" AS type
                 FROM trip
@@ -839,8 +840,8 @@ object MapRepository {
     }
 
     fun countTrips(context: Context): Int {
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.readableDatabase.use { db ->
+        val db = DatabaseUtil.getReadableDb(context)
+        db.use {
             val cursor = db.rawQuery("SELECT COUNT(*) FROM trip", null)
             if (cursor.moveToFirst()) {
                 return cursor.getInt(0)
@@ -851,8 +852,8 @@ object MapRepository {
     }
 
     fun countRegions(context: Context): Int {
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.readableDatabase.use { db ->
+        val db = DatabaseUtil.getReadableDb(context)
+        db.use {
             val cursor = db.rawQuery("SELECT COUNT(*) FROM region", null)
             if (cursor.moveToFirst()) {
                 return cursor.getInt(0)
@@ -863,8 +864,8 @@ object MapRepository {
     }
 
     fun createScheduleImage(context: Context, scheduleId: Int, fileId: String): Long {
-        val dbHelper = SQLiteHelper(context)
-        dbHelper.writableDatabase.use { db ->
+        val db = DatabaseUtil.getWritableDb(context)
+        db.use {
             val values = android.content.ContentValues().apply {
                 put("schedule_id", scheduleId)
                 put("file_id", fileId)
@@ -872,6 +873,42 @@ object MapRepository {
             }
             return db.insert("schedule_image", null, values)
         }
+    }
+
+    fun checkScheduleExists(context: Context, scheduleId: Int): Boolean {
+        val db = DatabaseUtil.getReadableDb(context)
+        db.use {
+            val cursor = db.rawQuery("SELECT COUNT(*) FROM schedule WHERE id = ?", arrayOf(scheduleId.toString()))
+            if (cursor.moveToFirst()) {
+                return cursor.getInt(0) > 0
+            }
+            cursor.close()
+        }
+        return false
+    }
+
+    fun checkRegionExists(context: Context, regionId: Int): Boolean {
+        val db = DatabaseUtil.getReadableDb(context)
+        db.use {
+            val cursor = db.rawQuery("SELECT COUNT(*) FROM region WHERE id = ?", arrayOf(regionId.toString()))
+            if (cursor.moveToFirst()) {
+                return cursor.getInt(0) > 0
+            }
+            cursor.close()
+        }
+        return false
+    }
+
+    fun checkTripExists(context: Context, tripId: Int): Boolean {
+        val db = DatabaseUtil.getReadableDb(context)
+        db.use {
+            val cursor = db.rawQuery("SELECT COUNT(*) FROM trip WHERE id = ?", arrayOf(tripId.toString()))
+            if (cursor.moveToFirst()) {
+                return cursor.getInt(0) > 0
+            }
+            cursor.close()
+        }
+        return false
     }
 }
 

@@ -57,10 +57,12 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import com.example.app.R
 import com.example.app.ui.components.buttons.BottomButton
+import com.example.app.ui.components.map.MapUtilButtons
 import com.example.app.ui.components.popup.AddRegionForm
 import com.example.app.ui.components.popup.AddScheduleForm
 
-val INITIAL_LAT_LNG = LatLng(48.866096757760225, 2.348085902631283) // 지도의 초기 위치(파리)
+//val INITIAL_LAT_LNG = LatLng(48.866096757760225, 2.348085902631283) // 지도의 초기 위치(파리)
+val INITIAL_LAT_LNG = LatLng(37.5665, 126.978) // 지도의 초기 위치(서울)
 val INITIAL_ZOOM_LEVEL = ZOOM_LEVEL.CONTINENT // 초기 줌 레벨
 
 object ZOOM_LEVEL {
@@ -111,12 +113,28 @@ fun MapTab(
     var userSelectedMapPin by remember { mutableStateOf<MapPin?>(null) } // 유저가 선택한 핀
 
     var selectedTripId by remember { mutableStateOf<Int?>(
-            if (preselectedPin?.type == MapPinType.TRIP) preselectedPin.id else null
+    if (preselectedPin?.type == MapPinType.TRIP) {
+                if (preselectedPin.id != null && MapRepository.checkTripExists(context, preselectedPin.id)) {
+                    preselectedPin.id
+                } else null
+            } else null
         ) } // 선택된 여행 ID
     var selectedRegionId by remember { mutableStateOf<Int?>(
         when (preselectedPin?.type) {
-            MapPinType.REGION -> preselectedPin.id
-            MapPinType.SCHEDULE -> (MapRepository.getScheduleById(context, preselectedPin.id as Int) as model.Schedule).region_id
+            MapPinType.REGION -> {
+                if(preselectedPin.id != null && MapRepository.checkRegionExists(context, preselectedPin.id)) {
+                    preselectedPin.id
+                } else null
+            }
+            MapPinType.SCHEDULE -> {
+                if (preselectedPin.id != null && MapRepository.checkScheduleExists(context, preselectedPin.id)) {
+                    val schedule = MapRepository.getScheduleById(context, preselectedPin.id)
+                    if (schedule != null && MapRepository.checkRegionExists(context, schedule.region_id)) {
+                        schedule.region_id
+                    } else null
+                } else null
+
+            }
             else -> null
         }
     ) } // 선택된 지역 ID
@@ -500,45 +518,48 @@ fun MapTab(
             )
         }
 
-        // 초기화 버튼
-        Box(
-            modifier = Modifier
-                .fillMaxSize(),
-        ) {
-            Box(
-                modifier = Modifier
-                    .padding(start = 16.dp, bottom = 24.dp)
-                    .size(40.dp)
-                    .align(Alignment.BottomStart)
-                    .background(
-                        color = CustomColors.White,
-                        shape = RoundedCornerShape(20.dp)
+        // 왼쪽 하단 유틸 버튼
+        MapUtilButtons(
+            onResetClick = {
+                focusManager.clearFocus() // 키보드 내리기
+                CoroutineScope(Dispatchers.Main).launch {
+                    cameraPositionState.animate(
+                        CameraUpdateFactory.newLatLngZoom(
+                            INITIAL_LAT_LNG,
+                            INITIAL_ZOOM_LEVEL
+                        )
                     )
-                    .clickable {
-                        focusManager.clearFocus() // 키보드 내리기
-                        CoroutineScope(Dispatchers.Main).launch {
-                            cameraPositionState.animate(
-                                CameraUpdateFactory.newLatLngZoom(
-                                    INITIAL_LAT_LNG,
-                                    INITIAL_ZOOM_LEVEL
-                                )
-                            )
-                        }
-                        selectedTripId = null
-                        selectedRegionId = null
-                        tripInfoBottomDrawerState = false
-                        regionInfoBottomDrawerState = false
-                        setPreselectedPin(null) // 선택된 핀 초기화
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.map_globe),
-                    contentDescription = "",
-                    modifier = Modifier.size(20.dp)
-                )
+                }
+                selectedTripId = null
+                selectedRegionId = null
+                tripInfoBottomDrawerState = false
+                regionInfoBottomDrawerState = false
+                setPreselectedPin(null) // 선택된 핀 초기화
+            },
+            onGlobeClick = {
+                focusManager.clearFocus() // 키보드 내리기
+                CoroutineScope(Dispatchers.Main).launch {
+                    cameraPositionState.animate(
+                        CameraUpdateFactory.newLatLngZoom(
+                            cameraPositionState.position.target,
+                            ZOOM_LEVEL.CONTINENT
+                        )
+                    )
+                }
+            },
+            onCityClick = {
+                focusManager.clearFocus() // 키보드 내리기
+                CoroutineScope(Dispatchers.Main).launch {
+                    cameraPositionState.animate(
+                        CameraUpdateFactory.newLatLngZoom(
+                            cameraPositionState.position.target,
+                            ZOOM_LEVEL.CITY
+                        )
+                    )
+                }
             }
-        }
+        )
+
 
         // 여행 정보 Bottom Drawer
         BottomDrawer (
@@ -591,7 +612,21 @@ fun MapTab(
                                     )
                                 )
                             }
-                        }
+                        },
+                        deleteFn = {
+                            MapRepository.deleteRegion(context, region.id)
+
+                            // 업데이트
+                            if(selectedRegionId == region.id) {
+                                selectedRegionId = null
+                                regionInfoBottomDrawerState = false
+                            }
+                            if(preselectedPin?.type == MapPinType.REGION && preselectedPin.id == region.id) {
+                                setPreselectedPin(null)
+                            }
+                            regions = MapTabData.getSessionRegions(context, tripId) // 지역 목록 업데이트
+                            sessionMapPins = MapTabData.getSessionPinsByZoomRate(context, zoomLevel) // 세션에 저장된 핀 목록 업데이트
+                        },
                     )
                 }
 
@@ -676,7 +711,18 @@ fun MapTab(
                                     )
                                 )
                             }
-                        }
+                        },
+                        deleteFn = {
+                            MapRepository.deleteSchedule(context, schedule.id)
+
+                            // 업데이트
+                            if(preselectedPin?.type == MapPinType.SCHEDULE && preselectedPin.id == schedule.id) {
+                                setPreselectedPin(null)
+                            }
+                            schedules = MapTabData.getSessionSchedules(context, regionId) // 스케줄 목록 업데이트
+                            sessionMapPins = MapTabData.getSessionPinsByZoomRate(context, zoomLevel) // 세션에 저장된 핀 목록 업데이트
+                            sessionTransportPins = MapTabData.getSessionTransportPinsByZoomRate(context, zoomLevel) // 교통수단 핀 목록 업데이트
+                        },
                     )
                     if (index != schedules.lastIndex) {
                         val nextSchedule = schedules.getOrNull(index + 1) as model.Schedule
@@ -758,6 +804,7 @@ fun MapTab(
                 )
             }
         }
+
     }
 
 }

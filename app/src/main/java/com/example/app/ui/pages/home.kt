@@ -246,6 +246,13 @@ fun HomeTab(
                                     id = trip.id,
                                     position = if(tripInfo != null) LatLng(tripInfo.lat, tripInfo.lng) else null
                                 ))
+                            },
+                            deleteFn = {
+                                MapRepository.deleteTrip(context, trip.id)
+
+                                // 업데이트
+                                setAllTrips(MapRepository.getTrips(context))
+                                setPlannedTrip(MapRepository.getPlannedTrip(context))
                             }
                         )
                     }

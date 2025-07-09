@@ -1,5 +1,6 @@
 package com.example.app.ui.pages.map
 
+import android.util.Log
 import com.example.app.ui.components.map.MapPin
 import com.example.app.ui.components.map.MapPinType
 import com.example.app.ui.components.map.TransportPin
@@ -13,6 +14,11 @@ object MapTabData {
         context: android.content.Context,
         zoomLevel: Float
     ): List<TransportPin> {
+        for ( i in MapRepository.getAllTransports(context)) {
+            Log.d("MapTabData", "Transport: ${i.from_schedule_id} -> ${i.to_schedule_id}, type: ${i.type}")
+        }
+
+
         return when (zoomLevel) {
             ZOOM_LEVEL.CITY -> {
                 MapRepository.getAllTransports(context).map { transport ->
