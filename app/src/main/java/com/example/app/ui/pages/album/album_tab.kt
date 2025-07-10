@@ -234,8 +234,6 @@ fun FolderNavigatorScreen(context: Context, username: String = "사용자") {
             }
         }
         else -> {
-
-
             val launcher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.GetContent()
             ) { uri: Uri? ->
