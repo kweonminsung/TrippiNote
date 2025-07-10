@@ -20,6 +20,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.app.type.EXAMPLE_SESSION_DATA
 import com.example.app.type.SessionData
 import com.example.app.ui.theme.AppTheme
@@ -50,6 +51,8 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
