@@ -254,11 +254,10 @@ fun FolderNavigatorScreen(context: Context, username: String = "사용자") {
                 }
             }
 
-
-
-
             val region = selectedRegion!!
             val schedule = selectedSchedule!!
+
+            imageList = getScheduleImages(context, schedule.id)
 
             BackHandler( onBack = { selectedSchedule = null } )
             Box (
