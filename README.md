@@ -65,13 +65,9 @@
 - 여행 횟수 및 지역 수 통계
 - 여행 전 체크리스트 관리 기능
 
-<br>
-
 ## 📦 APK 다운로드
 
 👉 [**Release v0.1.0**](https://github.com/kweonminsung/TrippiNote/releases/tag/v0.1.0) 에서 APK를 다운로드해 직접 사용해보세요!
-
-<br>
 
 ## System Requirements
 
@@ -82,8 +78,6 @@
 | Android SDK           | API 24 or higher              |
 | Android Gradle Plugin | 8.1.0                         |
 | Gradle                | 8.9                           |
-
----
 
 ## Setup Instructions
 
