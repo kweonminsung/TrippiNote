@@ -29,3 +29,17 @@ val EXAMPLE_SESSION_DATA = SessionData(
         passport_file_id = "passport_12345",
     )
 )
+
+val INITIAL_SESSION_DATA = SessionData(
+    User(
+        name = "게스트",
+        email = "",
+        phone = "",
+        birthdate = "",
+        english_name = "",
+        passport_number = "",
+        passport_expiry = "",
+        passport_file_id = null,
+        image_id = null,
+    )
+)

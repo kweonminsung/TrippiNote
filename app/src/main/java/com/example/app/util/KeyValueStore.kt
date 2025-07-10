@@ -1,6 +1,7 @@
 package com.example.app.util
 
 import android.content.Context
+import com.example.app.type.INITIAL_SESSION_DATA
 import com.example.app.type.SessionData
 import com.google.gson.Gson
 import java.io.IOException
@@ -33,5 +34,6 @@ object KeyValueStore {
 
     fun clear(context: Context) {
         context.deleteFile(APP_KV_STORE)
+        saveBulk(context, INITIAL_SESSION_DATA)
     }
 }

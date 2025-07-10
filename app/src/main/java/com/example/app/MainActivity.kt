@@ -22,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.app.type.EXAMPLE_SESSION_DATA
+import com.example.app.type.INITIAL_SESSION_DATA
 import com.example.app.type.SessionData
 import com.example.app.ui.theme.AppTheme
 import com.example.app.ui.pages.album.AlbumTab
@@ -65,7 +66,7 @@ class MainActivity : ComponentActivity() {
         // Database 초기화
         DatabaseUtil.dropAllTables(this)
         DatabaseUtil.createAllTables(this)
-        DatabaseUtil.insertMockData(this)
+//        DatabaseUtil.insertMockData(this)
 
         setContent {
             val context = this
@@ -73,8 +74,7 @@ class MainActivity : ComponentActivity() {
             KeyValueStore.clear(context)
 
             // 예시 데이터 삽입
-            KeyValueStore.saveBulk(context, EXAMPLE_SESSION_DATA)
-
+//            KeyValueStore.saveBulk(context, EXAMPLE_SESSION_DATA)
 
             // KeyValueStore에서 가져온 데이터를 LocalSession에 저장
             val initialSessionData = KeyValueStore.loadBulk(context) as SessionData
