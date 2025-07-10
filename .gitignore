@@ -110,3 +110,5 @@ lint-results*.xml
 
 # Android Profiling
 *.hprof
+
+secrets.properties
