@@ -15,6 +15,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.with
 import androidx.compose.material3.Scaffold
 import androidx.compose.foundation.layout.*
@@ -64,14 +65,12 @@ class MainActivity : ComponentActivity() {
         }
 
         // Database 초기화
-        DatabaseUtil.dropAllTables(this)
-        DatabaseUtil.createAllTables(this)
+//        DatabaseUtil.dropAllTables(this)
+//        DatabaseUtil.createAllTables(this)
 //        DatabaseUtil.insertMockData(this)
 
         setContent {
             val context = this
-
-            KeyValueStore.clear(context)
 
             // 예시 데이터 삽입
 //            KeyValueStore.saveBulk(context, EXAMPLE_SESSION_DATA)
@@ -113,11 +112,13 @@ fun MainScreen() {
         targetState = tabType,
         transitionSpec = {
             slideInHorizontally(
-                animationSpec = tween(durationMillis = 300),
-                initialOffsetX = { - it / 4 },
-            ) with slideOutHorizontally(
-                animationSpec = tween(durationMillis = 300),
-                targetOffsetX = { - it / 4 },
+                        animationSpec = tween(durationMillis = 300),
+                        initialOffsetX = { - it / 4 },
+                    ).togetherWith(
+                slideOutHorizontally(
+                        animationSpec = tween(durationMillis = 300),
+                        targetOffsetX = { - it / 4 },
+                    )
             )
         }
     ) {

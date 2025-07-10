@@ -292,6 +292,12 @@ fun ProfileSpecific(onDismiss: () -> Unit = {}) {
                         TextField(
                             value = phone,
                             onValueChange = setPhone,
+                            placeholder = {
+                                Text(
+                                    text = "전화번호를 입력하세요",
+                                    color = CustomColors.Gray
+                                )
+                            },
                             leadingIcon = {
                                 Text(
                                     text = "전화번호",
@@ -327,6 +333,12 @@ fun ProfileSpecific(onDismiss: () -> Unit = {}) {
                                     fontSize = 16.sp
                                 )
                             },
+                            placeholder = {
+                                Text(
+                                    text = "생년월일을 입력하세요",
+                                    color = CustomColors.Gray
+                                )
+                            },
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = CustomColors.White,
                                 focusedTextColor = CustomColors.DarkGray,
@@ -348,6 +360,12 @@ fun ProfileSpecific(onDismiss: () -> Unit = {}) {
                                     modifier = Modifier.padding(end = 16.dp),
                                     color = CustomColors.Black,
                                     fontSize = 16.sp
+                                )
+                            },
+                            placeholder = {
+                                Text(
+                                    text = "영문 이름을 입력하세요",
+                                    color = CustomColors.Gray
                                 )
                             },
                             colors = TextFieldDefaults.colors(
@@ -377,6 +395,12 @@ fun ProfileSpecific(onDismiss: () -> Unit = {}) {
                                     fontSize = 16.sp
                                 )
                             },
+                            placeholder = {
+                                Text(
+                                    text = "여권 번호를 입력하세요",
+                                    color = CustomColors.Gray
+                                )
+                            },
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = CustomColors.White,
                                 focusedTextColor = CustomColors.DarkGray,
@@ -402,6 +426,12 @@ fun ProfileSpecific(onDismiss: () -> Unit = {}) {
                                     modifier = Modifier.padding(end = 16.dp),
                                     color = CustomColors.Black,
                                     fontSize = 16.sp
+                                )
+                            },
+                            placeholder = {
+                                Text(
+                                    text = "여권 만료일을 입력하세요",
+                                    color = CustomColors.Gray
                                 )
                             },
                             colors = TextFieldDefaults.colors(

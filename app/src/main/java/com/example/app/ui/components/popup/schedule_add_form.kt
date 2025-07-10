@@ -270,7 +270,11 @@ fun AddScheduleForm(
                             disabledContainerColor = CustomColors.LighterGray,
                             disabledTextColor = CustomColors.DarkGray,
                             focusedTextColor = CustomColors.DarkGray,
-                            unfocusedTextColor = CustomColors.DarkGray
+                            unfocusedTextColor = CustomColors.DarkGray,
+                            focusedSupportingTextColor = CustomColors.DarkGray,
+                            unfocusedSupportingTextColor = CustomColors.DarkGray,
+                            disabledSupportingTextColor = CustomColors.DarkGray
+
                         ),
                         enabled = false,
                     )
